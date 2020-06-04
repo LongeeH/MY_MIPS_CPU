@@ -19,15 +19,14 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 module mycpu_top(
-    input         aclk         ,
-    input  [0:0]  aresetn     ,
-    input  [5:0]  int          ,
-    
+	input  [5:0]  int			,
+    input         aclk 			,
+    input  		  aresetn		,
+    //read address channel
     output [3 :0] arid         ,
     output [31:0] araddr       ,
-    output [7 :0] arlen        ,
+    output [3 :0] arlen        ,
     output [2 :0] arsize       ,
     output [1 :0] arburst      ,
     output [1 :0] arlock       ,
@@ -35,17 +34,17 @@ module mycpu_top(
     output [2 :0] arprot       ,
     output        arvalid      ,
     input         arready      ,
-    //r           
+    //read data channel
     input  [3 :0] rid          ,
     input  [31:0] rdata        ,
     input  [1 :0] rresp        ,
     input         rlast        ,
     input         rvalid       ,
     output        rready       ,
-    //aw          
+    //write address channel
     output [3 :0] awid         ,
     output [31:0] awaddr       ,
-    output [7 :0] awlen        ,
+    output [3 :0] awlen        ,
     output [2 :0] awsize       ,
     output [1 :0] awburst      ,
     output [1 :0] awlock       ,
@@ -53,23 +52,28 @@ module mycpu_top(
     output [2 :0] awprot       ,
     output        awvalid      ,
     input         awready      ,
-    //w          
+    //write data channel
     output [3 :0] wid          ,
     output [31:0] wdata        ,
     output [3 :0] wstrb        ,
     output        wlast        ,
     output        wvalid       ,
     input         wready       ,
-    //b           
+    //write response channel
     input  [3 :0] bid          ,
     input  [1 :0] bresp        ,
     input         bvalid       ,
     output        bready       ,
     
-    output wire [31:0] debug_wb_pc,
-    output wire [3:0] debug_wb_rf_wen,
-    output wire [4:0] debug_wb_rf_wnum,
-    output wire [31:0] debug_wb_rf_wdata
+    output  [31:0] debug_wb_pc_1,
+    output  [3:0] debug_wb_rf_wen_1,
+    output  [4:0] debug_wb_rf_wnum_1,
+    output  [31:0] debug_wb_rf_wdata_1,
+    output  [31:0] debug_wb_pc_2,
+    output  [3:0] debug_wb_rf_wen_2,
+    output  [4:0] debug_wb_rf_wnum_2,
+    output  [31:0] debug_wb_rf_wdata_2
+    
 
     );
     wire cpu_inst_req;
@@ -99,6 +103,7 @@ module mycpu_top(
     wire [31:0] cache_tag;
     
     reg cache_op_r;
+    
 
 
     exe_core core(
@@ -130,6 +135,15 @@ module mycpu_top(
         .debug_wb_pc(debug_wb_pc),
         .debug_wb_rf_wen(debug_wb_rf_wen),
         .debug_wb_rf_wnum(debug_wb_rf_wnum),
-        .debug_wb_rf_wdata(debug_wb_rf_wdata)
+        .debug_wb_rf_wdata(debug_wb_rf_wdata),
+        
+        .debug_wb_pc_1(debug_wb_pc_1),
+        .debug_wb_rf_wen_1(debug_wb_rf_wen_1),
+        .debug_wb_rf_wnum_1(debug_wb_rf_wnum_1),
+        .debug_wb_rf_wdata_1(debug_wb_rf_wdata_1),
+        .debug_wb_pc_2(debug_wb_pc_2),
+        .debug_wb_rf_wen_2(debug_wb_rf_wen_2),
+        .debug_wb_rf_wnum_2(debug_wb_rf_wnum_2),
+        .debug_wb_rf_wdata_2(debug_wb_rf_wdata_2)
     );
 endmodule
