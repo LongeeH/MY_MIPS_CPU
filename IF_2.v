@@ -99,7 +99,7 @@ reg [1:0]IC_IF;
 always @ (posedge reset or negedge clk)
     begin
         if (reset)
-            next_PC<=4;
+            next_PC<=32'hbfc0_0004;
         else if(int)
             next_PC<=exc_PC+4;
         else if(delay)
@@ -120,7 +120,7 @@ begin
     if (reset) begin
         inst<=32'b0;
         IC_IF<=2'b0;
-        ID_PC<=32'b0;
+        ID_PC<=32'hbfc0_0004;
     end else if(int)begin
         inst<=32'b0;
         ID_PC<=PC;

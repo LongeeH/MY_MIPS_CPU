@@ -64,7 +64,7 @@ module register_file(
 	end
 	
 
-always @ (posedge reset) begin //Execute when reset is asserted
+always @ (negedge reset) begin //Execute when reset is asserted
 	Register[0] <=32'b0 ;
 	Register[1] <=32'b0 ;
 	Register[2] <=32'b0 ;

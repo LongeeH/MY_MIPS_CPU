@@ -239,53 +239,53 @@ assign OP_subA[4:0]= inst[25:21];
 assign OP_subB[4:0]= inst[20:16];
 assign RTI[4:0]    = inst[20:16];
 assign RDI[4:0]    = inst[15:11];
-assign Rtype       = (OP == 000000);
-assign cp0type     = (OP == 010000);
-assign add_inst    = Rtype && (func == 100000);
-assign addu_inst   = Rtype && (func == 100001);
-assign sub_inst    = Rtype && (func == 100010);
-assign subu_inst   = Rtype && (func == 100011);
-assign and_inst    = Rtype && (func == 100100);
-assign or_inst     = Rtype && (func == 100101);
-assign nor_inst    = Rtype && (func == 100111);
-assign xor_inst    = Rtype && (func == 100110);
-assign slt_inst    = Rtype && (func == 101010);
-assign sltu_inst   = Rtype && (func == 101011);
-assign sll_inst    = Rtype && (func == 000000);
-assign sllv_inst   = Rtype && (func == 000100);
-assign sra_inst    = Rtype && (func == 000011);
-assign srav_inst   = Rtype && (func == 000111);
-assign srl_inst    = Rtype && (func == 000010);
-assign srlv_inst   = Rtype && (func == 000110);
-assign mflo_inst   = Rtype && (func == 010010);
-assign mfhi_inst   = Rtype && (func == 010000);
-assign mtlo_inst   = Rtype && (func == 010011);
-assign mthi_inst   = Rtype && (func == 010001);
-assign addi_inst   = (OP == 001000);
-assign addiu_inst  = (OP == 001001);
-assign andi_inst   = (OP == 001100);
-assign ori_inst    = (OP == 001101);
-assign xori_inst   = (OP == 001110);
-assign slti_inst   = (OP == 001010);
-assign sltiu_inst  = (OP == 001011);
-assign lw_inst     = (OP == 100011);
-assign sw_inst     = (OP == 101011);
-assign j_inst      = (OP == 000010);
-assign beq_inst    = (OP == 000100);
-assign bne_inst    = (OP == 000101);
-assign bltz_inst   = (OP == 000001)&&(OP_subB==00000);
-assign blez_inst   = (OP == 000110)&&(OP_subB==00000);
-assign bgtz_inst   = (OP == 000111)&&(OP_subB==00000);
-assign bgez_inst   = (OP == 000001)&&(OP_subB==00001);
-assign syscall_inst= Rtype && (func==001100);
-assign mtc0_inst   = cp0type && (OP_subA==00100);
-assign mfc0_inst   = cp0type && (OP_subA==00000);
-assign tlbp_inst   = cp0type && OP_subA[4] && (func==001000);
-assign tlbr_inst   = cp0type && OP_subA[4] && (func==000001);
-assign tlbwi_inst  = cp0type && OP_subA[4] && (func==000010);
-assign tlbwr_inst  = cp0type && OP_subA[4] && (func==000110);
-assign rfe_inst    = cp0type && OP_subA[4] && (func==011000);
-assign break_inst  = Rtype && (func==001101);
+assign Rtype       = (OP == 6'b000000);
+assign cp0type     = (OP == 6'b010000);
+assign add_inst    = Rtype && (func == 6'b100000);
+assign addu_inst   = Rtype && (func == 6'b100001);
+assign sub_inst    = Rtype && (func == 6'b100010);
+assign subu_inst   = Rtype && (func == 6'b100011);
+assign and_inst    = Rtype && (func == 6'b100100);
+assign or_inst     = Rtype && (func == 6'b100101);
+assign nor_inst    = Rtype && (func == 6'b100111);
+assign xor_inst    = Rtype && (func == 6'b100110);
+assign slt_inst    = Rtype && (func == 6'b101010);
+assign sltu_inst   = Rtype && (func == 6'b101011);
+assign sll_inst    = Rtype && (func == 6'b000000);
+assign sllv_inst   = Rtype && (func == 6'b000100);
+assign sra_inst    = Rtype && (func == 6'b000011);
+assign srav_inst   = Rtype && (func == 6'b000111);
+assign srl_inst    = Rtype && (func == 6'b000010);
+assign srlv_inst   = Rtype && (func == 6'b000110);
+assign mflo_inst   = Rtype && (func == 6'b010010);
+assign mfhi_inst   = Rtype && (func == 6'b010000);
+assign mtlo_inst   = Rtype && (func == 6'b010011);
+assign mthi_inst   = Rtype && (func == 6'b010001);
+assign addi_inst   = (OP == 6'b001000);
+assign addiu_inst  = (OP == 6'b001001);
+assign andi_inst   = (OP == 6'b001100);
+assign ori_inst    = (OP == 6'b001101);
+assign xori_inst   = (OP == 6'b001110);
+assign slti_inst   = (OP == 6'b001010);
+assign sltiu_inst  = (OP == 6'b001011);
+assign lw_inst     = (OP == 6'b100011);
+assign sw_inst     = (OP == 6'b101011);
+assign j_inst      = (OP == 6'b000010);
+assign beq_inst    = (OP == 6'b000100);
+assign bne_inst    = (OP == 6'b000101);
+assign bltz_inst   = (OP == 6'b000001)&&(OP_subB==5'b00000);
+assign blez_inst   = (OP == 6'b000110)&&(OP_subB==5'b00000);
+assign bgtz_inst   = (OP == 6'b000111)&&(OP_subB==5'b00000);
+assign bgez_inst   = (OP == 6'b000001)&&(OP_subB==5'b00001);
+assign syscall_inst= Rtype && (func==6'b001100);
+assign mtc0_inst   = cp0type && (OP_subA==5'b00100);
+assign mfc0_inst   = cp0type && (OP_subA==5'b00000);
+assign tlbp_inst   = cp0type && OP_subA[4] && (func==6'b001000);
+assign tlbr_inst   = cp0type && OP_subA[4] && (func==6'b000001);
+assign tlbwi_inst  = cp0type && OP_subA[4] && (func==6'b000010);
+assign tlbwr_inst  = cp0type && OP_subA[4] && (func==6'b000110);
+assign rfe_inst    = cp0type && OP_subA[4] && (func==6'b011000);
+assign break_inst  = Rtype && (func==6'b001101);
 assign nop_inst    = (inst == 32'b0);
 
 //ALU_OP
@@ -295,25 +295,25 @@ always@(and_inst  or andi_inst  or or_inst or ori_inst or add_inst or
         sll_inst or sllv_inst or nor_inst or xor_inst or xori_inst or lw_inst or sw_inst)
 begin
         if (and_inst || andi_inst) 
-                ALU_OP<=00000;
+                ALU_OP<=5'b00000;
         else if(or_inst || ori_inst)
-                ALU_OP<=01000;
+                ALU_OP<=5'b01000;
         else if(add_inst || addi_inst || addu_inst || addiu_inst || lw_inst || sw_inst)
-                ALU_OP<=00001;
+                ALU_OP<=5'b00001;
         else if(sub_inst || subu_inst)
-                ALU_OP<=01001;
+                ALU_OP<=5'b01001;
         else if(slt_inst || sltu_inst || slti_inst || sltiu_inst)
-                ALU_OP<=01010;
+                ALU_OP<=5'b01010;
         else if(srl_inst || srlv_inst)
-                ALU_OP<=00100;
+                ALU_OP<=5'b00100;
         else if(sra_inst || srav_inst)
-                ALU_OP<=01100;
+                ALU_OP<=5'b01100;
         else if(sll_inst || sllv_inst)
-                ALU_OP<=10100;
+                ALU_OP<=5'b10100;
         else if(xor_inst || xori_inst)
-                ALU_OP<=11000;
+                ALU_OP<=5'b11000;
         else
-                ALU_OP<=00000;
+                ALU_OP<=5'b00000;
 end
 
 
@@ -326,13 +326,13 @@ assign TLB_OP_e = (tlbp_inst || tlbr_inst || tlbwi_inst || tlbwr_inst);
 always @ (tlbp_inst or tlbr_inst or tlbwi_inst or tlbwr_inst)
         begin
                 if(tlbp_inst)
-                        TLB_OP<=00;
+                        TLB_OP<=2'b00;
                 else if(tlbr_inst)
-                        TLB_OP<=01;
+                        TLB_OP<=2'b01;
                 else if(tlbwi_inst)
-                        TLB_OP<=10;
+                        TLB_OP<=2'b10;
                 else if(tlbwr_inst)
-                        TLB_OP<=11;
+                        TLB_OP<=2'b11;
         end
 
 //通用信号
@@ -362,7 +362,7 @@ always @ (reg_des or RDI or RTI)
                         result_des <= RTI;
         end
 
-always @ (negedge clk)
+always @ (*)//changed
         if(!delay)
                 begin
                         control[4:0]<=ALU_OP[4:0];
@@ -418,58 +418,60 @@ assign lo_target = mtlo_inst;
 //FWDA 
 //参考图5-10 FWDA可能不受clk控制
 always @ (*)
-        begin
-                if((alu_des_1[6] && ((rs_source && (RSI[4:0] == alu_des_1[4:0]))||(rt_source && (RTI[4:0] == alu_des_1[4:0]))))||(alu_des_2[6] && ((rs_source && (RSI[4:0] == alu_des_2[4:0]))|| (rt_source && (RTI[4:0] == alu_des_2[4:0])))))
-                        begin
-                                delay<=1;
-                                RSO<=00000;
-                                RTO<=00000;
-                                RDO<=00000; 
-                        end         
-                else if ((alu_w_HiLo1[0] && lo_source)
-                        ||(alu_w_HiLo1[1] && hi_source))
-                        FWDA<=0111;
+    begin
+        if((alu_des_1[6] && ((rs_source && (RSI[4:0] == alu_des_1[4:0]))||(rt_source && (RTI[4:0] == alu_des_1[4:0]))))||(alu_des_2[6] && ((rs_source && (RSI[4:0] == alu_des_2[4:0]))|| (rt_source && (RTI[4:0] == alu_des_2[4:0])))))
+		begin
+			delay<=1;
+            RSO<=5'b00000;
+            RTO<=5'b00000;
+            RDO<=5'b00000; 
+        end else 
+			begin
+				delay<=0;
+				if ((alu_w_HiLo1[0] && lo_source)||(alu_w_HiLo1[1] && hi_source))
+					FWDA<=04'b111;
                 else if ((alu_w_HiLo2[0]&&lo_source)
-                        || (alu_w_HiLo2[1] && hi_source))
-                        FWDA<=1000;
-                else if((alu_des_1[5] && ((rs_source && (RSI[4:0] == alu_des_1)))))
-                        FWDA<=0011;
-                else if((alu_des_2[5] && ((rs_source && (RSI[4:0] == alu_des_2)))))
-                        FWDA<=0100;
+                        || (alu_w_HiLo2[1] && hi_source))            
+						FWDA<=4'b1000;
+                else if((alu_des_1[5] && ((rs_source && (RSI[4:0] == alu_des_1))))) 
+						FWDA<=4'b0011;
+                else if((alu_des_2[5] && ((rs_source && (RSI[4:0] == alu_des_2)))))      
+						FWDA<=4'b0100;
                 else if((MEM_w_HiLo1[0] && lo_source)
-                        || (MEM_w_HiLo1[1] && hi_source))
-                        FWDA<=0111;
+                        || (MEM_w_HiLo1[1] && hi_source))              
+						FWDA<=4'b0111;
                 else if((MEM_w_HiLo2[0] && lo_source)
-                        || (MEM_w_HiLo2[1] && hi_source))
-                        FWDA<=1000;
+                        || (MEM_w_HiLo2[1] && hi_source))        
+						FWDA<=4'b1000;
                 else if((MEM_des1[5] || MEM_des1[6]) && rs_source &&
-                        (RSI[4:0] == MEM_des1[4:0]))
-                        FWDA<=1010;
+                        (RSI[4:0] == MEM_des1[4:0])) 
+						FWDA<=4'b1010;
                 else if((MEM_des2[5] || MEM_des2[6]) && rs_source &&
                         (RSI[4:0] == MEM_des2[4:0]))
-                        FWDA<=0110;
-                else if (lo_source)
-                        FWDA<=0010;
+						FWDA<=4'b0110;
+                else if (lo_source)   
+						FWDA<=4'b0010;
                 else if (hi_source)
-                        FWDA<=0001;
-                else
-                        FWDA<=0000;
-        end
+						FWDA<=4'b0001;
+                else   
+						FWDA<=4'b0000;
+			end
+    end
                 
 //FWDB
 //参考图5-10 FWDB可能不受clk控制
 always @ (*)
         begin
                 if(alu_des_1[5] && rt_source && (RTI[4:0] == alu_des_1[4:0]))
-                        FWDB<=001;
+                        FWDB<=3'b001;
                 else if (alu_des_2[5] && rt_source && (RTI[4:0] == alu_des_2[4:0]))
-                        FWDB<=010;
+                        FWDB<=3'b010;
                 else if ((MEM_des1[5] || MEM_des1[6]) && rt_source && (RTI[4:0] == MEM_des1[4:0]))
-                        FWDB<=011;
+                        FWDB<=3'b011;
                 else if ((MEM_des2[5] || MEM_des2[6]) && rt_source && (RTI[4:0] == MEM_des2[4:0]))
-                        FWDB<=100;
+                        FWDB<=3'b100;
                 else
-                        FWDB<=000;
+                        FWDB<=3'b000;
         end
 //新增模块 参考图4-8
 always @ (*)
@@ -546,8 +548,8 @@ begin
         J<= j_inst;
 end
 
-always @ (posedge reset or negedge clk)
-        if(reset)
+always @ (negedge reset or negedge clk)
+        if(reset==0)
                 begin
                         iddes[6:0]<=7'b0;
                         ID_w_HiLo[1:0] <= 2'b0;
@@ -565,10 +567,10 @@ always @ (posedge reset or negedge clk)
                         reg_esa[31:0] <= reg_A[31:0];
                         reg_esb[31:0] <= reg_B[31:0];
                         exe_PC[31:0] <= ID_PC[31:0];
-                        contr_ID[31:0] <= control[31:30];
+                        contr_ID[31:0] <= control[31:0];
                         IC_ID[7:0] <= control_w[7:0];
                         if(inst[15])
-                                immed[31:0]<={16'b1,inst[15:0]};
+                                immed[31:0]<={16'b1111111111111111,inst[15:0]};
                         else
                                 immed[31:0]<={16'b0,inst[15:0]};
                 end

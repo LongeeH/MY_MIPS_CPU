@@ -97,11 +97,16 @@ reg [31:0]inst;
 reg [31:0]ID_PC;
 reg [1:0]IC_IF;
 
+initial
+begin
+	PC=32'hbfc0_0000;
+end
 
-always @ (posedge reset or negedge clk)
+
+always @ (negedge reset or negedge clk)
     begin
-        if (reset)
-            next_PC<=32'b0;
+        if (reset==0)
+            next_PC<=32'hbfc0_0000;
         else if(int)
             next_PC<=exc_PC;
         else if(delay)
@@ -114,16 +119,16 @@ always @ (posedge reset or negedge clk)
                     next_PC<=PC+(LA_inst[15:0]<<2);
             end
         else
-        next_PC<=PC+8;
+			next_PC<=PC+8;
     end
 
-always @ (posedge reset or negedge clk)
+always @ (negedge reset or negedge clk)
 	begin
-		if (reset) 
+		if (reset==0) 
 			begin
 				inst<=32'b0;
 				IC_IF<=2'b0;
-				ID_PC<=32'b0;
+				ID_PC<=32'hbfc0_0000;
 			end 
 		else if(int)
 			begin
@@ -138,7 +143,7 @@ always @ (posedge reset or negedge clk)
 				IC_IF<=2'b00;
 			end
 	end
-always @ (posedge clk)
+always @ (*)
 	begin 
 		PC<=next_PC;
 	end

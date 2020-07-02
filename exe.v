@@ -126,9 +126,9 @@ module exe(
 		ALUWRITEHILO<=IDWRITEHILO;
     end
 
-	always @(posedge reset or negedge clk)//流水线处理
+	always @(negedge reset or negedge clk)//流水线处理
 	begin
-		if(reset)
+		if(reset==0)
 		begin
 			ALURES<=32'b0;
 			MEMDATA<=32'b0;

@@ -20,7 +20,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module mycpu_top(
-	input  [5:0]  int			,
+	//global signal
+	input  [5:0]  ext_int			,
     input         aclk 			,
     input  		  aresetn		,
     //read address channel
@@ -64,7 +65,7 @@ module mycpu_top(
     input  [1 :0] bresp        ,
     input         bvalid       ,
     output        bready       ,
-    
+    //debug signal
     output  [31:0] debug_wb_pc_1,
     output  [3:0] debug_wb_rf_wen_1,
     output  [4:0] debug_wb_rf_wnum_1,
@@ -73,7 +74,6 @@ module mycpu_top(
     output  [3:0] debug_wb_rf_wen_2,
     output  [4:0] debug_wb_rf_wnum_2,
     output  [31:0] debug_wb_rf_wdata_2
-    
 
     );
     wire cpu_inst_req;
@@ -97,19 +97,37 @@ module mycpu_top(
     wire [31:0] cpu_data_uncache_wdata;
     wire cpu_data_addr_ok;
     wire cpu_data_data_ok;
-
     wire cache_req;
     wire [6 :0] cache_op;
-    wire [31:0] cache_tag;
-    
+    wire [31:0] cache_tag;    
     reg cache_op_r;
     
 
 
+
     exe_core core(
         .clk(aclk),
-        .reset(reset),
-        .int(int),
+        .reset(aresetn),
+        .int(ext_int),
+        //test axi port here
+        .arvalid(arvalid),
+		.araddr(araddr),
+		.arid(arid),
+		.arlen(arlen),
+		.arburst(arburst),
+		.arlock(arlock),
+		.arcache(arcache),
+		.arprot(arprot),
+		.arsize(arsize),
+		
+        .rvalid(rvalid),
+        .rdata(rdata),
+        .arready(arready),
+		.rready(rready),
+        
+        
+        
+		//No function port (copied)
         .inst_req(cpu_inst_req),
         .inst_addr(cpu_inst_addr),
         .inst_rdata(cpu_inst_rdata),
@@ -117,7 +135,7 @@ module mycpu_top(
         .inst_data_ok(cpu_inst_data_ok),
 
         .data_req(cpu_data_req),
-        //.data_cache(),
+        .data_cache(),
         .data_wr(cpu_data_wr),
         .data_wstrb(cpu_data_wstrb),
         .data_addr(cpu_data_addr),
@@ -126,17 +144,18 @@ module mycpu_top(
         .data_rdata(cpu_data_rdata),
         .data_addr_ok(cpu_data_addr_ok & data_req_cango),
         .data_data_ok(cpu_data_data_ok),
-
+		
         .cache_req(cache_req),
         .cache_op(cache_op),
         .cache_tag(cache_tag),
         .cache_op_ok(cache_op_ok),
-
-        .debug_wb_pc(debug_wb_pc),
-        .debug_wb_rf_wen(debug_wb_rf_wen),
-        .debug_wb_rf_wnum(debug_wb_rf_wnum),
-        .debug_wb_rf_wdata(debug_wb_rf_wdata),
-        
+		
+		//orignal debug signal
+        //.debug_wb_pc(debug_wb_pc),
+        //.debug_wb_rf_wen(debug_wb_rf_wen),
+        //.debug_wb_rf_wnum(debug_wb_rf_wnum),
+        //.debug_wb_rf_wdata(debug_wb_rf_wdata),
+        //debug signal
         .debug_wb_pc_1(debug_wb_pc_1),
         .debug_wb_rf_wen_1(debug_wb_rf_wen_1),
         .debug_wb_rf_wnum_1(debug_wb_rf_wnum_1),
@@ -146,4 +165,8 @@ module mycpu_top(
         .debug_wb_rf_wnum_2(debug_wb_rf_wnum_2),
         .debug_wb_rf_wdata_2(debug_wb_rf_wdata_2)
     );
+	
+	
+	
+	
 endmodule

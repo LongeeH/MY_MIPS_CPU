@@ -141,9 +141,9 @@ module mem(
 		endcase
 	end 
 	
-	always @(posedge reset or negedge clk) //原设计的流水线，结合上一个always重新实现
+	always @(negedge reset or negedge clk) //原设计的流水线，结合上一个always重新实现
     begin  
-		if(reset) 
+		if(reset==0) 
 			begin 
 				RESULT<=32'b0; 
 				CONTROLW_MEM<=32'b0; 

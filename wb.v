@@ -62,13 +62,15 @@ module WB(
 	input [31:0]controlw_MEM,
     input [31:0]result,
     input [4:0]WB_hi_lo,
+    input [31:0]wb_pc,
     output [31:0]reg_result,
     output write_reg,
     output write_hi,
     output write_lo,
     output [4:0]result_des,
     output [31:0]reg_hi,
-    output [31:0]reg_lo
+    output [31:0]reg_lo,
+	output [31:0]wb_pc_debug
     );
 
 reg write_reg;
@@ -79,9 +81,9 @@ reg [31:0]reg_lo;
 reg [31:0]result_des;
 reg [31:0]reg_result;
 
-always @(posedge reset or posedge clk)
+always @(negedge reset or posedge clk)
     begin
-        if(reset)
+        if(reset==0)
             begin
                 reg_result<=32'b0;
                 reg_hi<=32'b0;
