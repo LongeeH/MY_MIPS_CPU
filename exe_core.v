@@ -144,8 +144,8 @@ module exe_core(
 	wire [31:0]CONTROLMEM_2;
 	wire [31:0]WBHILO_1;
 	wire [31:0]WBHILO_2;
-	wire [31:0]wb_pc_1;
-	wire [31:0]wb_pc_2;
+	wire [31:0]WB_PC_1;
+	wire [31:0]WB_PC_2;
 	//ID-REG
 	wire [4:0]RSO_1;
 	wire [4:0]RSO_2;
@@ -327,7 +327,8 @@ module exe_core(
 		.MEMHILORES(MEM_HiLo_res_1),
 		.MEMDES(MEM_des1),
 		.MEMWRITEHILO(MEM_HiLo1),
-		.INTPC(wb_pc_1)//注意这个接口只是临时用来传递pc给wb，未来要恢复它本身的功能
+		.INTPC(),
+		.WB_PC(WB_PC_1)
 	);
 	mem _mem2(
 		.clk(clk),
@@ -360,7 +361,8 @@ module exe_core(
 		.MEMHILORES(MEM_HiLo_res_2),
 		.MEMDES(MEM_des2),
 		.MEMWRITEHILO(MEM_HiLo2),
-		.INTPC(wb_pc_2)
+		.INTPC(),
+		.WB_PC(WB_PC_2)
 	);
     
 	WB _wb1(
@@ -369,7 +371,7 @@ module exe_core(
 		.controlw_MEM(CONTROLMEM_1),
 		.result(RESULT_1),
 		.WB_hi_lo(WBHILO_1),
-		.wb_pc(wb_pc_1),
+		.WB_PC(WB_PC_1),
 		//
 		.reg_result(reg_result_1),
 		.write_reg(write_reg_1),
@@ -386,7 +388,7 @@ module exe_core(
 		.controlw_MEM(CONTROLMEM_2),
 		.result(RESULT_2),
 		.WB_hi_lo(WBHILO_1),
-		.wb_pc(wb_pc_2),
+		.WB_PC(WB_PC_2),
 		//
 		.reg_result(reg_result_2),
 		.write_reg(write_reg_2),

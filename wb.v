@@ -25,7 +25,7 @@
                                     控制，[9]控制寄存器堆是否写入（ID中的write_reg＿
                                     控制，[27]和[28]分别控制lo和hi的写入（对应ID中的write_lo和write_hi＿
 	result			                MEM指令数据结果
-	WB_hi_lo(write_back_hight_low)  霿要写入的数据
+	WB_hi_lo(write_back_hight_low)  要写入的数据
 	
     reg_result                      指令朿终运行结枿
 	write_reg                       标志，是否把结果写入寄存器堆丿
@@ -33,7 +33,7 @@
     write_lo                        标志，是否把数据写入到寄存器lo丿
     reg_hi                          寄存器hi
     reg_lo                          寄存器lo
-    result_des                       标识WB执行阶段中结果需要写入的寄存器?
+    result_des                      标识WB执行阶段中结果需要写入的寄存器?
 
 	
 				            	wb
@@ -49,7 +49,7 @@
 		|								                |
 		|	WB_hi_lo[4:0]			reg_hi[31:0]        |
         |								                |
-        |	         				reg_lo[31:0]        |
+        |	WBPC[31:0] 				reg_lo[31:0]        |
 		|								                |
         |	         				result_des[4:0]     |
         |								                |
@@ -62,7 +62,7 @@ module WB(
 	input [31:0]controlw_MEM,
     input [31:0]result,
     input [4:0]WB_hi_lo,
-    input [31:0]wb_pc,
+    input [31:0]WB_PC,
     output [31:0]reg_result,
     output write_reg,
     output write_hi,
@@ -80,6 +80,8 @@ reg [31:0]reg_hi;
 reg [31:0]reg_lo;
 reg [31:0]result_des;
 reg [31:0]reg_result;
+
+assign wb_pc_debug=WB_PC;
 
 always @(negedge reset or posedge clk)
     begin

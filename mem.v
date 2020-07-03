@@ -85,7 +85,9 @@ module mem(
 	output [31:0]MEMHILORES,
 	output [6:0]MEMDES,
 	output [1:0]MEMWRITEHILO,
-	output [31:0]INTPC
+	output [31:0]INTPC,
+	output [31:0]WB_PC
+
 
     );
 	reg [31:0]MEMRES;
@@ -104,6 +106,7 @@ module mem(
 	reg	[31:0]WBHILO;
 	reg	[31:0]CONTROLW_MEM;
 	reg	[31:0]RESULT;
+	reg	[31:0]WB_PC;
 	wire[31:0]MEMRESULT;
 	wire[31:0]MEMHILORES;
 	
@@ -154,6 +157,7 @@ module mem(
 				WBHILO<=MEMHILO; 
 				CONTROLW_MEM<=CONTROLW_EXE; 
 				RESULT<=MEMRES; 
+				WB_PC<=MEMPC; 
             end 
     end 
 	

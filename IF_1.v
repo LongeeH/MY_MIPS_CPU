@@ -139,7 +139,7 @@ always @ (negedge reset or negedge clk)
 		else if(!delay)
 			begin
 				inst<=MEM_inst;
-				ID_PC<=32'b0;
+				ID_PC<=PC;
 				IC_IF<=2'b00;
 			end
 	end
