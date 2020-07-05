@@ -181,11 +181,11 @@ module exe_core(
 		.int(), //maybe need CP0
 		.J(J),
 		.branch(branch),
-		.delay(if_delay),
+		.delay(if_delay_1),
 		.IADEE(),
 		.IADFE(),
 		.exc_PC(),
-		.MEM_inst(rdata),
+		.MEM_inst(MEM_inst_1),
 		.LA_inst(),
 
 		.PC(pc_1),
@@ -199,14 +199,14 @@ module exe_core(
 		.int(),
 		.J(J),
 		.branch(branch),
-		.delay(if_delay),
+		.delay(if_delay_2),
 		.IADEE(),
 		.IADFE(),
 		.exc_PC(),
-		.MEM_inst(),
+		.MEM_inst(MEM_inst_2),
 		.LA_inst(),
 
-		.PC(),
+		.PC(pc_2),
 		.inst(inst_2),
 		.ID_PC(ID_PC_2),
 		.IC_IF(IC_IF_2)
@@ -440,9 +440,14 @@ module exe_core(
 	
 	//instruction require
 	wire [31:0] pc_1;
-	reg waitinst;
+	wire [31:0] pc_2;
+	wire waitinst;
+	reg waitinst_1;
+	reg waitinst_2;
 	reg rready;
-	reg neednewpc;
+	reg inst_req_1;
+	reg inst_req_2;
+	reg inst_req_en;//which pipeline req?
 	
 	
 	always@(posedge clk)
@@ -459,34 +464,88 @@ module exe_core(
 		// begin
 			// waitinst<=1;
 		// end else 
-		if(rvalid==1)
-		begin
-			waitinst<=0;
-			arvalid<=0;// awful experience, need change shorter, just wait a cycle, creat a signal model later...
-			neednewpc<=0;// this also awful
-		end else if(neednewpc)
+		//rec
+		//req
+		if(inst_req_1 & inst_req_en==0 & waitinst_2==0)
 		begin
 			araddr<=pc_1;// is new pc or before? perhaps late... 
 			arvalid<=1;
-			waitinst<=1;
-		end 
+			waitinst_1<=1;
+			inst_req_en<=1;
+		end else if(inst_req_2 & inst_req_en==1 & waitinst_1==0)
+		begin
+			araddr<=pc_2;// is new pc or before? perhaps late... 
+			arvalid<=1;
+			waitinst_2<=1;
+			inst_req_en<=0;
+		end
 	end
+	
+	always@(negedge clk)
+	begin
+		if(rvalid==1 & inst_req_en==1)
+		begin
+			waitinst_1<=0;
+			arvalid<=0;// awful experience, need change shorter, just wait a cycle, creat a signal model later...
+			inst_req_1<=0;// this also awful
+		end else if(rvalid==1 & inst_req_en==0)
+		begin
+			waitinst_2<=0;
+			arvalid<=0;// awful experience, need change shorter, just wait a cycle, creat a signal model later...
+			inst_req_2<=0;// this also awful
+		end
+	end
+	
+	
+	
+	
+	reg [31:0]MEM_inst_1;
+	reg [31:0]MEM_inst_2;
+	
+	always@(*)
+	begin
+		case(inst_req_en)
+			1'b0:begin
+				MEM_inst_1=32'bz;
+				MEM_inst_2=rdata;
+			end
+			1'b1:begin
+				MEM_inst_1=rdata;
+				MEM_inst_2=32'bz;
+			end
+			default:begin
+				MEM_inst_1=32'bz;
+				MEM_inst_2=32'bz;
+			end
+		endcase
+		
+	end
+	
 	
 	always @(pc_1)
 	begin
-		neednewpc=1;
+		inst_req_1=1;
 	end
+	always @(pc_2)
+	begin
+		inst_req_2=1;
+	end
+	
 	
 	initial
 	begin
 		arid=0;
-		arlen=4'b1111;
+		// arlen=4'b1111;
+		arlen=4'b0000;
 		arsize=3'b010;
 		arburst=1'b1;
 		arlock=0;
 		arcache=0;
 		arprot=0;
 		rready=1;
+		inst_req_en=0;
+		waitinst_1=0;
+		waitinst_2=0;
 	end
 	// always@(posedge clk)//finish inst addr out
 	// begin
@@ -510,8 +569,11 @@ module exe_core(
 	//need rready reset model here
 	
 	
-	wire if_delay;
-	assign if_delay = delay | waitinst;
+	wire if_delay_1;
+	wire if_delay_2;
+	assign if_delay_1 = delay | inst_req_1;
+	assign if_delay_2 = delay | inst_req_2;
+	// assign waitinst = waitinst_1 | waitinst_2;
 	//need data distributor divide instruction or data
 	
 	

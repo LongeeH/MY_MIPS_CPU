@@ -97,10 +97,10 @@ reg [31:0]inst;
 reg [31:0]ID_PC;
 reg [1:0]IC_IF;
 
-initial
-begin
-	PC=32'hbfc0_0000;
-end
+// initial
+// begin
+	// PC=32'hbfc0_0000;
+// end
 
 
 always @ (negedge reset or negedge clk)
@@ -125,11 +125,11 @@ always @ (negedge reset or negedge clk)
 always @ (negedge reset or negedge clk)
 	begin
 		if (reset==0) 
-			begin
+		begin
 				inst<=32'b0;
 				IC_IF<=2'b0;
 				ID_PC<=32'hbfc0_0000;
-			end 
+		end 
 		else if(int)
 			begin
 				inst<=32'b0;
