@@ -385,7 +385,7 @@ always @ (*)//changed
                         control[31:30] <= ALU_srcB[1:0];
                 end; 
 
-always @ (negedge clk)
+always @ (posedge clk)
         if(!delay)
                 begin
                         control_w[1:0]<=IC_IF[1:0];
@@ -481,7 +481,7 @@ always @ (*)
 	end
 
 
-always @ (negedge clk)
+always @ (posedge clk)
         begin
                 des<={MEM_res_ok,ALU_res_ok,result_des[4:0]};
                 write_hilo = {write_hi,write_lo};
@@ -548,7 +548,7 @@ begin
         J<= j_inst;
 end
 
-always @ (negedge reset or negedge clk)
+always @ (negedge reset or posedge clk)
         if(reset==0)
                 begin
                         iddes[6:0]<=7'b0;

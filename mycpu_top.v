@@ -86,10 +86,12 @@ module mycpu_top(
     wire cpu_inst_data_ok;
     wire cpu_data_req;
     wire cpu_data_wr;
+	wire [31:0] cpu_data_wdata;
+	
     wire [3:0] cpu_data_wstrb;
     wire [31:0] cpu_data_addr;
     wire [2 :0] cpu_data_size;
-    wire [31:0] cpu_data_wdata;
+
     wire [31:0] cpu_data_rdata;
     wire [31:0] cpu_data_cache_rdata;
     wire [31:0] cpu_data_cache_wdata;

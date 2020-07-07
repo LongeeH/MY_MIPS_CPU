@@ -22,29 +22,29 @@
 
 
 module IF_1(//input:
-              clk,reset,int,J,branch,delay,IADEE,IADFE,exc_PC,MEM_inst,LA_inst,
+              clk,reset,int,J,branch,inst_delay_fetch,delay,IADEE,IADFE,exc_PC,MEM_inst,LA_inst,
             //output:
               PC,inst,ID_PC,IC_IF);
 
 /*
-    branch                                    分支指令（来自分支延迟槽）
-    clk                                       时钟
-    next_PC                                   下一个PC
-    exc_PC(exception_PC)                      产生异常后IF_1下一条指令
-    exc_PC+4(exception_PC+4)                  产生异常后IF_2下一条指令
-    ID_PC                                     译码阶段PC
-    int                                       中断
-    IC_IF(int_control_IF);                    中断控制
-    LA_inst                                   load address 指令
-    inst(instructions)                        分支指令自身中的部分
-    MEM_inst（MEM instructions）              在存储器中的指令
-    J                                         跳转指令
-    IAEE(interrupt_address_error_exception)   中断地址错误异常
-    delay                                     延迟
-    IAFE(interrupt_address_file_exception)    中断文件错误异常
-    PC                                        取码
-    inst                                      指令
-    reset                                     重置
+    branch                                    鍒嗘敮鎸囦护锛堟潵鑷垎鏀欢杩熸Ы锛?
+    clk                                       鏃堕挓
+    next_PC                                   涓嬩竴涓狿C
+    exc_PC(exception_PC)                      浜х敓寮傚父鍚嶪F_1涓嬩竴鏉℃寚浠?
+    exc_PC+4(exception_PC+4)                  浜х敓寮傚父鍚嶪F_2涓嬩竴鏉℃寚浠?
+    ID_PC                                     璇戠爜闃舵PC
+    int                                       涓柇
+    IC_IF(int_control_IF);                    涓柇鎺у埗
+    LA_inst                                   load address 鎸囦护
+    inst(instructions)                        鍒嗘敮鎸囦护鑷韩涓殑閮ㄥ垎
+    MEM_inst锛圡EM instructions锛?              鍦ㄥ瓨鍌ㄥ櫒涓殑鎸囦护
+    J                                         璺宠浆鎸囦护
+    IAEE(interrupt_address_error_exception)   涓柇鍦板潃閿欒寮傚父
+    delay                                     寤惰繜
+    IAFE(interrupt_address_file_exception)    涓柇鏂囦欢閿欒寮傚父
+    PC                                        鍙栫爜
+    inst                                      鎸囦护
+    reset                                     閲嶇疆
 
                                     IF
             -------------------------------------------------
@@ -79,6 +79,7 @@ input reset;
 input int;
 input J;
 input branch;
+input inst_delay_fetch;
 input delay;
 input IADEE;
 input IADFE;
@@ -103,13 +104,13 @@ reg [1:0]IC_IF;
 // end
 
 
-always @ (negedge reset or negedge clk)
+always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
             next_PC<=32'hbfc0_0000;
         else if(int)
             next_PC<=exc_PC;
-        else if(delay)
+        else if(delay|inst_delay_fetch)
             next_PC<=PC;
         else if(branch)
             begin
@@ -122,13 +123,13 @@ always @ (negedge reset or negedge clk)
 			next_PC<=PC+8;
     end
 
-always @ (negedge reset or negedge clk)
+always @ (negedge reset or posedge clk)
 	begin
 		if (reset==0) 
 		begin
 				inst<=32'b0;
 				IC_IF<=2'b0;
-				ID_PC<=32'hbfc0_0000;
+				//ID_PC<=32'hbfc0_0000;
 		end 
 		else if(int)
 			begin

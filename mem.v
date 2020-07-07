@@ -144,7 +144,7 @@ module mem(
 		endcase
 	end 
 	
-	always @(negedge reset or negedge clk) //原设计的流水线，结合上一个always重新实现
+	always @(negedge reset or posedge clk) //原设计的流水线，结合上一个always重新实现
     begin  
 		if(reset==0) 
 			begin 

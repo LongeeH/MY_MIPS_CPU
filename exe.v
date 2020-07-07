@@ -126,7 +126,7 @@ module exe(
 		ALUWRITEHILO<=IDWRITEHILO;
     end
 
-	always @(negedge reset or negedge clk)//流水线处理
+	always @(negedge reset or posedge clk)//流水线处理
 	begin
 		if(reset==0)
 		begin

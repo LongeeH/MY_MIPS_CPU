@@ -80,8 +80,9 @@ reg [31:0]reg_hi;
 reg [31:0]reg_lo;
 reg [31:0]result_des;
 reg [31:0]reg_result;
+reg [31:0]wb_pc_debug;
 
-assign wb_pc_debug=WB_PC;
+// assign wb_pc_debug=WB_PC;
 
 always @(negedge reset or posedge clk)
     begin
@@ -97,6 +98,7 @@ always @(negedge reset or posedge clk)
             end
         else
             begin
+				wb_pc_debug<=WB_PC;
                 reg_result<=result;
                 result_des<=controlw_MEM[24:20];
                 write_reg<=controlw_MEM[9];

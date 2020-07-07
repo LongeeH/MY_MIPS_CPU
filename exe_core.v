@@ -75,6 +75,7 @@ module exe_core(
     output  [31:0] debug_wb_rf_wdata_2
     );
 	
+	
 	//wire put here
 	//IF-ID
     wire [31:0]inst_1;
@@ -181,6 +182,7 @@ module exe_core(
 		.int(), //maybe need CP0
 		.J(J),
 		.branch(branch),
+		.inst_delay_fetch(inst_req_1),
 		.delay(if_delay_1),
 		.IADEE(),
 		.IADFE(),
@@ -199,6 +201,7 @@ module exe_core(
 		.int(),
 		.J(J),
 		.branch(branch),
+		.inst_delay_fetch(inst_req_2),
 		.delay(if_delay_2),
 		.IADEE(),
 		.IADFE(),
@@ -441,102 +444,105 @@ module exe_core(
 	//instruction require
 	wire [31:0] pc_1;
 	wire [31:0] pc_2;
+	wire [31:0]MEM_inst_1;
+	wire [31:0]MEM_inst_2;
 	wire waitinst;
 	reg waitinst_1;
 	reg waitinst_2;
 	reg rready;
+	wire inst_req;
+	reg inst_rec;
 	reg inst_req_1;
 	reg inst_req_2;
 	reg inst_req_en;//which pipeline req?
+	reg arvalid_rst;
+	reg arvalid_use;
 	
-	
+	//req
 	always@(posedge clk)
 	begin
-		// inst_addr=pc_1;
-		// if (arready==1)
-		// begin
-			// inst_addr=32'b0;
-			// araddr<=32'b0;
-			// arvalid<=0;
-			// rready<=1;
-		// end else 
-		// if(reset==1)//!reset not work when reset=Z
-		// begin
-			// waitinst<=1;
-		// end else 
-		//rec
-		//req
-		if(inst_req_1 & inst_req_en==0 & waitinst_2==0)
+		if(inst_req & inst_rec & arready)
 		begin
 			araddr<=pc_1;// is new pc or before? perhaps late... 
 			arvalid<=1;
-			waitinst_1<=1;
-			inst_req_en<=1;
-		end else if(inst_req_2 & inst_req_en==1 & waitinst_1==0)
+			inst_rec<=0;
+			arvalid_use<=1;
+		end 
+	end
+	
+	
+	reg flag;
+	reg [63:0]inst_2_if;
+	wire [31:0]pc; 
+	
+	always @ (posedge clk)
+	begin
+		if(rvalid==1)
 		begin
-			araddr<=pc_2;// is new pc or before? perhaps late... 
-			arvalid<=1;
-			waitinst_2<=1;
-			inst_req_en<=0;
+		// arvalid=0;
+			if(flag)
+			begin
+				inst_2_if[31:0] <= pc;
+				inst_req_1<=0;
+			end else
+			begin
+				inst_2_if[63:32] <= pc;
+				inst_req_2<=0;
+				inst_rec<=1;
+			end
+			flag = !flag;
 		end
 	end
 	
-	always@(negedge clk)
-	begin
-		if(rvalid==1 & inst_req_en==1)
-		begin
-			waitinst_1<=0;
-			arvalid<=0;// awful experience, need change shorter, just wait a cycle, creat a signal model later...
-			inst_req_1<=0;// this also awful
-		end else if(rvalid==1 & inst_req_en==0)
-		begin
-			waitinst_2<=0;
-			arvalid<=0;// awful experience, need change shorter, just wait a cycle, creat a signal model later...
-			inst_req_2<=0;// this also awful
-		end
-	end
+	assign MEM_inst_1 = inst_2_if[31:0];
+	assign MEM_inst_2 = inst_2_if[63:32];
+	assign pc = rdata;
 	
-	
-	
-	
-	reg [31:0]MEM_inst_1;
-	reg [31:0]MEM_inst_2;
-	
-	always@(*)
-	begin
-		case(inst_req_en)
-			1'b0:begin
-				MEM_inst_1=32'bz;
-				MEM_inst_2=rdata;
-			end
-			1'b1:begin
-				MEM_inst_1=rdata;
-				MEM_inst_2=32'bz;
-			end
-			default:begin
-				MEM_inst_1=32'bz;
-				MEM_inst_2=32'bz;
-			end
-		endcase
-		
-	end
 	
 	
 	always @(pc_1)
 	begin
 		inst_req_1=1;
+		inst_2_if[31:0]=32'b0;
 	end
 	always @(pc_2)
 	begin
 		inst_req_2=1;
+		inst_2_if[63:32]=32'b0;
 	end
 	
+	// always@(posedge arready)
+	// begin
+		// if(arvalid_use)
+		// begin
+			// arvalid_rst<=1;
+		// end
+	// end
+	// always@(posedge clk)
+	// begin
+		// if(arvalid_rst)
+		// begin
+			// arvalid<=0;
+			// arvalid_rst<=0;
+			// arvalid_use<=0;
+		// end
+	// end
+	always@(posedge clk)
+	begin
+		if(arvalid)
+		begin
+			arvalid<=0;
+		end
+	end
+	
+	assign inst_req = inst_req_1 & inst_req_2;
 	
 	initial
 	begin
+		flag = 1;
 		arid=0;
 		// arlen=4'b1111;
-		arlen=4'b0000;
+		arlen=4'b0001;
 		arsize=3'b010;
 		arburst=1'b1;
 		arlock=0;
@@ -546,34 +552,22 @@ module exe_core(
 		inst_req_en=0;
 		waitinst_1=0;
 		waitinst_2=0;
+		inst_rec=1;
+		arvalid_use=0;
+		inst_req_1=1;
+		inst_req_2=1;
 	end
-	// always@(posedge clk)//finish inst addr out
-	// begin
-		// if (arready==1)
-		// begin
-			// arvalid<=0;
-			// inst_addr=32'b0;
-			// araddr<=32'b0;
-			// rready<=1;
-		// end
-		
-	// end
-	
-	// always@(*)
-	// begin
-		// if(rready==1&&rvalid==1)
-		// begin
-			// waitinst<=0;
-		// end
-	// end
-	//need rready reset model here
-	
+
 	
 	wire if_delay_1;
 	wire if_delay_2;
-	assign if_delay_1 = delay | inst_req_1;
-	assign if_delay_2 = delay | inst_req_2;
+	// assign if_delay_1 = delay | inst_req_1;
+	// assign if_delay_2 = delay | inst_req_2;
+	assign if_delay_1 = delay;
+	assign if_delay_2 = delay;
 	// assign waitinst = waitinst_1 | waitinst_2;
+	
+	
 	//need data distributor divide instruction or data
 	
 	

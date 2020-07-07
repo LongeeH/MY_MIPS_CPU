@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module IF_2(//input:
-              clk,reset,int,J,branch,delay,IADEE,IADFE,exc_PC,MEM_inst,LA_inst,
+              clk,reset,int,J,branch,inst_delay_fetch,delay,IADEE,IADFE,exc_PC,MEM_inst,LA_inst,
             //output:
               PC,inst,ID_PC,IC_IF);
 
@@ -77,6 +77,7 @@ input reset;
 input int;
 input J;
 input branch;
+input inst_delay_fetch;
 input delay;
 input IADEE;
 input IADFE;
@@ -96,13 +97,13 @@ reg [31:0]ID_PC;
 reg [1:0]IC_IF;
 
 
-always @ (negedge reset or negedge clk)
+always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
             next_PC<=32'hbfc0_0004;
         else if(int)
             next_PC<=exc_PC+4;
-        else if(delay)
+        else if(delay|inst_delay_fetch)
             next_PC<=PC;
         else if(branch)
             begin
@@ -115,13 +116,13 @@ always @ (negedge reset or negedge clk)
         next_PC<=PC+8;
     end
 
-always @ (negedge reset or negedge clk)
+always @ (negedge reset or posedge clk)
 	begin
 		if (reset==0) 
 		begin
 			inst<=32'b0;
 			IC_IF<=2'b0;
-			ID_PC<=32'hbfc0_0004;
+			//ID_PC<=32'hbfc0_0004;
 		end else if(int)
 		begin
 			inst<=32'b0;
