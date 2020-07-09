@@ -93,6 +93,9 @@ module alu(
 			5'b10100:begin
 				result=b<<a;
 			end
+			5'b11100:begin
+				result={b[15:0],16'b0};
+			end
 			default:begin
 				result=33'b0;//默认项，留作调试变量
 			end

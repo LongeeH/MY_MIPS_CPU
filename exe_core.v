@@ -77,6 +77,9 @@ module exe_core(
 	
 	
 	//wire put here
+	//IF-IF
+	wire [31:0]la_inst_1;
+	wire [31:0]la_inst_2;
 	//IF-ID
     wire [31:0]inst_1;
 	wire [31:0]ID_PC_1;
@@ -84,8 +87,10 @@ module exe_core(
 	wire [31:0]inst_2;
 	wire [31:0]ID_PC_2;
 	wire [1:0]IC_IF_2;
-	wire branch;
-	wire J;
+	wire branch_1;
+	wire branch_2;//nouse
+	wire J_1;
+	wire J_2;//useless
 	wire delay;
 	//ID-EXE
 	wire [6:0]alu_des_1;
@@ -180,39 +185,43 @@ module exe_core(
 		.clk(clk),
 		.reset(reset),
 		.int(), //maybe need CP0
-		.J(J),
-		.branch(branch),
-		.inst_delay_fetch(inst_req_1),
+		.J(J_1),
+		.branch_1(branch_1),
+		.branch_2(branch_2),
+		.inst_delay_fetch(inst_delay_fetch),
 		.delay(if_delay_1),
 		.IADEE(),
 		.IADFE(),
 		.exc_PC(),
 		.MEM_inst(MEM_inst_1),
-		.LA_inst(),
+		.la_inst_in(la_inst_2),
 
 		.PC(pc_1),
 		.inst(inst_1),
 		.ID_PC(ID_PC_1),
-		.IC_IF(IC_IF_1)
+		.IC_IF(IC_IF_1),
+		.la_inst_out(la_inst_1)
 	);
     IF_2 _if2(
 		.clk(clk),
 		.reset(reset),
 		.int(),
-		.J(J),
-		.branch(branch),
-		.inst_delay_fetch(inst_req_2),
+		.J(J_2),
+		.branch_1(branch_1),
+		.branch_2(branch_2),
+		.inst_delay_fetch(inst_delay_fetch),
 		.delay(if_delay_2),
 		.IADEE(),
 		.IADFE(),
 		.exc_PC(),
 		.MEM_inst(MEM_inst_2),
-		.LA_inst(),
+		.la_inst_in(la_inst_1),
 
 		.PC(pc_2),
 		.inst(inst_2),
 		.ID_PC(ID_PC_2),
-		.IC_IF(IC_IF_2)
+		.IC_IF(IC_IF_2),
+		.la_inst_out(la_inst_2)
 	);
     
 	ID _id1(
@@ -228,7 +237,7 @@ module exe_core(
 		.MEM_des2(MEM_des2),.MEM_w_HiLo2(MEM_HiLo2),
 		.MEM_HiLo_res_1(MEM_HiLo_res_1),.MEM_HiLo_res_2(MEM_HiLo_res_2),
          //output
-        .branch(branch),.J(J),.delay(delay),.contr_ID(contr_ID_1),.IC_ID(IC_ID_1),.exe_PC(exe_PC_1),
+        .branch(branch_1),.J(J_1),.delay(delay),.contr_ID(contr_ID_1),.IC_ID(IC_ID_1),.exe_PC(exe_PC_1),
 		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.iddes(iddes_1),
 		.ID_w_HiLo(ID_HiLo_1),.RSO(RSO_1),.RTO(RTO_1)
 	);	
@@ -245,7 +254,7 @@ module exe_core(
 		.MEM_des2(MEM_des2),.MEM_w_HiLo2(MEM_HiLo2),
 		.MEM_HiLo_res_1(MEM_HiLo_res_1),.MEM_HiLo_res_2(MEM_HiLo_res_2),
          //output
-        .branch(branch),.J(J),.delay(delay),.contr_ID(contr_ID_2),.IC_ID(IC_ID_2),.exe_PC(exe_PC_2),
+        .branch(branch_2),.J(J_2),.delay(delay),.contr_ID(contr_ID_2),.IC_ID(IC_ID_2),.exe_PC(exe_PC_2),
 		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.iddes(iddes_2),
 		.ID_w_HiLo(ID_HiLo_2),.RSO(RSO_2),.RTO(RTO_2)
 	);
@@ -450,6 +459,7 @@ module exe_core(
 	reg waitinst_1;
 	reg waitinst_2;
 	reg rready;
+	wire inst_delay_fetch;
 	wire inst_req;
 	reg inst_rec;
 	reg inst_req_1;
@@ -473,8 +483,8 @@ module exe_core(
 	
 	reg flag;
 	reg [63:0]inst_2_if;
-	wire [31:0]pc; 
-	
+	//wire [31:0]pc; 
+	//rec
 	always @ (posedge clk)
 	begin
 		if(rvalid==1)
@@ -482,11 +492,11 @@ module exe_core(
 		// arvalid=0;
 			if(flag)
 			begin
-				inst_2_if[31:0] <= pc;
+				inst_2_if[31:0] <= rdata;
 				inst_req_1<=0;
 			end else
 			begin
-				inst_2_if[63:32] <= pc;
+				inst_2_if[63:32] <= rdata;
 				inst_req_2<=0;
 				inst_rec<=1;
 			end
@@ -496,19 +506,19 @@ module exe_core(
 	
 	assign MEM_inst_1 = inst_2_if[31:0];
 	assign MEM_inst_2 = inst_2_if[63:32];
-	assign pc = rdata;
+	// assign pc = rdata;
 	
 	
 	
 	always @(pc_1)
 	begin
-		inst_req_1=1;
-		inst_2_if[31:0]=32'b0;
+		inst_req_1<=1;
+		inst_2_if[31:0]<=32'b0;
 	end
 	always @(pc_2)
 	begin
-		inst_req_2=1;
-		inst_2_if[63:32]=32'b0;
+		inst_req_2<=1;
+		inst_2_if[63:32]<=32'b0;
 	end
 	
 	// always@(posedge arready)
@@ -536,6 +546,7 @@ module exe_core(
 	end
 	
 	assign inst_req = inst_req_1 & inst_req_2;
+	assign inst_delay_fetch = inst_req_1 | inst_req_2;
 	
 	initial
 	begin

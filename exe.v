@@ -21,27 +21,27 @@
 /*
 	clk
 	reset
-	CONTROLW_ID[31:0]		IDÌá¹©µÄ¿ØÖÆ×Ö
-	INTCONTROLW_ID[7:0]		IDÌá¹©µÄÖÐ¶Ï¿ØÖÆ×Ö
-	EXEPC[31:0]				IDÌá¹©µÄPC¡£Ò»ÖÜÆÚºó¸øMEMPC[31:0]
-	REGRESA[31:0]			¼Ä´æÆ÷AÊý¾Ý
-	REGRESB[31:0]			¼Ä´æÆ÷BÊý¾Ý
-	IDDES[6:0]				IDÌá¹©µÄ½á¹û¿ØÖÆÐÅºÅDES¡£Ò»ÖÜÆÚºó¸øMEMDES[7:0]¡¢ALUDES[6:0]
-	IDWRITEHILO[1:0]		IDÌá¹©µÄWIRITEHILO¡£Ò»ÖÜÆÚºó¸øEXEWRITEHILO[1:0]	¡¢ALUWRITEHILO[1:0]	
-	IMMED[31;0]				32Î»Á¢¼´Êý
+	CONTROLW_ID[31:0]		IDæä¾›çš„æŽ§åˆ¶å­—
+	INTCONTROLW_ID[7:0]		IDæä¾›çš„ä¸­æ–­æŽ§åˆ¶å­—
+	EXEPC[31:0]				IDæä¾›çš„PCã€‚ä¸€å‘¨æœŸåŽç»™MEMPC[31:0]
+	REGRESA[31:0]			å¯„å­˜å™¨Aæ•°æ®
+	REGRESB[31:0]			å¯„å­˜å™¨Bæ•°æ®
+	IDDES[6:0]				IDæä¾›çš„ç»“æžœæŽ§åˆ¶ä¿¡å·DESã€‚ä¸€å‘¨æœŸåŽç»™MEMDES[7:0]ã€ALUDES[6:0]
+	IDWRITEHILO[1:0]		IDæä¾›çš„WIRITEHILOã€‚ä¸€å‘¨æœŸåŽç»™EXEWRITEHILO[1:0]	ã€ALUWRITEHILO[1:0]	
+	IMMED[31;0]				32ä½ç«‹å³æ•°
 	
 	EXEDES[6:0]				
 	EXEWRITEHILO[1:0]		
-	ALUDES[6:0]				Ç°?¸øIDÅÐ¶ÏÊý¾ÝÏà¹ØµÄ¿ØÖÆÐÅºÅ
-	ALUWRITEHILO[1:0]		Ç°?¸øIDÅÐ¶ÏÊý¾ÝÏà¹ØµÄ¿ØÖÆÐÅºÅ
-	ALURES[31:0]			ALU¼ÆËã½á¹ûÊä³öEXE
-	MEMDATA[31:0]			ÊäÈë¼Ä´æÆ÷REGRESBµÄÊý
-	CONTROLW_EXE[31:0]		CONTROLW_ID[31:0]Á÷Ë®
-	INTCONTROLW_EXE[7:0]	INTCONTROLW_ID[7:0]Á÷Ë®£¬INTCONTROLW_ID[2]Ìæ»»ÎªÒÆÒç³öÐÅºÅ
-	MEMPC[31:0]				EXEPC[31:0]Á÷Ë®
-	MEMHILO[31:0]			ÊäÈë¼Ä´æÆ÷REGRESAµÄÊý’Ý
-	ALURESULT[31:0]			ALU¼ÆËã½á¹ûÊä³ö£¬Êý¾ÝÏà¹ØÊ±Ç°µÝ¸øID
-	ALUHILORES[31:0]		ALU¼ÆËã½á¹ûÊä³ö£¬Êý¾ÝÏà¹ØÊ±Ç°µÝ¸øID
+	ALUDES[6:0]				å‰?ç»™IDåˆ¤æ–­æ•°æ®ç›¸å…³çš„æŽ§åˆ¶ä¿¡å·
+	ALUWRITEHILO[1:0]		å‰?ç»™IDåˆ¤æ–­æ•°æ®ç›¸å…³çš„æŽ§åˆ¶ä¿¡å·
+	ALURES[31:0]			ALUè®¡ç®—ç»“æžœè¾“å‡ºEXE
+	MEMDATA[31:0]			è¾“å…¥å¯„å­˜å™¨REGRESBçš„æ•°
+	CONTROLW_EXE[31:0]		CONTROLW_ID[31:0]æµæ°´
+	INTCONTROLW_EXE[7:0]	INTCONTROLW_ID[7:0]æµæ°´ï¼ŒINTCONTROLW_ID[2]æ›¿æ¢ä¸ºç§»æº¢å‡ºä¿¡å·
+	MEMPC[31:0]				EXEPC[31:0]æµæ°´
+	MEMHILO[31:0]			è¾“å…¥å¯„å­˜å™¨REGRESAçš„æ•°æ¿
+	ALURESULT[31:0]			ALUè®¡ç®—ç»“æžœè¾“å‡ºï¼Œæ•°æ®ç›¸å…³æ—¶å‰é€’ç»™ID
+	ALUHILORES[31:0]		ALUè®¡ç®—ç»“æžœè¾“å‡ºï¼Œæ•°æ®ç›¸å…³æ—¶å‰é€’ç»™ID
 	
 */
 
@@ -84,7 +84,7 @@ module exe(
 	reg [31:0]MEMHILO;
 	reg [6:0]EXEDES;
 	reg [1:0]EXEWRITEHILO;
-	always@(*)//MUX2¾ö¶¨AÊäÈë
+	always@(*)//MUX2å†³å®šAè¾“å…¥
 	begin
 		case(CONTROLW_ID[5])
 			1'b0:begin
@@ -94,12 +94,12 @@ module exe(
 				{mux2_out[31:16],mux2_out[15:0]}={16'b0,IMMED[15:0]};
 			end
 			default:begin
-				mux2_out=32'b0;//Ä¬ÈÏÏî£¬Áô×÷µ÷ÊÔ±äÁ¿
+				mux2_out=32'b0;//é»˜è®¤é¡¹ï¼Œç•™ä½œè°ƒè¯•å˜é‡
 			end
 		endcase
 	end
 	
-	always@(*)//MUX4¾ö¶¨BÊäÈë
+	always@(*)//MUX4å†³å®šBè¾“å…¥
 	begin
 		case({CONTROLW_ID[31],CONTROLW_ID[30]})
 			2'b00:begin
@@ -115,18 +115,18 @@ module exe(
 				mux4_out=REGRESA;
 			end
 			default:begin
-				mux4_out=32'b0;//Ä¬ÈÏÏî£¬Áô×÷µ÷ÊÔ±äÁ¿
+				mux4_out=32'b0;//é»˜è®¤é¡¹ï¼Œç•™ä½œè°ƒè¯•å˜é‡
 			end
 		endcase
 	end
 	
-	always @(IDDES or IDWRITEHILO)//Êý¾ÝÏà¹ØµÄ¿ØÖÆÐÅºÅ
+	always @(IDDES or IDWRITEHILO)//æ•°æ®ç›¸å…³çš„æŽ§åˆ¶ä¿¡å·
 	begin
 		ALUDES<=IDDES;
 		ALUWRITEHILO<=IDWRITEHILO;
     end
 
-	always @(negedge reset or posedge clk)//Á÷Ë®Ïß´¦Àí
+	always @(negedge reset or posedge clk)//æµæ°´çº¿å¤„ç†
 	begin
 		if(reset==0)
 		begin
@@ -162,7 +162,7 @@ module exe(
 		.intov(ALUINTOV)
 	);
 	
-	//ÒÔÏÂÁ½ÐÐÎªÍÆ²â£¬Ö±Á¬ÄÜÌø¹ýÒ»¸ö¼Ä´æÆ÷£¬µ«ÈÔÈ»²»Õý³£¡£¡£¡£
+	//ä»¥ä¸‹ä¸¤è¡Œä¸ºæŽ¨æµ‹ï¼Œç›´è¿žèƒ½è·³è¿‡ä¸€ä¸ªå¯„å­˜å™¨ï¼Œä½†ä»ç„¶ä¸æ­£å¸¸ã€‚ã€‚ã€‚
 	assign ALURESULT=ALURESB;
 	assign ALUHILORES=ALURESB;
 	

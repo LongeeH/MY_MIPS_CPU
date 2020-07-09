@@ -59,6 +59,7 @@ module register_file(
 	begin
 		if( Write_Enable_2 && (Write_Addr_2 != 0) )
 		begin
+			#5
 			Register[Write_Addr_2] <= Write_Data_2;
 		end
 	end

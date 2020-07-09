@@ -268,6 +268,7 @@ assign ori_inst    = (OP == 6'b001101);
 assign xori_inst   = (OP == 6'b001110);
 assign slti_inst   = (OP == 6'b001010);
 assign sltiu_inst  = (OP == 6'b001011);
+assign lui_inst    = (OP == 6'b001111);
 assign lw_inst     = (OP == 6'b100011);
 assign sw_inst     = (OP == 6'b101011);
 assign j_inst      = (OP == 6'b000010);
@@ -312,6 +313,8 @@ begin
                 ALU_OP<=5'b10100;
         else if(xor_inst || xori_inst)
                 ALU_OP<=5'b11000;
+		else if(lui_inst)
+				ALU_OP<=5'b11100;
         else
                 ALU_OP<=5'b00000;
 end
@@ -341,18 +344,18 @@ always @ (tlbp_inst or tlbr_inst or tlbwi_inst or tlbwr_inst)
                      subu_inst || and_inst || or_inst || ori_inst || slt_inst ||
                      sltu_inst || slti_inst || sltiu_inst || sll_inst || sllv_inst ||
                      sra_inst || srav_inst ||srl_inst ||srlv_inst ||nor_inst||xor_inst||
-                     xori_inst ||lw_inst||mfc0_inst||mfhi_inst||mflo_inst);
+                     xori_inst ||lw_inst||mfc0_inst||mfhi_inst||mflo_inst||lui_inst);
 assign write_MEM = sw_inst;
 assign MEM_2_reg = lw_inst;
 assign write_lo = mtlo_inst;
 assign write_hi = mthi_inst;
 assign ALU_srcA = (sll_inst || sra_inst || srl_inst);
-assign ALU_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst);
+assign ALU_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst);
 assign ALU_srcB[1] = (ori_inst || andi_inst ||xori_inst);
 assign ALU_res_ok = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst || subu_inst ||
                      and_inst || andi_inst || or_inst || ori_inst || slt_inst || sltu_inst ||
                      slti_inst || sltiu_inst ||sll_inst || sra_inst || srav_inst || srl_inst ||nor_inst||
-                     xor_inst || xori_inst);
+                     xor_inst || xori_inst||lui_inst);
 assign MEM_res_ok = (lw_inst || mfc0_inst);
 always @ (reg_des or RDI or RTI)
         begin

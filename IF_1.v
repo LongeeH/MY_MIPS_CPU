@@ -22,9 +22,9 @@
 
 
 module IF_1(//input:
-              clk,reset,int,J,branch,inst_delay_fetch,delay,IADEE,IADFE,exc_PC,MEM_inst,LA_inst,
+              clk,reset,int,J,branch_1,branch_2,inst_delay_fetch,delay,IADEE,IADFE,exc_PC,MEM_inst,la_inst_in,
             //output:
-              PC,inst,ID_PC,IC_IF);
+              PC,inst,ID_PC,IC_IF,la_inst_out);
 
 /*
     branch                                    分支指令（来自分支延迟槽�?
@@ -35,7 +35,7 @@ module IF_1(//input:
     ID_PC                                     译码阶段PC
     int                                       中断
     IC_IF(int_control_IF);                    中断控制
-    LA_inst                                   load address 指令
+    la_inst                                   load address 指令
     inst(instructions)                        分支指令自身中的部分
     MEM_inst（MEM instructions�?              在存储器中的指令
     J                                         跳转指令
@@ -69,7 +69,7 @@ module IF_1(//input:
             |                                               |
             |  MEM_inst[31:0]                               |
             |                                               |
-            |  LA_inst[31:0]                                |
+            |  la_inst[31:0]                                |
             |                                               |
             -------------------------------------------------
 
@@ -78,26 +78,32 @@ input clk;
 input reset;
 input int;
 input J;
-input branch;
+input branch_1;
+input branch_2;
 input inst_delay_fetch;
 input delay;
 input IADEE;
 input IADFE;
 input [31:0]exc_PC;
 input [31:0]MEM_inst;
-input [31:0]LA_inst;
+input [31:0]la_inst_in;
+
 
 output [31:0]PC;
 output [31:0]inst;
 output [31:0]ID_PC;
 output [1:0]IC_IF;
+output [31:0]la_inst_out;
 
 reg [31:0]next_PC;
 reg [31:0]PC;
 reg [31:0]inst;
 reg [31:0]ID_PC;
 reg [1:0]IC_IF;
-
+reg [31:0]la_inst;
+// reg inst_emp;
+reg branch_req_1;
+reg branch_req_2;
 // initial
 // begin
 	// PC=32'hbfc0_0000;
@@ -108,17 +114,36 @@ always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
             next_PC<=32'hbfc0_0000;
+			
         else if(int)
             next_PC<=exc_PC;
         else if(delay|inst_delay_fetch)
             next_PC<=PC;
-        else if(branch)
+        else if(branch_req_1)
             begin
                 if(J)
-                    next_PC<=PC+(LA_inst[25:0]<<2);
+				begin
+                    next_PC<=PC+(la_inst[25:0]<<2)-4;
+				end
                 else
-                    next_PC<=PC+(LA_inst[15:0]<<2);
+				begin
+                    next_PC<=PC+(la_inst[15:0]<<2)-4;
+				end
+				branch_req_1<=1'b0;
             end
+		else if(branch_req_2)
+            begin
+                if(J)
+				begin
+                    next_PC<=PC+(la_inst_in[25:0]<<2);
+				end
+                else
+				begin
+                    next_PC<=PC+(la_inst_in[15:0]<<2);
+				end
+			branch_req_2<=1'b0;
+            end
+
         else
 			next_PC<=PC+8;
     end
@@ -137,8 +162,19 @@ always @ (negedge reset or posedge clk)
 				ID_PC<=PC;
 				IC_IF<={IADEE,IADFE};
 			end 
+		else if(branch_req_1)
+			begin
+				inst<=32'b0;
+				ID_PC<=32'b0;
+			end
+		else if(inst_delay_fetch)
+			begin
+				
+				inst<=32'b0;
+			end
 		else if(!delay)
 			begin
+				la_inst<=MEM_inst;
 				inst<=MEM_inst;
 				ID_PC<=PC;
 				IC_IF<=2'b00;
@@ -148,5 +184,14 @@ always @ (*)
 	begin 
 		PC<=next_PC;
 	end
+always @ (posedge branch_1 or posedge branch_2)
+	begin
+		if(branch_1)
+			branch_req_1<=1'b1;
+		else
+			branch_req_2<=1'b0;
+	end
+
+assign la_inst_out=la_inst;
 
 endmodule
