@@ -92,6 +92,11 @@ module exe_core(
 	wire J_1;
 	wire J_2;//useless
 	wire delay;
+	//ID-ID
+	wire delay_mix;
+	wire delay_out_1;
+	wire delay_out_2;
+	wire [6:0]id_des_1;
 	//ID-EXE
 	wire [6:0]alu_des_1;
 	wire [6:0]alu_des_2;
@@ -188,8 +193,8 @@ module exe_core(
 		.J(J_1),
 		.branch_1(branch_1),
 		.branch_2(branch_2),
-		.inst_delay_fetch(inst_delay_fetch),
-		.delay(if_delay_1),
+		.delay_soft(delay_soft_inst|delay_mix),
+		.delay_hard(if_delay),
 		.IADEE(),
 		.IADFE(),
 		.exc_PC(),
@@ -209,8 +214,8 @@ module exe_core(
 		.J(J_2),
 		.branch_1(branch_1),
 		.branch_2(branch_2),
-		.inst_delay_fetch(inst_delay_fetch),
-		.delay(if_delay_2),
+		.delay_soft(delay_soft_inst),
+		.delay_hard(if_delay|delay_mix),
 		.IADEE(),
 		.IADFE(),
 		.exc_PC(),
@@ -235,13 +240,13 @@ module exe_core(
 		.MEM_res_1(MEM_res_1),.MEM_res_2(MEM_res_2),
 		.MEM_des1(MEM_des1),.MEM_w_HiLo1(MEM_HiLo1),
 		.MEM_des2(MEM_des2),.MEM_w_HiLo2(MEM_HiLo2),
-		.MEM_HiLo_res_1(MEM_HiLo_res_1),.MEM_HiLo_res_2(MEM_HiLo_res_2),
+		.MEM_HiLo_res_1(MEM_HiLo_res_1),.MEM_HiLo_res_2(MEM_HiLo_res_2),.delay_mix(delay_mix),.delay_in(delay_out_2),
          //output
-        .branch(branch_1),.J(J_1),.delay(delay),.contr_ID(contr_ID_1),.IC_ID(IC_ID_1),.exe_PC(exe_PC_1),
-		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.iddes(iddes_1),
+        .branch(branch_1),.J(J_1),.delay_out(delay_out_1),.contr_ID(contr_ID_1),.IC_ID(IC_ID_1),.exe_PC(exe_PC_1),
+		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.iddes(iddes_1),.id_des_1(id_des_1),
 		.ID_w_HiLo(ID_HiLo_1),.RSO(RSO_1),.RTO(RTO_1)
 	);	
-	ID _id2(
+	ID_2 _id2(
 		.clk(clk),.reset(reset),.inst(inst_2),.ID_PC(ID_PC_2),.IC_IF(IC_IF_2),
 		.reg_rs(reg_rs_2),.reg_rt(reg_rt_2),
 		.reg_Hi(reg_Hi),.reg_Lo(reg_Lo),
@@ -252,10 +257,10 @@ module exe_core(
 		.MEM_res_1(MEM_res_1),.MEM_res_2(MEM_res_2),
 		.MEM_des1(MEM_des1),.MEM_w_HiLo1(MEM_HiLo1),
 		.MEM_des2(MEM_des2),.MEM_w_HiLo2(MEM_HiLo2),
-		.MEM_HiLo_res_1(MEM_HiLo_res_1),.MEM_HiLo_res_2(MEM_HiLo_res_2),
+		.MEM_HiLo_res_1(MEM_HiLo_res_1),.MEM_HiLo_res_2(MEM_HiLo_res_2),.delay_in(delay_out_1),
          //output
-        .branch(branch_2),.J(J_2),.delay(delay),.contr_ID(contr_ID_2),.IC_ID(IC_ID_2),.exe_PC(exe_PC_2),
-		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.iddes(iddes_2),
+        .branch(branch_2),.J(J_2),.delay_out(delay_out_2),.delay_mix(delay_mix),.contr_ID(contr_ID_2),.IC_ID(IC_ID_2),.exe_PC(exe_PC_2),
+		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.iddes(iddes_2),.id_des_1(id_des_1),
 		.ID_w_HiLo(ID_HiLo_2),.RSO(RSO_2),.RTO(RTO_2)
 	);
 	
@@ -459,7 +464,7 @@ module exe_core(
 	reg waitinst_1;
 	reg waitinst_2;
 	reg rready;
-	wire inst_delay_fetch;
+	wire delay_soft;
 	wire inst_req;
 	reg inst_rec;
 	reg inst_req_1;
@@ -546,7 +551,7 @@ module exe_core(
 	end
 	
 	assign inst_req = inst_req_1 & inst_req_2;
-	assign inst_delay_fetch = inst_req_1 | inst_req_2;
+	assign delay_soft_inst = inst_req_1 | inst_req_2;
 	
 	initial
 	begin
@@ -570,12 +575,13 @@ module exe_core(
 	end
 
 	
-	wire if_delay_1;
-	wire if_delay_2;
+	wire if_delay;
+	// wire if_delay;
+	assign if_delay = delay_out_1 | delay_out_2;
 	// assign if_delay_1 = delay | inst_req_1;
 	// assign if_delay_2 = delay | inst_req_2;
-	assign if_delay_1 = delay;
-	assign if_delay_2 = delay;
+	// assign if_delay_1 = delay;
+	// assign if_delay_2 = delay;
 	// assign waitinst = waitinst_1 | waitinst_2;
 	
 	

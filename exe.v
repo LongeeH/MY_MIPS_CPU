@@ -74,7 +74,7 @@ module exe(
 	wire [31:0]ALURESB;
 	wire ALUINTOV;
 	
-	reg [7:0]ALUDES;
+	reg [6:0]ALUDES;
 	reg [1:0]ALUWRITEHILO;
 	reg [31:0]ALURES;
 	reg [31:0]MEMDATA;

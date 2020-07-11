@@ -78,7 +78,7 @@ reg write_hi;
 reg write_lo;
 reg [31:0]reg_hi;
 reg [31:0]reg_lo;
-reg [31:0]result_des;
+reg [4:0]result_des;
 reg [31:0]reg_result;
 reg [31:0]wb_pc_debug;
 

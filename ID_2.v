@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module ID(//input
+module ID_2(//input
             clk,reset,inst,ID_PC,IC_IF,
             reg_rs,reg_rt,
             reg_Hi,reg_Lo,
@@ -31,10 +31,10 @@ module ID(//input
             MEM_res_1,MEM_res_2,
             MEM_des1,MEM_w_HiLo1,
             MEM_des2,MEM_w_HiLo2,
-            MEM_HiLo_res_1,MEM_HiLo_res_2,delay_in,delay_mix,
+            MEM_HiLo_res_1,MEM_HiLo_res_2,id_des_1,id_hilo_1,delay_in,
          //output
-            branch,J,delay_out,contr_ID,IC_ID,exe_PC,
-            reg_esa,reg_esb,immed,iddes,id_des_1,self_hilo,
+            branch,J,delay_out,delay_mix,contr_ID,IC_ID,exe_PC,
+            reg_esa,reg_esb,immed,iddes,
             ID_w_HiLo,RSO,RTO
     );
 
@@ -126,12 +126,13 @@ input [6:0]MEM_des2;
 input [1:0]MEM_w_HiLo2;
 input [31:0]MEM_HiLo_res_1;
 input [31:0]MEM_HiLo_res_2;
+input [6:0]id_des_1;
 input delay_in;
-input delay_mix;
 
 output branch;
 output J;
 output delay_out;
+output delay_mix;
 output [31:0]contr_ID;
 output [7:0]IC_ID;
 output [31:0]exe_PC;
@@ -139,8 +140,7 @@ output [31:0]reg_esa;
 output [31:0]reg_esb;
 output [31:0]immed;
 output [6:0]iddes;
-output [6:0]id_des_1;
-output [1:0]self_hilo;
+output [6:0]id_hilo_1;
 output [1:0]ID_w_HiLo;
 output [4:0]RSO;
 output [4:0]RTO;
@@ -148,8 +148,9 @@ output [4:0]RTO;
 //输出
 reg branch;
 reg J;
-wire[6:0]id_des_1;
-// reg delay_out;
+wire delay;
+reg delay_self;
+reg delay_self_mix;
 reg [31:0]contr_ID;
 reg [7:0]IC_ID;
 reg [31:0]exe_PC;
@@ -157,7 +158,6 @@ reg [31:0]reg_esa;
 reg [31:0]reg_esb;
 reg [31:0]immed;
 reg [6:0]iddes;
-
 reg [1:0]ID_w_HiLo;
 reg [4:0]RSO;
 reg [4:0]RTO;
@@ -178,7 +178,6 @@ reg rseq_rt;
 reg [4:0]RDO;
 reg [6:0]des;
 reg [1:0]write_hilo;
-reg delay_self;
 
 
 wire [5:0]OP;
@@ -296,7 +295,6 @@ assign rfe_inst    = cp0type && OP_subA[4] && (func==6'b011000);
 assign break_inst  = Rtype && (func==6'b001101);
 assign nop_inst    = (inst == 32'b0);
 
-
 //ALU_OP
 always@(and_inst  or andi_inst  or or_inst or ori_inst or add_inst or 
         addu_inst or addiu_inst or subu_inst or slt_inst or sltu_inst or
@@ -347,8 +345,8 @@ always @ (tlbp_inst or tlbr_inst or tlbwi_inst or tlbwr_inst)
         end
 
 //通用信号
- assign reg_des = Rtype;
- assign write_reg = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst ||
+assign reg_des = Rtype;
+assign write_reg = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst ||
                      subu_inst || and_inst || or_inst || ori_inst || slt_inst ||
                      sltu_inst || slti_inst || sltiu_inst || sll_inst || sllv_inst ||
                      sra_inst || srav_inst ||srl_inst ||srlv_inst ||nor_inst||xor_inst||
@@ -366,9 +364,9 @@ assign ALU_res_ok = (add_inst || addu_inst || addi_inst || addiu_inst || sub_ins
                      xor_inst || xori_inst||lui_inst);
 assign MEM_res_ok = (lw_inst || mfc0_inst);
 
-assign delay = delay_in | delay_self;
+assign delay = delay_in | delay_self | delay_self_mix;
 assign delay_out = delay_self;
-// assign delay_mix_out = delay_self_mix;
+assign delay_mix = delay_self_mix;
 
 always @ (reg_des or RDI or RTI)
         begin
@@ -379,43 +377,39 @@ always @ (reg_des or RDI or RTI)
         end
 
 always @ (*)//changed
-begin
-	if(!delay)
-	begin
-		control[4:0]<=ALU_OP[4:0];
-		control[5] <= ALU_srcA;
-		control[6] <= reg_des;
-		control[7] <= write_MEM;
-		control[8] <= MEM_2_reg;
-		control[9] <= write_reg;
-		control[14:10] <= cp0_reg_index[4:0];
-		control[15] <= write_cp0_reg;
-		control[16] <= read_cp0_reg;
-		control[18:17] <= TLB_OP[1:0];
-		control[19] <= TLB_OP_e;
-		control[24:20] <= result_des[4:0];
-		control[25] <= ALU_res_ok;
-		control[26] <= MEM_res_ok;
-		control[27] <= write_lo;
-		control[28] <= write_hi;
-		control[29] <= cp0type;
-		control[31:30] <= ALU_srcB[1:0];
-	end
-end
+        if(!delay)
+                begin
+                        control[4:0]<=ALU_OP[4:0];
+                        control[5] <= ALU_srcA;
+                        control[6] <= reg_des;
+                        control[7] <= write_MEM;
+                        control[8] <= MEM_2_reg;
+                        control[9] <= write_reg;
+                        control[14:10] <= cp0_reg_index[4:0];
+                        control[15] <= write_cp0_reg;
+                        control[16] <= read_cp0_reg;
+                        control[18:17] <= TLB_OP[1:0];
+                        control[19] <= TLB_OP_e;
+                        control[24:20] <= result_des[4:0];
+                        control[25] <= ALU_res_ok;
+                        control[26] <= MEM_res_ok;
+                        control[27] <= write_lo;
+                        control[28] <= write_hi;
+                        control[29] <= cp0type;
+                        control[31:30] <= ALU_srcB[1:0];
+                end; 
 
 always @ (posedge clk)
-begin
-	if(!delay)
-	begin
-		control_w[1:0]<=IC_IF[1:0];
-		control_w[2]<=(add_inst || addi_inst ||sub_inst);
-		control_w[3]<=break_inst;
-		control_w[4]<=syscall_inst;
-		control_w[5]<=rfe_inst;
-		control_w[6]<=write_MEM;
-		control_w[7]<=branch;
-	end
-end
+        if(!delay)
+                begin
+                        control_w[1:0]<=IC_IF[1:0];
+                        control_w[2]<=(add_inst || addi_inst ||sub_inst);
+                        control_w[3]<=break_inst;
+                        control_w[4]<=syscall_inst;
+                        control_w[5]<=rfe_inst;
+                        control_w[6]<=write_MEM;
+                        control_w[7]<=branch;
+                end; 
 
 
 //数据相关
@@ -430,12 +424,21 @@ assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||
                     srlv_inst || srav_inst || sllv_inst || nor_inst || xor_inst ||beq_inst ||
                     bne_inst || bltz_inst ||blez_inst ||bgez_inst);
 
-assign hi_source =  mfhi_inst ;
+assign hi_source = mfhi_inst ;
 assign hi_target = mthi_inst;
 assign lo_source = mflo_inst;
 assign lo_target = mtlo_inst;
-assign id_des_1 = des;
-assign self_hilo = write_hilo;
+//id-id conflict
+always@(*)
+	begin
+		if(((id_des_1[6]||id_des_1[5])&&((rs_source && (RSI[4:0]==id_des_1[4:0]))||(rt_source && (RTI[4:0]==id_des_1[4:0]))))||((id_hilo_1[0]&&lo_source)||(id_hilo_1[1]&&hi_source)))
+		begin
+			delay_self_mix<=1;//id-id conflict
+		end 
+		else
+			delay_self_mix<=0;
+	end
+reg sb;
 //FWDA 
 //参考图5-10 FWDA可能不受clk控制
 always @ (*)
@@ -447,11 +450,13 @@ always @ (*)
             RSO<=5'b00000;
             RTO<=5'b00000;
             RDO<=5'b00000; 
+
         end else 
 			begin
+				sb<=(!sb)?0:1;
 				delay_self<=0;
 				if ((alu_w_HiLo1[0] && lo_source)||(alu_w_HiLo1[1] && hi_source))
-					FWDA<=04'b111;
+					FWDA<=04'b0111;
                 else if ((alu_w_HiLo2[0]&&lo_source)
                         || (alu_w_HiLo2[1] && hi_source))            
 						FWDA<=4'b1000;
@@ -475,7 +480,7 @@ always @ (*)
 						FWDA<=4'b0010;
                 else if (hi_source)
 						FWDA<=4'b0001;
-                else   
+                else				
 						FWDA<=4'b0000;
 			end
     end
@@ -504,10 +509,10 @@ always @ (*)
 
 
 always @ (*)
-    begin
-        des<={MEM_res_ok,ALU_res_ok,result_des[4:0]};
-        write_hilo = {write_hi,write_lo};
-    end
+        begin
+                des<={MEM_res_ok,ALU_res_ok,result_des[4:0]};
+                write_hilo = {write_hi,write_lo};
+        end
 //参考图5-10 reg_A reg_B可能不受clk控制
 always @(*)
         begin

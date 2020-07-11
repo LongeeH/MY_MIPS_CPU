@@ -22,7 +22,7 @@
 
 
 module IF_1(//input:
-              clk,reset,int,J,branch_1,branch_2,inst_delay_fetch,delay,IADEE,IADFE,exc_PC,MEM_inst,la_inst_in,
+              clk,reset,int,J,branch_1,branch_2,delay_soft,delay_hard,IADEE,IADFE,exc_PC,MEM_inst,la_inst_in,
             //output:
               PC,inst,ID_PC,IC_IF,la_inst_out);
 
@@ -40,7 +40,7 @@ module IF_1(//input:
     MEM_inst（MEM instructions�?              在存储器中的指令
     J                                         跳转指令
     IAEE(interrupt_address_error_exception)   中断地址错误异常
-    delay                                     延迟
+    delay_hard                                     延迟
     IAFE(interrupt_address_file_exception)    中断文件错误异常
     PC                                        取码
     inst                                      指令
@@ -59,7 +59,7 @@ module IF_1(//input:
             |                                               |
             |  branch                                       |
             |                                               |
-            |  delay                                        |
+            |  delay_hard                                        |
             |                                               |
             |  IAEE                                         |
             |                                               |
@@ -80,8 +80,9 @@ input int;
 input J;
 input branch_1;
 input branch_2;
-input inst_delay_fetch;
-input delay;
+input delay_soft;
+// input delay_mix;
+input delay_hard;
 input IADEE;
 input IADFE;
 input [31:0]exc_PC;
@@ -117,7 +118,7 @@ always @ (negedge reset or posedge clk)
 			
         else if(int)
             next_PC<=exc_PC;
-        else if(delay|inst_delay_fetch)
+        else if(delay_hard|delay_soft)
             next_PC<=PC;
         else if(branch_req_1)
             begin
@@ -167,12 +168,14 @@ always @ (negedge reset or posedge clk)
 				inst<=32'b0;
 				ID_PC<=32'b0;
 			end
-		else if(inst_delay_fetch)
+		else if(delay_hard)
 			begin
-				
+			end
+		else if(delay_soft)
+			begin	
 				inst<=32'b0;
 			end
-		else if(!delay)
+		else if(!delay_hard)
 			begin
 				la_inst<=MEM_inst;
 				inst<=MEM_inst;

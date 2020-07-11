@@ -51,15 +51,17 @@ module register_file(
 	begin
 		if(Write_Enable_1 && (Write_Addr_1 != 0) )
 		begin
-			Register[Write_Addr_1] <= Write_Data_1;
+			if(Write_Addr_1 != Write_Addr_2)
+				Register[Write_Addr_1] <= Write_Data_1;
+			else
+			    #1;
 		end
 	end
 	
 	always @(posedge clk)
 	begin
-		if( Write_Enable_2 && (Write_Addr_2 != 0) )
+		if(Write_Enable_2 && (Write_Addr_2 != 0) )
 		begin
-			#5
 			Register[Write_Addr_2] <= Write_Data_2;
 		end
 	end
@@ -100,8 +102,8 @@ always @ (negedge reset) begin //Execute when reset is asserted
 	Register[31] <=32'b0 ;
 end
 
-	initial
-	begin
-		Register[0] <= 0;
-	end
+initial
+begin
+	Register[0] <= 0;
+end
 endmodule
