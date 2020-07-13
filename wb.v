@@ -61,7 +61,7 @@ module WB(
 	input reset,
 	input [31:0]controlw_MEM,
     input [31:0]result,
-    input [4:0]WB_hi_lo,
+    input [31:0]WB_hi_lo,
     input [31:0]WB_PC,
     output [31:0]reg_result,
     output write_reg,

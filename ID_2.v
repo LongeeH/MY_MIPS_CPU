@@ -21,7 +21,7 @@
 
 
 module ID_2(//input
-            clk,reset,inst,ID_PC,IC_IF,
+            clk,reset,id_inst,id_pc,IC_IF,
             reg_rs,reg_rt,
             reg_Hi,reg_Lo,
             alu_des_1,alu_w_HiLo1,
@@ -31,9 +31,9 @@ module ID_2(//input
             MEM_res_1,MEM_res_2,
             MEM_des1,MEM_w_HiLo1,
             MEM_des2,MEM_w_HiLo2,
-            MEM_HiLo_res_1,MEM_HiLo_res_2,id_des_1,id_hilo_1,delay_in,
+            MEM_HiLo_res_1,MEM_HiLo_res_2,self_des,self_hilo,delay_in,
          //output
-            branch,J,delay_out,delay_mix,contr_ID,IC_ID,exe_PC,
+            branch,J,jr,jr_data,jr_data_ok,delay_out,delay_mix,contr_ID,IC_ID,exe_PC,
             reg_esa,reg_esb,immed,iddes,
             ID_w_HiLo,RSO,RTO
     );
@@ -103,8 +103,8 @@ module ID_2(//input
 
 input clk;
 input reset;
-input [31:0]inst;
-input [31:0]ID_PC;
+input [31:0]id_inst;
+input [31:0]id_pc;
 input [1:0]IC_IF;
 input [31:0]reg_rs;
 input [31:0]reg_rt;
@@ -126,11 +126,14 @@ input [6:0]MEM_des2;
 input [1:0]MEM_w_HiLo2;
 input [31:0]MEM_HiLo_res_1;
 input [31:0]MEM_HiLo_res_2;
-input [6:0]id_des_1;
+input [6:0]self_des;
 input delay_in;
 
 output branch;
 output J;
+output jr;
+output [31:0]jr_data;
+output jr_data_ok;
 output delay_out;
 output delay_mix;
 output [31:0]contr_ID;
@@ -140,7 +143,7 @@ output [31:0]reg_esa;
 output [31:0]reg_esb;
 output [31:0]immed;
 output [6:0]iddes;
-output [6:0]id_hilo_1;
+output [1:0]self_hilo;
 output [1:0]ID_w_HiLo;
 output [4:0]RSO;
 output [4:0]RTO;
@@ -148,6 +151,9 @@ output [4:0]RTO;
 //输出
 reg branch;
 reg J;
+reg jr;
+reg [31:0]jr_data;
+reg jr_data_ok;
 wire delay;
 reg delay_self;
 reg delay_self_mix;
@@ -238,13 +244,13 @@ wire break_inst;
 wire nop_inst;
 
 
-assign OP[5:0]     = inst[31:26];
-assign func[5:0]   = inst[5:0];
-assign RSI[4:0]    = inst[25:21];
-assign OP_subA[4:0]= inst[25:21];
-assign OP_subB[4:0]= inst[20:16];
-assign RTI[4:0]    = inst[20:16];
-assign RDI[4:0]    = inst[15:11];
+assign OP[5:0]     = id_inst[31:26];
+assign func[5:0]   = id_inst[5:0];
+assign RSI[4:0]    = id_inst[25:21];
+assign OP_subA[4:0]= id_inst[25:21];
+assign OP_subB[4:0]= id_inst[20:16];
+assign RTI[4:0]    = id_inst[20:16];
+assign RDI[4:0]    = id_inst[15:11];
 assign Rtype       = (OP == 6'b000000);
 assign cp0type     = (OP == 6'b010000);
 assign add_inst    = Rtype && (func == 6'b100000);
@@ -278,6 +284,7 @@ assign lui_inst    = (OP == 6'b001111);
 assign lw_inst     = (OP == 6'b100011);
 assign sw_inst     = (OP == 6'b101011);
 assign j_inst      = (OP == 6'b000010);
+assign jr_inst     = Rtype && (func == 6'b001000);
 assign beq_inst    = (OP == 6'b000100);
 assign bne_inst    = (OP == 6'b000101);
 assign bltz_inst   = (OP == 6'b000001)&&(OP_subB==5'b00000);
@@ -293,7 +300,7 @@ assign tlbwi_inst  = cp0type && OP_subA[4] && (func==6'b000010);
 assign tlbwr_inst  = cp0type && OP_subA[4] && (func==6'b000110);
 assign rfe_inst    = cp0type && OP_subA[4] && (func==6'b011000);
 assign break_inst  = Rtype && (func==6'b001101);
-assign nop_inst    = (inst == 32'b0);
+assign nop_inst    = (id_inst == 32'b0);
 
 //ALU_OP
 always@(and_inst  or andi_inst  or or_inst or ori_inst or add_inst or 
@@ -418,7 +425,8 @@ assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
                     sw_inst || sub_inst || subu_inst ||slt_inst || sltu_inst ||
                     slti_inst || sltiu_inst || srlv_inst || srav_inst ||
                     sllv_inst || nor_inst || xor_inst || xori_inst || beq_inst ||
-                    bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst);
+                    bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst || jr_inst);
+					
 assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||
                     sw_inst || sub_inst || subu_inst || slt_inst || sltu_inst ||
                     srlv_inst || srav_inst || sllv_inst || nor_inst || xor_inst ||beq_inst ||
@@ -431,14 +439,14 @@ assign lo_target = mtlo_inst;
 //id-id conflict
 always@(*)
 	begin
-		if(((id_des_1[6]||id_des_1[5])&&((rs_source && (RSI[4:0]==id_des_1[4:0]))||(rt_source && (RTI[4:0]==id_des_1[4:0]))))||((id_hilo_1[0]&&lo_source)||(id_hilo_1[1]&&hi_source)))
+		if(((self_des[6]||self_des[5])&&((rs_source && (RSI[4:0]==self_des[4:0]))||(rt_source && (RTI[4:0]==self_des[4:0]))))||((self_hilo[0]&&lo_source)||(self_hilo[1]&&hi_source)))
 		begin
 			delay_self_mix<=1;//id-id conflict
 		end 
 		else
 			delay_self_mix<=0;
 	end
-reg sb;
+
 //FWDA 
 //参考图5-10 FWDA可能不受clk控制
 always @ (*)
@@ -453,7 +461,7 @@ always @ (*)
 
         end else 
 			begin
-				sb<=(!sb)?0:1;
+
 				delay_self<=0;
 				if ((alu_w_HiLo1[0] && lo_source)||(alu_w_HiLo1[1] && hi_source))
 					FWDA<=04'b0111;
@@ -503,8 +511,8 @@ always @ (*)
 //新增模块 参考图4-8
 always @ (*)
 	begin
-		RSO<=inst[25:21];
-		RTO<=inst[20:16];
+		RSO<=id_inst[25:21];
+		RTO<=id_inst[20:16];
 	end
 
 
@@ -566,15 +574,31 @@ begin
                 r_slt_z <= 0;        
 end
 
-always @ (j_inst or beq_inst or rseq_rt or bne_inst or bltz_inst or r_slt_z or 
+always @ (j_inst or jr_inst or beq_inst or rseq_rt or bne_inst or bltz_inst or r_slt_z or 
           blez_inst or rseq_z or bgtz_inst or r_slt_z or bgez_inst)
 begin
-        branch <= j_inst || (beq_inst && rseq_rt) || (bne_inst && !rseq_rt) ||
+        branch <= j_inst || jr_inst || (beq_inst && rseq_rt) || (bne_inst && !rseq_rt) ||
                   (blez_inst && rseq_z) || (bgtz_inst && ! (rseq_rt || r_slt_z)) ||
                   (bgez_inst && !r_slt_z);
         J<= j_inst;
+        jr<=jr_inst;
 end
-
+// assign jr_data = jr_data_ok?reg_A:32'bZ;
+always@(*)
+begin
+	if(jr_data_ok)
+		jr_data<=reg_A;
+	else
+		jr_data<=32'bZ;
+end
+always@(*)
+begin
+	if(jr_inst && (!delay))
+		jr_data_ok<=1'b1;
+	else
+		jr_data_ok<=1'bZ;
+end
+// assign jr_data_ok = jr_inst&&(!delay)?1'b1:1'bZ;
 always @ (negedge reset or posedge clk)
         if(reset==0)
                 begin
@@ -593,13 +617,13 @@ always @ (negedge reset or posedge clk)
                         ID_w_HiLo[1:0] <=write_hilo[1:0];
                         reg_esa[31:0] <= reg_A[31:0];
                         reg_esb[31:0] <= reg_B[31:0];
-                        exe_PC[31:0] <= ID_PC[31:0];
+                        exe_PC[31:0] <= id_pc[31:0];
                         contr_ID[31:0] <= control[31:0];
                         IC_ID[7:0] <= control_w[7:0];
-                        if(inst[15])
-                                immed[31:0]<={16'b1111111111111111,inst[15:0]};
+                        if(id_inst[15])
+                                immed[31:0]<={16'b1111111111111111,id_inst[15:0]};
                         else
-                                immed[31:0]<={16'b0,inst[15:0]};
+                                immed[31:0]<={16'b0,id_inst[15:0]};
                 end
 
 

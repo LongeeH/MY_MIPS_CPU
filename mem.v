@@ -109,6 +109,8 @@ module mem(
 	reg	[31:0]WB_PC;
 	wire[31:0]MEMRESULT;
 	wire[31:0]MEMHILORES;
+	reg[6:0]MEMDES;
+	reg[1:0]MEMWRITEHILO;
 	
 	always@(*)//CP0操作相关指令
 	begin 
@@ -126,7 +128,7 @@ module mem(
 		INTPC<=MEMPC; 
 	end 
 	
-	always@(*)//将原设计的串联2_1译码器改作一个四输入译码器
+	always@(*)//将原设计的串联2_1译码器改作一个四输入选择器
 	begin 
 		case({CONTROLW_EXE[16],CONTROLW_EXE[8]})
 			2'b00:begin
@@ -160,6 +162,12 @@ module mem(
 				WB_PC<=MEMPC; 
             end 
     end 
+	always @(EXEDES or EXEWRITEHILO) 
+	begin  
+		MEMDES<=EXEDES; 
+		MEMWRITEHILO<=EXEWRITEHILO; 
+	end 
+
 	
 	//和EXE一样的处理方式，在寄存器前直接相连结果，将数据前递提前，也许并不正确
 	assign MEMRESULT=MEMRES;

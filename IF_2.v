@@ -20,38 +20,38 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module IF_2(//input:
-              clk,reset,int,J,branch_1,branch_2,delay_soft,delay_hard,IADEE,IADFE,exc_PC,MEM_inst,la_inst_in,
+              clk,reset,int,J,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,IADEE,IADFE,exc_pc,if_inst,last_inst_1,
             //output:
-              PC,inst,ID_PC,IC_IF,la_inst_out);
+              pc,id_inst,id_pc,IC_IF,last_inst_2);
 
 /*
     branch                                    分支指令（来自分支延迟槽）
     clk                                       时钟
-    next_PC                                   下一个PC
-    exc_PC(exception_PC)                      产生异常后IF_1下一条指令
-    exc_PC+4(exception_PC+4)                  产生异常后IF_2下一条指令
-    ID_PC                                     译码阶段PC
+    next_pc                                   下一个pc
+    exc_pc(exception_pc)                      产生异常后IF_1下一条指令
+    exc_pc+4(exception_pc+4)                  产生异常后IF_2下一条指令
+    id_pc                                     译码阶段pc
     int                                       中断
     IC_IF(int_control_IF);                    中断控制
-    la_inst                                   load address 指令
-    inst(instructions)                        分支指令自身中的部分
-    MEM_inst（MEM instructions）              在存储器中的指令
+    last_inst                                   load address 指令
+    id_inst(instructions)                        分支指令自身中的部分
+    if_inst（MEM instructions）              在存储器中的指令
     J                                         跳转指令
     delay_hard                                     延迟
     IAEE(interrupt_address_error_exception)   中断地址错误异常
     IAFE(interrupt_address_file_exception)    中断文件错误异常
-    PC                                        取码
-    inst                                      指令
+    pc                                        取码
+    id_inst                                      指令
     reset                                     重置
 
                                     IF
             -------------------------------------------------
             |                                               |
-            |  clk                            PC[31:0]      |
+            |  clk                            pc[31:0]      |
             |                                               |
-            |  reset                          inst[31:0]    |
+            |  reset                          id_inst[31:0]    |
             |                                               |
-            |  int                            ID_PC[31:0]   |
+            |  int                            id_pc[31:0]   |
             |                                               |
             |  J                              IC_IF[1:0]    |
             |                                               |
@@ -63,11 +63,11 @@ module IF_2(//input:
             |                                               |
             |  IAFE                                         |
             |                                               |
-            |  exc_PC[31:0]                                 |
+            |  exc_pc[31:0]                                 |
             |                                               |
-            |  MEM_inst[31:0]                               |
+            |  if_inst[31:0]                               |
             |                                               |
-            |  la_inst[31:0]                                |
+            |  last_inst[31:0]                                |
             |                                               |
             -------------------------------------------------
 
@@ -76,109 +76,146 @@ input clk;
 input reset;
 input int;
 input J;
+input jr;
+input [31:0]jr_data;
+input jr_data_ok;
 input branch_1;
 input branch_2;
 input delay_soft;
 input delay_hard;
 input IADEE;
 input IADFE;
-input [31:0]exc_PC;
-input [31:0]MEM_inst;
-input [31:0]la_inst_in;
+input [31:0]exc_pc;
+input [31:0]if_inst;
+input [31:0]last_inst_1;
 
-output [31:0]PC;
-output [31:0]inst;
-output [31:0]ID_PC;
+output [31:0]pc;
+output [31:0]id_inst;
+output [31:0]id_pc;
 output [1:0]IC_IF;
-output [31:0]la_inst_out;
+output [31:0]last_inst_2;
 
-reg [31:0]next_PC;
-reg [31:0]PC;
-reg [31:0]inst;
-reg [31:0]ID_PC;
+reg [31:0]next_pc;
+reg [31:0]pc;
+reg [31:0]id_inst;
+reg [31:0]id_pc;
 reg [1:0]IC_IF;
-reg [31:0]la_inst;
+reg [31:0]last_inst;
 reg branch_req_1;
 reg branch_req_2;
+reg J_req;
+reg jr_req;
+reg [31:0]jr_data_cache;
+//reg jr_data_ok;
 
 always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
-            next_PC<=32'hbfc0_0004;
+            next_pc<=32'hbfc0_0004;
         else if(int)
-            next_PC<=exc_PC+4;
+            next_pc<=exc_pc+4;
         else if(delay_hard|delay_soft)
-            next_PC<=PC;
+            next_pc<=pc;
         else if(branch_req_1)
             begin
-                if(J)
-                    next_PC<=PC+(la_inst_in[25:0]<<2)-4;
-                else
-                    next_PC<=PC+(la_inst_in[15:0]<<2)-4;
-                branch_req_1<=1'b0;
+                if(J_req)
+				begin
+                    next_pc<=pc+(last_inst_1[25:0]<<2)-4;
+					J_req<=1'b0;
+				end
+                else if(jr_req)
+				begin
+                    next_pc<=jr_data_cache+4;
+					jr_req<=0;
+				end
+				else
+				begin
+					next_pc<=pc+(last_inst_1[15:0]<<2)-4;
+				end
+				branch_req_1<=1'b0;
             end
 		
 		else if(branch_req_2)
 			begin
-                if(J)
+                if(J_req)
 				begin
-                    next_PC<=PC+(la_inst[25:0]<<2);
+                    next_pc<=pc+(last_inst[25:0]<<2);
+					J_req<=0;
+				end
+				else if(jr_req)
+				begin
+					next_pc<=jr_data_cache+4;
+					jr_req<=0;
 				end
                 else
 				begin
-                    next_PC<=PC+(la_inst[15:0]<<2);
+                    next_pc<=pc+(last_inst[15:0]<<2);
 				end
                 branch_req_2<=1'b0;
             end
 			
         else
-        next_PC<=PC+8;
+        next_pc<=pc+8;
     end
 
 always @ (negedge reset or posedge clk)
 	begin
 		if (reset==0) 
 		begin
-			inst<=32'b0;
+			id_inst<=32'b0;
 			IC_IF<=2'b0;
-			//ID_PC<=32'hbfc0_0004;
+			//id_pc<=32'hbfc0_0004;
 		end else if(int)
 		begin
-			inst<=32'b0;
-			ID_PC<=PC;
+			id_inst<=32'b0;
+			id_pc<=pc;
 			IC_IF<={IADEE,IADFE};
-		end else if(branch_req_1|branch_req_2)
+		end else if(delay_hard)//硬暂停，通常是用于数据相关，级别最高，不允许更新任何，冻结流水线
 		begin
-			inst<=32'b0;
-			ID_PC<=32'b0;
-		end else if(delay_hard)
+		end else if(branch_req_1|branch_req_2)//流水线清空
 		begin
-		
+			id_inst<=32'b0;
+			id_pc<=32'b0;
 		end else if(delay_soft)
 		begin
-			inst<=32'b0;
+			id_inst<=32'b0;
 		end else if(!delay_hard)
 		begin
-			la_inst<=MEM_inst;
-			inst<=MEM_inst;
-			ID_PC<=PC;
+			last_inst<=if_inst;
+			id_inst<=if_inst;
+			id_pc<=pc;
 			IC_IF<=2'b0;
 		end
 	end
 
 always @ (*)
 	begin 
-		PC<=next_PC;
+		pc<=next_pc;
 	end
 
+//分支跳转*3
 always @ (posedge branch_1 or posedge branch_2)
 	begin
 		if(branch_1)
 			branch_req_1<=1'b1;
 		else
-			branch_req_2<=1'b0;
+			branch_req_2<=1'b1;
 	end
-
-assign la_inst_out=la_inst;
+always @ (posedge J)
+	begin
+		J_req<=1'b1;
+	end
+always @ (posedge jr)
+	begin
+		jr_req<=1;
+		
+	end
+always @ (jr_data)
+	begin
+		if(jr_data_ok)
+			jr_data_cache<=jr_data;
+	end
+	
+assign last_inst_2=last_inst;
 
 endmodule
