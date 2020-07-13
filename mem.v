@@ -21,157 +21,157 @@
 /*
     reset
     clk
-	CONTROLW_EXE[31:0]	
-	INTCONTROLW_EXE[7:0]	
-	ALURES[31:0]	
-	MEMDATAI[31:0]	
-	CP0DATAI[31:0]	
-	MEMHILO[31:0]	
-	MEMDATA[31:0]	
-	MEMPC[31:0]	
-	EXEDES[6:0]	
-	EXEWRITEHILO[1:0]	
-	TRANDATADDR			ÊÇ·ñĞèÒªĞ­´¦ÀíÆ÷ CP0 ½øĞĞĞéÄâµØÖ·µ½ÎïÀíµØÖ·µÄµØÖ·×ª»»¡£ 
-	SORL				´æÈ¡´æ´¢Æ÷µÄ²Ù×÷ÊÇĞ´²Ù×÷»¹ÊÇ¶Á²Ù×÷¡£
-	WRITEMEM			ÊÇ·ñ°ÑÊı¾İĞ´Èë´æ´¢Æ÷
-	READCP0REG			´æÈ¡ CP0 µÄ²Ù×÷ÊÇ¶Á²Ù×÷¡£
-	WRITECP0REG			´æÈ¡ CP0 µÄ²Ù×÷ÊÇĞ´²Ù×÷¡£
-	TLBOPE				Îª CP0 ½øĞĞ TLB ²Ù×÷µÄÊ¹ÄÜĞÅºÅ¡£
-	DADDR[31:0]			ĞèÒª´æ´¢µÄÊı¾İµØÖ·
-	DATAO[31:0]			cpuÊä³öµÄÊı¾İ
-	INTV[7:0]			ÖĞ¶Ï¿ØÖÆĞÅºÅ
-	CP0REGINDEX[4:0]	CP0Ïà¹Ø¼Ä´æÆ÷²Ù×÷µÄÑ¡Ö·ĞÅºÅ¡£ 
-	TLBOP[1:0]			CP0½øĞĞµÄ TLB ²Ù×÷ÀàĞÍ¡£
-	RESULT[31:0]		MEM¼¶µÄÖ¸ÁîÊı¾İ½á¹û£¿£¿
-	CONTROLW_MEM[31:0]	Á÷Ë®ÏÂÒ»½×¶Î
-	WBHILO[31:0]		Á÷Ë®ÏÂÒ»½×¶Î
-	MEMRESULT[31:0]		Êı¾İÏà¹ØÊ±Ç°µİ¸øIDÌæ»»À´Ô´
-	MEMHILORES[31:0]	Êı¾İÏà¹ØÊ±Ç°µİ¸øIDÌæ»»À´Ô´
-	MEMDES[6:0]			·´À¡ID£¬´¦ÀíÊı¾İÏà¹ØµÄ¿ØÖÆĞÅºÅ
-	MEMWRITEHILO[1:0]	·´À¡ID£¬´¦ÀíÊı¾İÏà¹ØµÄ¿ØÖÆĞÅºÅ
-	INTPC[31:0]			ÖĞ¶Ï»Ö¸´µØÖ·¡£
+	exe_contr_word[31:0]	
+	exe_int_contr_word[7:0]	
+	exe_res[31:0]	
+	mem_data_in[31:0]	
+	mem_cp0_data_in[31:0]	
+	mem_hilo_data[31:0]	
+	mem_data[31:0]	
+	mem_pc[31:0]	
+	exe_des[6:0]	
+	exe_wr_hilo[1:0]	
+	mem_tran_data_addr			æ˜¯å¦éœ€è¦åå¤„ç†å™¨ CP0 è¿›è¡Œè™šæ‹Ÿåœ°å€åˆ°ç‰©ç†åœ°å€çš„åœ°å€è½¬æ¢ 
+	mem_sorl					å­˜å–å­˜å‚¨å™¨çš„æ“ä½œæ˜¯å†™æ“ä½œè¿˜æ˜¯è¯»æ“ä½œ
+	mem_wr						æ˜¯å¦æŠŠæ•°æ®å†™å…¥å­˜å‚¨å™¨
+	mem_rd_cp0_reg				å­˜å– CP0 çš„æ“ä½œæ˜¯è¯»æ“ä½œ
+	mem_wr_cp0_reg				å­˜å– CP0 çš„æ“ä½œæ˜¯å†™æ“ä½œ
+	mem_tlb_op_en				ä¸º CP0 è¿›è¡Œ TLB æ“ä½œçš„ä½¿èƒ½ä¿¡å·
+	mem_data_addr[31:0]			éœ€è¦å­˜å‚¨çš„æ•°æ®åœ°å€
+	mem_data_out[31:0]			cpuè¾“å‡ºçš„æ•°æ®
+	mem_int_contr[7:0]			ä¸­æ–­æ§åˆ¶ä¿¡å·
+	mem_cp0_reg_index[4:0]		CP0ç›¸å…³å¯„å­˜å™¨æ“ä½œçš„é€‰å€ä¿¡å· 
+	mem_tlb_op[1:0]				CP0è¿›è¡Œçš„ TLB æ“ä½œç±»å‹
+	mem_res[31:0]				MEMçº§çš„æŒ‡ä»¤æ•°æ®ç»“æœï¼Ÿï¼Ÿ
+	mem_contr_word[31:0]		æµæ°´ä¸‹ä¸€é˜¶æ®µ
+	wb_hilo_data[31:0]			æµæ°´ä¸‹ä¸€é˜¶æ®µ
+	mem_2id_res[31:0]			æ•°æ®ç›¸å…³æ—¶å‰é€’ç»™IDæ›¿æ¢æ¥æº
+	mem_2id_hilo[31:0]			æ•°æ®ç›¸å…³æ—¶å‰é€’ç»™IDæ›¿æ¢æ¥æº
+	mem_des[6:0]				åé¦ˆIDï¼Œå¤„ç†æ•°æ®ç›¸å…³çš„æ§åˆ¶ä¿¡å·
+	mem_wr_hilo[1:0]			åé¦ˆIDï¼Œå¤„ç†æ•°æ®ç›¸å…³çš„æ§åˆ¶ä¿¡å·
+	mem_int_pc[31:0]			ä¸­æ–­æ¢å¤åœ°å€ã€‚
 
 
 */
 
-module mem(
+module MEM(
     input clk,
     input reset,
-	input [31:0]CONTROLW_EXE,
-	input [7:0]INTCONTROLW_EXE,
-	input [31:0]ALURES,
-	input [31:0]MEMDATAI,
-	input [31:0]CP0DATAI,
-	input [31:0]MEMHILO,
-	input [31:0]MEMDATA,
-	input [31:0]MEMPC,
-	input [6:0]EXEDES,
-	input [1:0]EXEWRITEHILO,
-	output TRANDATADDR,
-	output SORL,
-	output WRITEMEM,
-	output READCP0REG,
-	output WRITECP0REG,
-	output TLBOPE,
-	output [31:0]DADDR,
-	output [31:0]DATAO,
-	output [7:0]INTV,
-	output [4:0]CP0REGINDEX,
-	output [1:0]TLBOP,
-	output [31:0]RESULT,
-	output [31:0]CONTROLW_MEM,
-	output [31:0]WBHILO,
-	output [31:0]MEMRESULT,
-	output [31:0]MEMHILORES,
-	output [6:0]MEMDES,
-	output [1:0]MEMWRITEHILO,
-	output [31:0]INTPC,
-	output [31:0]WB_PC
+	input [31:0]exe_contr_word,
+	input [7:0]exe_int_contr_word,
+	input [31:0]exe_res,
+	input [31:0]mem_data_in,
+	input [31:0]mem_cp0_data_in,
+	input [31:0]mem_hilo_data,
+	input [31:0]mem_data,
+	input [31:0]mem_pc,
+	input [6:0]exe_des,
+	input [1:0]exe_wr_hilo,
+	output mem_tran_data_addr,
+	output mem_sorl,
+	output mem_wr,
+	output mem_rd_cp0_reg,
+	output mem_wr_cp0_reg,
+	output mem_tlb_op_en,
+	output [31:0]mem_data_addr,
+	output [31:0]mem_data_out,
+	output [7:0]mem_int_contr,
+	output [4:0]mem_cp0_reg_index,
+	output [1:0]mem_tlb_op,
+	output [31:0]mem_res,
+	output [31:0]mem_contr_word,
+	output [31:0]wb_hilo_data,
+	output [31:0]mem_2id_res,
+	output [31:0]mem_2id_hilo,
+	output [6:0]mem_des,
+	output [1:0]mem_wr_hilo,
+	output [31:0]mem_int_pc,
+	output [31:0]wb_pc
 
 
     );
-	reg [31:0]MEMRES;
-	reg [31:0]DADDR;
-	reg [31:0]DATAO;
-	reg TRANDATADDR;
-	reg SORL;
-	reg [7:0]INTV;
-	reg WRITEMEM;
-	reg	READCP0REG;
-	reg	WRITECP0REG;
-	reg	TLBOPE;
-	reg	[4:0]CP0REGINDEX;
-	reg	[1:0]TLBOP;
-	reg	[31:0]INTPC;
-	reg	[31:0]WBHILO;
-	reg	[31:0]CONTROLW_MEM;
-	reg	[31:0]RESULT;
-	reg	[31:0]WB_PC;
-	wire[31:0]MEMRESULT;
-	wire[31:0]MEMHILORES;
-	reg[6:0]MEMDES;
-	reg[1:0]MEMWRITEHILO;
+	reg [31:0]mem_mux;
+	reg [31:0]mem_data_addr;
+	reg [31:0]mem_data_out;
+	reg mem_tran_data_addr;
+	reg mem_sorl;
+	reg [7:0]mem_int_contr;
+	reg mem_wr;
+	reg	mem_rd_cp0_reg;
+	reg	mem_wr_cp0_reg;
+	reg	mem_tlb_op_en;
+	reg	[4:0]mem_cp0_reg_index;
+	reg	[1:0]mem_tlb_op;
+	reg	[31:0]mem_int_pc;
+	reg	[31:0]wb_hilo_data;
+	reg	[31:0]mem_contr_word;
+	reg	[31:0]mem_res;
+	reg	[31:0]wb_pc;
+	wire[31:0]mem_2id_res;
+	wire[31:0]mem_2id_hilo;
+	reg[6:0]mem_des;
+	reg[1:0]mem_wr_hilo;
 	
-	always@(*)//CP0²Ù×÷Ïà¹ØÖ¸Áî
+	always@(*)//CP0æ“ä½œç›¸å…³æŒ‡ä»¤
 	begin 
-		DADDR<=ALURES; 
-		DATAO<=MEMDATA; 
-		TRANDATADDR<=(CONTROLW_EXE[7]||CONTROLW_EXE[8]); 
-		SORL<=CONTROLW_EXE[7]; 
-		INTV<=INTCONTROLW_EXE; 
-		WRITEMEM<=CONTROLW_EXE[7]; 
-		READCP0REG<=CONTROLW_EXE[16]; 
-		WRITECP0REG<=CONTROLW_EXE[15]; 
-		TLBOPE<=CONTROLW_EXE[19]; 
-		CP0REGINDEX<=CONTROLW_EXE[14:10]; 
-		TLBOP<=CONTROLW_EXE[18:17]; 
-		INTPC<=MEMPC; 
+		mem_data_addr<=exe_res; 
+		mem_data_out<=mem_data; 
+		mem_tran_data_addr<=(exe_contr_word[7]||exe_contr_word[8]); 
+		mem_sorl<=exe_contr_word[7]; 
+		mem_int_contr<=exe_int_contr_word; 
+		mem_wr<=exe_contr_word[7]; 
+		mem_rd_cp0_reg<=exe_contr_word[16]; 
+		mem_wr_cp0_reg<=exe_contr_word[15]; 
+		mem_tlb_op_en<=exe_contr_word[19]; 
+		mem_cp0_reg_index<=exe_contr_word[14:10]; 
+		mem_tlb_op<=exe_contr_word[18:17]; 
+		mem_int_pc<=mem_pc; 
 	end 
 	
-	always@(*)//½«Ô­Éè¼ÆµÄ´®Áª2_1ÒëÂëÆ÷¸Ä×÷Ò»¸öËÄÊäÈëÑ¡ÔñÆ÷
+	always@(*)//å°†åŸè®¾è®¡çš„ä¸²è”2_1è¯‘ç å™¨æ”¹ä½œä¸€ä¸ªå››è¾“å…¥é€‰æ‹©å™¨
 	begin 
-		case({CONTROLW_EXE[16],CONTROLW_EXE[8]})
+		case({exe_contr_word[16],exe_contr_word[8]})
 			2'b00:begin
-				MEMRES[31:0]=ALURES;
+				mem_mux[31:0]=exe_res;
 			end
 			2'b01:begin
-				MEMRES[31:0]=MEMDATAI;
+				mem_mux[31:0]=mem_data_in;
 			end
 			2'b10:begin
-				MEMRES[31:0]=CP0DATAI;
+				mem_mux[31:0]=mem_cp0_data_in;
 			end
 			2'b11:begin
-				MEMRES[31:0]=CP0DATAI;
+				mem_mux[31:0]=mem_cp0_data_in;
 			end
 		endcase
 	end 
 	
-	always @(negedge reset or posedge clk) //Ô­Éè¼ÆµÄÁ÷Ë®Ïß£¬½áºÏÉÏÒ»¸öalwaysÖØĞÂÊµÏÖ
+	always @(negedge reset or posedge clk) //åŸè®¾è®¡çš„æµæ°´çº¿ï¼Œç»“åˆä¸Šä¸€ä¸ªalwaysé‡æ–°å®ç°
     begin  
 		if(reset==0) 
 			begin 
-				RESULT<=32'b0; 
-				CONTROLW_MEM<=32'b0; 
-				WBHILO<=32'b0; 
+				mem_res<=32'b0; 
+				mem_contr_word<=32'b0; 
+				wb_hilo_data<=32'b0; 
 			end 
         else  
 			begin 
-				WBHILO<=MEMHILO; 
-				CONTROLW_MEM<=CONTROLW_EXE; 
-				RESULT<=MEMRES; 
-				WB_PC<=MEMPC; 
+				wb_hilo_data<=mem_hilo_data; 
+				mem_contr_word<=exe_contr_word; 
+				mem_res<=mem_mux; 
+				wb_pc<=mem_pc; 
             end 
     end 
-	always @(EXEDES or EXEWRITEHILO) 
+	always @(exe_des or exe_wr_hilo) 
 	begin  
-		MEMDES<=EXEDES; 
-		MEMWRITEHILO<=EXEWRITEHILO; 
+		mem_des<=exe_des; 
+		mem_wr_hilo<=exe_wr_hilo; 
 	end 
 
 	
-	//ºÍEXEÒ»ÑùµÄ´¦Àí·½Ê½£¬ÔÚ¼Ä´æÆ÷Ç°Ö±½ÓÏàÁ¬½á¹û£¬½«Êı¾İÇ°µİÌáÇ°£¬Ò²Ğí²¢²»ÕıÈ·
-	assign MEMRESULT=MEMRES;
-	assign MEMHILORES=MEMRES;
+	//å’ŒEXEä¸€æ ·çš„å¤„ç†æ–¹å¼ï¼Œåœ¨å¯„å­˜å™¨å‰ç›´æ¥ç›¸è¿ç»“æœï¼Œå°†æ•°æ®å‰é€’æå‰ï¼Œä¹Ÿè®¸å¹¶ä¸æ­£ç¡®
+	assign mem_2id_res=mem_mux;
+	assign mem_2id_hilo=mem_mux;
 
 
 endmodule

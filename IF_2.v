@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module IF_2(//input:
-              clk,reset,int,J,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,IADEE,IADFE,exc_pc,if_inst,last_inst_1,
+              clk,reset,int,j,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,IADEE,IADFE,exc_pc,if_inst,last_inst_1,
             //output:
               pc,id_inst,id_pc,IC_IF,last_inst_2);
 
@@ -36,7 +36,7 @@ module IF_2(//input:
     last_inst                                   load address 指令
     id_inst(instructions)                        分支指令自身中的部分
     if_inst（MEM instructions）              在存储器中的指令
-    J                                         跳转指令
+    j                                         跳转指令
     delay_hard                                     延迟
     IAEE(interrupt_address_error_exception)   中断地址错误异常
     IAFE(interrupt_address_file_exception)    中断文件错误异常
@@ -53,7 +53,7 @@ module IF_2(//input:
             |                                               |
             |  int                            id_pc[31:0]   |
             |                                               |
-            |  J                              IC_IF[1:0]    |
+            |  j                              IC_IF[1:0]    |
             |                                               |
             |  branch                                       |
             |                                               |
@@ -75,7 +75,7 @@ module IF_2(//input:
 input clk;
 input reset;
 input int;
-input J;
+input j;
 input jr;
 input [31:0]jr_data;
 input jr_data_ok;
@@ -103,7 +103,7 @@ reg [1:0]IC_IF;
 reg [31:0]last_inst;
 reg branch_req_1;
 reg branch_req_2;
-reg J_req;
+reg j_req;
 reg jr_req;
 reg [31:0]jr_data_cache;
 //reg jr_data_ok;
@@ -118,10 +118,10 @@ always @ (negedge reset or posedge clk)
             next_pc<=pc;
         else if(branch_req_1)
             begin
-                if(J_req)
+                if(j_req)
 				begin
                     next_pc<=pc+(last_inst_1[25:0]<<2)-4;
-					J_req<=1'b0;
+					j_req<=1'b0;
 				end
                 else if(jr_req)
 				begin
@@ -137,10 +137,10 @@ always @ (negedge reset or posedge clk)
 		
 		else if(branch_req_2)
 			begin
-                if(J_req)
+                if(j_req)
 				begin
                     next_pc<=pc+(last_inst[25:0]<<2);
-					J_req<=0;
+					j_req<=0;
 				end
 				else if(jr_req)
 				begin
@@ -201,9 +201,9 @@ always @ (posedge branch_1 or posedge branch_2)
 		else
 			branch_req_2<=1'b1;
 	end
-always @ (posedge J)
+always @ (posedge j)
 	begin
-		J_req<=1'b1;
+		j_req<=1'b1;
 	end
 always @ (posedge jr)
 	begin

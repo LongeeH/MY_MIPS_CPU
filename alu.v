@@ -19,96 +19,96 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 /*
-	clk			Ê±ÖÓĞÅºÅ
-	reset		ÖØÖÃĞÅºÅ£¨Î´Ê¹ÓÃ
-	a[31:0]		²Ù×÷Êıa
-	b[31:0]		²Ù×÷Êıb
-	control[4:0]aluop
-	intov		Òç³ö
-	r[31:0]			½á¹û
+	clk				æ—¶é’Ÿä¿¡å·
+	reset			é‡ç½®ä¿¡å·ï¼ˆæœªä½¿ç”¨
+	alu_a[31:0]		æ“ä½œæ•°a
+	alu_b[31:0]		æ“ä½œæ•°b
+	alu_op[4:0]		aluop
+	alu_int_ov		æº¢å‡º
+	alu_res[31:0]	ç»“æœ
 	
 					alu
 		---------------------------------
 		|								|
-		|	clk					r[31:0]	|
+		|	clk			alu_res[31:0]	|
 		|								|
-		|	reset				intov	|
+		|	reset			alu_int_ov	|
 		|								|
-		|	a[31:0]						|
+		|	alu_a[31:0]					|
 		|								|
-		|	b[31:0]						|
+		|	alu_b[31:0]					|
 		|								|
-		|	control[4:0]				|
+		|	alu_op[4:0]					|
 		|								|
 		---------------------------------
 	
-	Õâ¸öalu²»½ö½öÊÇ×éºÏÂß¼­£¬Ò²¸ºÔğ±£´æÁËÉÏ´ÎµÄ¼ÆËã½á¹ûÔÚ¼Ä´æÆ÷ÖĞ¡£Õâ¸ö¼Ä´æÆ÷ÊÕµ½clk¸üĞÂ£¬ÊÕµ½resetÖÃÁã¡£
-	alu_1ºÍalu_2ËÆºõÍêÈ«Ò»ÖÂ
+	è¿™ä¸ªaluä¸ä»…ä»…æ˜¯ç»„åˆé€»è¾‘ï¼Œä¹Ÿè´Ÿè´£ä¿å­˜äº†ä¸Šæ¬¡çš„è®¡ç®—ç»“æœåœ¨å¯„å­˜å™¨ä¸­ã€‚è¿™ä¸ªå¯„å­˜å™¨æ”¶åˆ°clkæ›´æ–°ï¼Œæ”¶åˆ°resetç½®é›¶ã€‚
+	alu_1å’Œalu_2ä¼¼ä¹å®Œå…¨ä¸€è‡´
 */
 
 
-module alu(
+module ALU(
 	input clk,
 	input reset,
-	input [31:0]a,
-    input [31:0]b,
-    input [4:0]control,
-    output [31:0]r,
-    output intov
+	input [31:0]alu_a,
+    input [31:0]alu_b,
+    input [4:0]alu_op,
+    output [31:0]alu_res,
+    output alu_int_ov
     );
-    //reg [31:0]r;
-	reg [32:0]result;//¿¼ÂÇÒ»Î»½øÎ»
-	always@(*)//´¿Ó²²¼ÏßµÄALUÊµÏÖ
+    //reg [31:0]alu_res;
+	reg [32:0]result;//è€ƒè™‘ä¸€ä½è¿›ä½
+	always@(*)//çº¯ç¡¬å¸ƒçº¿çš„ALUå®ç°
 	begin
-		case(control)//ALUOP²Î¿¼page45
+		case(alu_op)//ALUOPå‚è€ƒpage45
 			5'b00000:begin
-				result=a&b;
+				result=alu_a&alu_b;
 			end
 			5'b01000:begin
-				result=a|b;
+				result=alu_a|alu_b;
 			end
 			5'b10000:begin
-				result=~(a|b);
+				result=~(alu_a|alu_b);
 			end
 			5'b11000:begin
-				result=a^b;
+				result=alu_a^alu_b;
 			end
 			5'b00001:begin
-				result=a+b;
+				result=alu_a+alu_b;
 			end
 			5'b01001:begin
-				result=a-b;
+				result=alu_a-alu_b;
 			end
 			5'b01010:begin
-				result=(a-b)<0?1:0;
+				result=(alu_a-alu_b)<0?1:0;
 			end
-			5'b00100:begin//¿ÉÒÔÁíÒ»ÖÖÊµÏÖ·½·¨
-				if(a==0) {result[31:0],result[32]}={b,1'b0};
-                else {result[31:0],result[32]}=b>>(a-1);
+			5'b00100:begin//å¯ä»¥å¦ä¸€ç§å®ç°æ–¹æ³•
+				if(alu_a==0) {result[31:0],result[32]}={alu_b,1'b0};
+                else {result[31:0],result[32]}=alu_b>>(alu_a-1);
 			end
 			5'b01100:begin
-				if(a==0) {result[31:0],result[32]}={b,1'b0};
-                else {result[31:0],result[32]}=b>>>(a-1);
+				if(alu_a==0) {result[31:0],result[32]}={alu_b,1'b0};
+                else {result[31:0],result[32]}=alu_b>>>(alu_a-1);
 			end
 			5'b10100:begin
-				result=b<<a;
+				result=alu_b<<alu_a;
 			end
 			5'b11100:begin
-				result={b[15:0],16'b0};
+				result={alu_b[15:0],16'b0};
 			end
 			default:begin
-				result=33'b0;//Ä¬ÈÏÏî£¬Áô×÷µ÷ÊÔ±äÁ¿
+				result=33'b0;//é»˜è®¤é¡¹ï¼Œç•™ä½œè°ƒè¯•å˜é‡
 			end
 		endcase
 	end
-	assign intov=result[32];//Òç³öÎ»
-	assign r=result;
-/*	always@(posedge reset or negedge clk)//Ê±ĞòÇı¶¯Õâ¸öÊ±ĞòÇı¶¯ÊÇÍÆ²âµÄ£¡
+	assign alu_int_ov=result[32];//æº¢å‡ºä½
+	assign alu_res=result;
+/*	always@(posedge reset or negedge clk)//æ—¶åºé©±åŠ¨è¿™ä¸ªæ—¶åºé©±åŠ¨æ˜¯æ¨æµ‹çš„ï¼
 	begin
 		if(reset)
-			r<=32'b0;
+			alu_res<=32'b0;
 		else
-			r<=result;
+			alu_res<=result;
 	end
 */
 endmodule

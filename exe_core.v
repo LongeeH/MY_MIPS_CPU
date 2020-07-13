@@ -89,12 +89,12 @@ module exe_core(
 	wire [1:0]IC_IF_2;
 	wire branch_1;
 	wire branch_2;
-	wire J_1;
-	wire J_2;//useless
+	wire j_1;
+	wire j_2;//useless
 	wire jr_1;
 	wire jr_2;
-	wire [31:0]jr_data;//三态门
-	wire jr_data_ok;//三态门
+	wire [31:0]jr_data;//三�?�门
+	wire jr_data_ok;//三�?�门
 	wire delay;
 	//ID-ID
 	wire delay_mix;
@@ -104,89 +104,89 @@ module exe_core(
 	//ID-EXE
 	wire [6:0]alu_des_1;
 	wire [6:0]alu_des_2;
-	wire [1:0]alu_HiLo_1;
-	wire [1:0]alu_HiLo_2;
+	wire [1:0]alu_hilo_1;
+	wire [1:0]alu_hilo_2;
 	wire [31:0]alu_res_1;
 	wire [31:0]alu_res_2;
-	wire [31:0]alu_HiLo_res_1;
-	wire [31:0]alu_HiLo_res_2;
-	wire [31:0]contr_ID_1;
-	wire [31:0]contr_ID_2;
-	wire [7:0]IC_ID_1;
-	wire [7:0]IC_ID_2;
-	wire [31:0]exe_PC_1;
-	wire [31:0]exe_PC_2;
+	wire [31:0]alu_2id_hilo_1;
+	wire [31:0]alu_2id_hilo_2;
+	wire [31:0]id_contr_word_1;
+	wire [31:0]id_contr_word_2;
+	wire [7:0]id_int_contr_word_1;
+	wire [7:0]id_int_contr_word_2;
+	wire [31:0]exe_pc_1;
+	wire [31:0]exe_pc_2;
 	wire [31:0]reg_esa_1;
 	wire [31:0]reg_esa_2;
 	wire [31:0]reg_esb_1;
 	wire [31:0]reg_esb_2;
 	wire [31:0]immed_1;
 	wire [31:0]immed_2;
-	wire [6:0]iddes_1;
-	wire [6:0]iddes_2;
-	wire [1:0]ID_HiLo_1;
-	wire [1:0]ID_HiLo_2;
+	wire [6:0]id_des_1;
+	wire [6:0]id_des_2;
+	wire [1:0]id_wr_hilo_1;
+	wire [1:0]id_wr_hilo_2;
 	//ID-MEM
-	wire [31:0]MEM_res_1;
-	wire [31:0]MEM_res_2;
-	wire [6:0]MEM_des1;
-	wire [6:0]MEM_des2;
-	wire [1:0]MEM_HiLo1;
-	wire [1:0]MEM_HiLo2;
-	wire [31:0]MEM_HiLo_res_1;
-	wire [31:0]MEM_HiLo_res_2;
+	wire [31:0]mem_2id_res_1;
+	wire [31:0]mem_2id_res_2;
+	wire [6:0]mem_des_1;
+	wire [6:0]mem_des_2;
+	wire [1:0]mem_wr_hilo_1;
+	wire [1:0]mem_wr_hilo_2;
+	wire [31:0]mem_2id_hilo_1;
+	wire [31:0]mem_2id_hilo_2;
 	//EXE-MEM
 	wire [6:0]exe_des_1;
 	wire [6:0]exe_des_2;
-	wire [31:0]ALURES_1;
-	wire [31:0]ALURES_2;
-	wire [31:0]MEMDATA_1;
-	wire [31:0]MEMDATA_2;
-	wire [31:0]CONTROLEXE_1;
-	wire [31:0]CONTROLEXE_2;
-	wire [7:0]INTCONTROLEXE_1;
-	wire [7:0]INTCONTROLEXE_2;
-	wire [31:0]MEMPC_1;
-	wire [31:0]MEMPC_2;
-	wire [31:0]MEMHILO_1;
-	wire [31:0]MEMHILO_2;
-	wire [1:0]EXEWRITEHILO_1;
-	wire [1:0]EXEWRITEHILO_2;
+	wire [31:0]exe_res1;
+	wire [31:0]exe_res2;
+	wire [31:0]mem_data_1;
+	wire [31:0]mem_data_2;
+	wire [31:0]exe_contr_word_1;
+	wire [31:0]exe_contr_word_2;
+	wire [7:0]exe_int_contr_word_1;
+	wire [7:0]exe_int_contr_word_2;
+	wire [31:0]mem_pc_1;
+	wire [31:0]mem_pc_2;
+	wire [31:0]mem_hilo_1;
+	wire [31:0]mem_hilo_2;
+	wire [1:0]exe_wr_hilo_1;
+	wire [1:0]exe_wr_hilo_2;
 	//MEM-WB
-	wire [31:0]RESULT_1;
-	wire [31:0]RESULT_2;
-	wire [31:0]CONTROLMEM_1;
-	wire [31:0]CONTROLMEM_2;
-	wire [31:0]WBHILO_1;
-	wire [31:0]WBHILO_2;
-	wire [31:0]WB_PC_1;
-	wire [31:0]WB_PC_2;
+	wire [31:0]mem_res_1;
+	wire [31:0]mem_res_2;
+	wire [31:0]mem_contr_word_1;
+	wire [31:0]mem_contr_word_2;
+	wire [31:0]wb_hilo_data_1;
+	wire [31:0]wb_hilo_data_2;
+	wire [31:0]wb_pc_1;
+	wire [31:0]wb_pc_2;
 	//ID-REG
 	wire [4:0]RSO_1;
 	wire [4:0]RSO_2;
 	wire [4:0]RTO_1;
 	wire [4:0]RTO_2;
-	wire [31:0]reg_rs_1;
-	wire [31:0]reg_rs_2;
-	wire [31:0]reg_rt_1;
-	wire [31:0]reg_rt_2;
-	wire [31:0]reg_Hi;
-	wire [31:0]reg_Lo;
+	wire [31:0]reg_rs_data_1;
+	wire [31:0]reg_rs_data_2;
+	wire [31:0]reg_rt_data_1;
+	wire [31:0]reg_rt_data_2;
+	wire [31:0]lo_r_data;
+	wire [31:0]hi_r_data;
 	//WB-REG
-	wire [31:0]reg_result_1;
-	wire [31:0]reg_result_2;
-	wire write_reg_1;
-	wire write_reg_2;
-	wire [4:0]result_des_1;
-	wire [4:0]result_des_2;
-	wire write_hi_1;
-	wire write_hi_2;
-	wire write_lo_1;
-	wire write_lo_2;
-	wire [31:0]reg_hi_1;
-	wire [31:0]reg_hi_2;
-	wire [31:0]reg_lo_1;
-	wire [31:0]reg_lo_2;
+	wire [31:0]wb_reg_data_1;
+	wire [31:0]wb_reg_data_2;
+	wire wb_reg_wr_1;
+	wire wb_reg_wr_2;
+	wire [4:0]wb_res_des1;
+	wire [4:0]wb_res_des2;
+	wire wb_hi_wr_1;
+	wire wb_hi_wr_2;
+	wire wb_lo_wr_1;
+	wire wb_lo_wr_2;
+	wire [31:0]wb_hi_data_1;
+	wire [31:0]wb_hi_data_2;
+	wire [31:0]wb_lo_data_1;
+	wire [31:0]wb_lo_data_2;
 	
 	//model put here
 	
@@ -194,7 +194,7 @@ module exe_core(
 		.clk(clk),
 		.reset(reset),
 		.int(), //maybe need CP0
-		.J(J_1|J_2),
+		.j(j_1|j_2),
 		.jr(jr_1|jr_2),
 		.jr_data(jr_data),
 		.jr_data_ok(jr_data_ok),
@@ -205,7 +205,7 @@ module exe_core(
 		.IADEE(),
 		.IADFE(),
 		.exc_pc(),
-		.if_inst(MEM_inst_1),
+		.if_inst(if_inst_1),
 		.last_inst_2(last_inst_2),
 
 		.pc(pc_1),
@@ -218,7 +218,7 @@ module exe_core(
 		.clk(clk),
 		.reset(reset),
 		.int(),
-		.J(J_1|J_2),
+		.j(j_1|j_2),
 		.jr(jr_1|jr_2),
 		.jr_data(jr_data),
 		.jr_data_ok(jr_data_ok),
@@ -229,7 +229,7 @@ module exe_core(
 		.IADEE(),
 		.IADFE(),
 		.exc_pc(),
-		.if_inst(MEM_inst_2),
+		.if_inst(if_inst_2),
 		.last_inst_1(last_inst_1),
 
 		.pc(pc_2),
@@ -241,235 +241,235 @@ module exe_core(
     
 	ID _id1(
 		.clk(clk),.reset(reset),.id_inst(id_inst_1),.id_pc(id_pc_1),.IC_IF(IC_IF_1),
-		.reg_rs(reg_rs_1),.reg_rt(reg_rt_1),
-		.reg_Hi(reg_Hi),.reg_Lo(reg_Lo),
-		.alu_des_1(alu_des_1),.alu_w_HiLo1(alu_HiLo_1),
-		.alu_des_2(alu_des_2),.alu_w_HiLo2(alu_HiLo_2),
+		.reg_rs(reg_rs_data_1),.reg_rt(reg_rt_data_1),
+		.lo_r_data(lo_r_data),.hi_r_data(hi_r_data),
+		.alu_des_1(alu_des_1),.alu_w_hilo_1(alu_hilo_1),
+		.alu_des_2(alu_des_2),.alu_w_hilo_2(alu_hilo_2),
 		.alu_res_1(alu_res_1),.alu_res_2(alu_res_2),
-		.alu_HiLo_res_1(alu_HiLo_res_1),.alu_HiLo_res_2(alu_HiLo_res_2),
-		.MEM_res_1(MEM_res_1),.MEM_res_2(MEM_res_2),
-		.MEM_des1(MEM_des1),.MEM_w_HiLo1(MEM_HiLo1),
-		.MEM_des2(MEM_des2),.MEM_w_HiLo2(MEM_HiLo2),
-		.MEM_HiLo_res_1(MEM_HiLo_res_1),.MEM_HiLo_res_2(MEM_HiLo_res_2),.delay_mix(delay_mix),.delay_in(delay_out_2),
+		.alu_hilo_res_1(alu_2id_hilo_1),.alu_hilo_res_2(alu_2id_hilo_2),
+		.mem_res_1(mem_2id_res_1),.mem_res_2(mem_2id_res_2),
+		.mem_des_1(mem_des_1),.mem_wr_hilo_1(mem_wr_hilo_1),
+		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
+		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_mix(delay_mix),.delay_in(delay_out_2),
          //output
-        .branch(branch_1),.J(J_1),.jr(jr_1),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_1),.contr_ID(contr_ID_1),.IC_ID(IC_ID_1),.exe_PC(exe_PC_1),
-		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.iddes(iddes_1),.self_des(self_des),.self_hilo(self_hilo),
-		.ID_w_HiLo(ID_HiLo_1),.RSO(RSO_1),.RTO(RTO_1)
+        .branch(branch_1),.j(j_1),.jr(jr_1),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_1),.id_contr_word(id_contr_word_1),.id_int_contr_word(id_int_contr_word_1),.exe_pc(exe_pc_1),
+		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.id_des(id_des_1),.self_des(self_des),.self_hilo(self_hilo),
+		.id_wr_hilo(id_wr_hilo_1),.RSO(RSO_1),.RTO(RTO_1)
 	);	
 	ID_2 _id2(
 		.clk(clk),.reset(reset),.id_inst(id_inst_2),.id_pc(id_pc_2),.IC_IF(IC_IF_2),
-		.reg_rs(reg_rs_2),.reg_rt(reg_rt_2),
-		.reg_Hi(reg_Hi),.reg_Lo(reg_Lo),
-		.alu_des_1(alu_des_1),.alu_w_HiLo1(alu_HiLo_1),
-		.alu_des_2(alu_des_2),.alu_w_HiLo2(alu_HiLo_2),
+		.reg_rs(reg_rs_data_2),.reg_rt(reg_rt_data_2),
+		.lo_r_data(lo_r_data),.hi_r_data(hi_r_data),
+		.alu_des_1(alu_des_1),.alu_w_hilo_1(alu_hilo_1),
+		.alu_des_2(alu_des_2),.alu_w_hilo_2(alu_hilo_2),
 		.alu_res_1(alu_res_1),.alu_res_2(alu_res_2),
-		.alu_HiLo_res_1(alu_HiLo_res_1),.alu_HiLo_res_2(alu_HiLo_res_2),
-		.MEM_res_1(MEM_res_1),.MEM_res_2(MEM_res_2),
-		.MEM_des1(MEM_des1),.MEM_w_HiLo1(MEM_HiLo1),
-		.MEM_des2(MEM_des2),.MEM_w_HiLo2(MEM_HiLo2),
-		.MEM_HiLo_res_1(MEM_HiLo_res_1),.MEM_HiLo_res_2(MEM_HiLo_res_2),.delay_in(delay_out_1),
+		.alu_hilo_res_1(alu_2id_hilo_1),.alu_hilo_res_2(alu_2id_hilo_2),
+		.mem_res_1(mem_2id_res_1),.mem_res_2(mem_2id_res_2),
+		.mem_des_1(mem_des_1),.mem_wr_hilo_1(mem_wr_hilo_1),
+		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
+		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_in(delay_out_1),
          //output
-        .branch(branch_2),.J(J_2),.jr(jr_2),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_2),.delay_mix(delay_mix),.contr_ID(contr_ID_2),.IC_ID(IC_ID_2),.exe_PC(exe_PC_2),
-		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.iddes(iddes_2),.self_des(self_des),.self_hilo(self_hilo),
-		.ID_w_HiLo(ID_HiLo_2),.RSO(RSO_2),.RTO(RTO_2)
+        .branch(branch_2),.j(j_2),.jr(jr_2),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_2),.delay_mix(delay_mix),.id_contr_word(id_contr_word_2),.id_int_contr_word(id_int_contr_word_2),.exe_pc(exe_pc_2),
+		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.id_des(id_des_2),.self_des(self_des),.self_hilo(self_hilo),
+		.id_wr_hilo(id_wr_hilo_2),.RSO(RSO_2),.RTO(RTO_2)
 	);
 	
-    exe _exe1(
+    EXE exe1(
 		.clk(clk),
 		.reset(reset),
-		.CONTROLW_ID(contr_ID_1),	
-		.INTCONTROLW_ID(IC_ID_1),	
-		.EXEPC(exe_PC_1),
-		.REGRESA(reg_esa_1),
-		.REGRESB(reg_esb_1),
-		.IDDES(iddes_1),
-		.IDWRITEHILO(ID_HiLo_1),
-		.IMMED(immed_1),
-		.EXEDES(exe_des_1),
-		.EXEWRITEHILO(EXEWRITEHILO_1),
-		.ALUDES(alu_des_1),
-		.ALUWRITEHILO(alu_HiLo_1),
-		.ALURES(ALURES_1),
-		.MEMDATA(MEMDATA_1),
-		.CONTROLW_EXE(CONTROLEXE_1),
-		.INTCONTROLW_EXE(INTCONTROLEXE_1),
-		.MEMPC(MEMPC_1),
-		.MEMHILO(MEMHILO_1),
-		.ALURESULT(alu_res_1),
-		.ALUHILORES(alu_HiLo_res_1)
+		.id_contr_word(id_contr_word_1),	
+		.id_int_contr_word(id_int_contr_word_1),	
+		.exe_pc(exe_pc_1),
+		.exe_reg_res_A(reg_esa_1),
+		.exe_reg_res_B(reg_esb_1),
+		.id_des(id_des_1),
+		.id_wr_hilo(id_wr_hilo_1),
+		.exe_immed(immed_1),
+		.exe_des(exe_des_1),
+		.exe_wr_hilo(exe_wr_hilo_1),
+		.exe_alu_des(alu_des_1),
+		.exe_alu_wr_hilo(alu_hilo_1),
+		.exe_res(exe_res1),
+		.mem_data(mem_data_1),
+		.exe_contr_word(exe_contr_word_1),
+		.exe_int_contr_word(exe_int_contr_word_1),
+		.mem_pc(mem_pc_1),
+		.mem_hilo(mem_hilo_1),
+		.alu_2id_res(alu_res_1),
+		.alu_2id_hilo(alu_2id_hilo_1)
 	);
-	exe _exe2(
+	EXE exe2(
 		.clk(clk),
 		.reset(reset),
-		.CONTROLW_ID(contr_ID_2),	
-		.INTCONTROLW_ID(IC_ID_2),	
-		.EXEPC(exe_PC_2),
-		.REGRESA(reg_esa_2),
-		.REGRESB(reg_esb_2),
-		.IDDES(iddes_2),
-		.IDWRITEHILO(ID_HiLo_2),
-		.IMMED(immed_2),
-		.EXEDES(exe_des_2),
-		.EXEWRITEHILO(EXEWRITEHILO_2),
-		.ALUDES(alu_des_2),
-		.ALUWRITEHILO(alu_HiLo_2),
-		.ALURES(ALURES_2),
-		.MEMDATA(MEMDATA_2),
-		.CONTROLW_EXE(CONTROLEXE_2),
-		.INTCONTROLW_EXE(INTCONTROLEXE_2),
-		.MEMPC(MEMPC_2),
-		.MEMHILO(MEMHILO_2),
-		.ALURESULT(alu_res_2),
-		.ALUHILORES(alu_HiLo_res_2)
+		.id_contr_word(id_contr_word_2),	
+		.id_int_contr_word(id_int_contr_word_2),	
+		.exe_pc(exe_pc_2),
+		.exe_reg_res_A(reg_esa_2),
+		.exe_reg_res_B(reg_esb_2),
+		.id_des(id_des_2),
+		.id_wr_hilo(id_wr_hilo_2),
+		.exe_immed(immed_2),
+		.exe_des(exe_des_2),
+		.exe_wr_hilo(exe_wr_hilo_2),
+		.exe_alu_des(alu_des_2),
+		.exe_alu_wr_hilo(alu_hilo_2),
+		.exe_res(exe_res2),
+		.mem_data(mem_data_2),
+		.exe_contr_word(exe_contr_word_2),
+		.exe_int_contr_word(exe_int_contr_word_2),
+		.mem_pc(mem_pc_2),
+		.mem_hilo(mem_hilo_2),
+		.alu_2id_res(alu_res_2),
+		.alu_2id_hilo(alu_2id_hilo_2)
 	);
 	
-    mem _mem1(
+    MEM mem1(
 		.clk(clk),
 		.reset(reset),
-		.CONTROLW_EXE(CONTROLEXE_1),
-		.INTCONTROLW_EXE(INTCONTROLEXE_1),
-		.ALURES(ALURES_1),
-		.MEMDATAI(),
-		.CP0DATAI(),
-		.MEMHILO(MEMHILO_1),
-		.MEMDATA(MEMDATA_1),
-		.MEMPC(MEMPC_1),
-		.EXEDES(exe_des_1),
-		.EXEWRITEHILO(EXEWRITEHILO_1),
-		.TRANDATADDR(),
-		.SORL(),
-		.WRITEMEM(),
-		.READCP0REG(),
-		.WRITECP0REG(),
-		.TLBOPE(),
-		.DADDR(),
-		.DATAO(),
-		.INTV(),
-		.CP0REGINDEX(),
-		.TLBOP(),
-		.RESULT(RESULT_1),
-		.CONTROLW_MEM(CONTROLMEM_1),
-		.WBHILO(WBHILO_1),
-		.MEMRESULT(MEM_res_1),
-		.MEMHILORES(MEM_HiLo_res_1),
-		.MEMDES(MEM_des1),
-		.MEMWRITEHILO(MEM_HiLo1),
-		.INTPC(),
-		.WB_PC(WB_PC_1)
+		.exe_contr_word(exe_contr_word_1),
+		.exe_int_contr_word(exe_int_contr_word_1),
+		.exe_res(exe_res1),
+		.mem_data_in(),
+		.mem_cp0_data_in(),
+		.mem_hilo_data(mem_hilo_1),
+		.mem_data(mem_data_1),
+		.mem_pc(mem_pc_1),
+		.exe_des(exe_des_1),
+		.exe_wr_hilo(exe_wr_hilo_1),
+		.mem_tran_data_addr(),
+		.mem_sorl(),
+		.mem_wr(),
+		.mem_rd_cp0_reg(),
+		.mem_wr_cp0_reg(),
+		.mem_tlb_op_en(),
+		.mem_data_addr(),
+		.mem_data_out(),
+		.mem_int_contr(),
+		.mem_cp0_reg_index(),
+		.mem_tlb_op(),
+		.mem_res(mem_res_1),
+		.mem_contr_word(mem_contr_word_1),
+		.wb_hilo_data(wb_hilo_data_1),
+		.mem_2id_res(mem_2id_res_1),
+		.mem_2id_hilo(mem_2id_hilo_1),
+		.mem_des(mem_des_1),
+		.mem_wr_hilo(mem_wr_hilo_1),
+		.mem_int_pc(),
+		.wb_pc(wb_pc_1)
 	);
-	mem _mem2(
+	MEM mem2(
 		.clk(clk),
 		.reset(reset),
-		.CONTROLW_EXE(CONTROLEXE_2),
-		.INTCONTROLW_EXE(INTCONTROLEXE_2),
-		.ALURES(ALURES_2),
-		.MEMDATAI(),
-		.CP0DATAI(),
-		.MEMHILO(MEMHILO_2),
-		.MEMDATA(MEMDATA_2),
-		.MEMPC(MEMPC_2),
-		.EXEDES(exe_des_2),
-		.EXEWRITEHILO(EXEWRITEHILO_2),
-		.TRANDATADDR(),
-		.SORL(),
-		.WRITEMEM(),
-		.READCP0REG(),
-		.WRITECP0REG(),
-		.TLBOPE(),
-		.DADDR(),
-		.DATAO(),
-		.INTV(),
-		.CP0REGINDEX(),
-		.TLBOP(),
-		.RESULT(RESULT_2),
-		.CONTROLW_MEM(CONTROLMEM_2),
-		.WBHILO(WBHILO_2),
-		.MEMRESULT(MEM_res_2),
-		.MEMHILORES(MEM_HiLo_res_2),
-		.MEMDES(MEM_des2),
-		.MEMWRITEHILO(MEM_HiLo2),
-		.INTPC(),
-		.WB_PC(WB_PC_2)
+		.exe_contr_word(exe_contr_word_2),
+		.exe_int_contr_word(exe_int_contr_word_2),
+		.exe_res(exe_res2),
+		.mem_data_in(),
+		.mem_cp0_data_in(),
+		.mem_hilo_data(mem_hilo_2),
+		.mem_data(mem_data_2),
+		.mem_pc(mem_pc_2),
+		.exe_des(exe_des_2),
+		.exe_wr_hilo(exe_wr_hilo_2),
+		.mem_tran_data_addr(),
+		.mem_sorl(),
+		.mem_wr(),
+		.mem_rd_cp0_reg(),
+		.mem_wr_cp0_reg(),
+		.mem_tlb_op_en(),
+		.mem_data_addr(),
+		.mem_data_out(),
+		.mem_int_contr(),
+		.mem_cp0_reg_index(),
+		.mem_tlb_op(),
+		.mem_res(mem_res_2),
+		.mem_contr_word(mem_contr_word_2),
+		.wb_hilo_data(wb_hilo_data_2),
+		.mem_2id_res(mem_2id_res_2),
+		.mem_2id_hilo(mem_2id_hilo_2),
+		.mem_des(mem_des_2),
+		.mem_wr_hilo(mem_wr_hilo_2),
+		.mem_int_pc(),
+		.wb_pc(wb_pc_2)
 	);
     
-	WB _wb1(
+	WB wb1(
 		.clk(clk),
 		.reset(reset),
-		.controlw_MEM(CONTROLMEM_1),
-		.result(RESULT_1),
-		.WB_hi_lo(WBHILO_1),
-		.WB_PC(WB_PC_1),
+		.mem_contr_word(mem_contr_word_1),
+		.mem_res(mem_res_1),
+		.wb_hilo_data(wb_hilo_data_1),
+		.wb_pc(wb_pc_1),
 		//
-		.reg_result(reg_result_1),
-		.write_reg(write_reg_1),
-		.write_hi(write_hi_1),
-		.write_lo(write_lo_1),
-		.result_des(result_des_1),
-		.reg_hi(reg_hi_1),
-		.reg_lo(reg_lo_1),
+		.wb_reg_data(wb_reg_data_1),
+		.wb_reg_wr(wb_reg_wr_1),
+		.wb_hi_wr(wb_hi_wr_1),
+		.wb_lo_wr(wb_lo_wr_1),
+		.wb_res_des(wb_res_des1),
+		.wb_hi_data(wb_hi_data_1),
+		.wb_lo_data(wb_lo_data_1),
 		.wb_pc_debug(debug_wb_pc_1)
 	);
-	WB _wb2(
+	WB wb2(
 		.clk(clk),
 		.reset(reset),
-		.controlw_MEM(CONTROLMEM_2),
-		.result(RESULT_2),
-		.WB_hi_lo(WBHILO_1),
-		.WB_PC(WB_PC_2),
+		.mem_contr_word(mem_contr_word_2),
+		.mem_res(mem_res_2),
+		.wb_hilo_data(wb_hilo_data_1),
+		.wb_pc(wb_pc_2),
 		//
-		.reg_result(reg_result_2),
-		.write_reg(write_reg_2),
-		.write_hi(write_hi_2),
-		.write_lo(write_lo_2),
-		.result_des(result_des_2),
-		.reg_hi(reg_hi_2),
-		.reg_lo(reg_lo_2),
+		.wb_reg_data(wb_reg_data_2),
+		.wb_reg_wr(wb_reg_wr_2),
+		.wb_hi_wr(wb_hi_wr_2),
+		.wb_lo_wr(wb_lo_wr_2),
+		.wb_res_des(wb_res_des2),
+		.wb_hi_data(wb_hi_data_2),
+		.wb_lo_data(wb_lo_data_2),
 		.wb_pc_debug(debug_wb_pc_2)
 	);
 	
-	register_file register(
+	Register_File register(
 		.clk(clk),
 		.reset(reset),
-		.RS_Addr_1(RSO_1),
-		.RS_Addr_2(RSO_2),
-		.RT_Addr_1(RTO_1),
-		.RT_Addr_2(RTO_2),
-		.Write_Enable_1(write_reg_1),
-		.Write_Enable_2(write_reg_2),
-		.Write_Addr_1(result_des_1),
-		.Write_Addr_2(result_des_2),
-		.Write_Data_1(reg_result_1),
-		.Write_Data_2(reg_result_2),
+		.reg_rs_addr_1(RSO_1),
+		.reg_rs_addr_2(RSO_2),
+		.reg_rt_addr_1(RTO_1),
+		.reg_rt_addr_2(RTO_2),
+		.reg_w_en_1(wb_reg_wr_1),
+		.reg_w_en_2(wb_reg_wr_2),
+		.reg_w_addr_1(wb_res_des1),
+		.reg_w_addr_2(wb_res_des2),
+		.reg_w_data_1(wb_reg_data_1),
+		.reg_w_data_2(wb_reg_data_2),
 		//output
-		.RS_Data_1(reg_rs_1),
-		.RS_Data_2(reg_rs_2),
-		.RT_Data_1(reg_rt_1),
-		.RT_Data_2(reg_rs_2)
+		.reg_rs_data_1(reg_rs_data_1),
+		.reg_rs_data_2(reg_rs_data_2),
+		.reg_rt_data_1(reg_rt_data_1),
+		.reg_rt_data_2(reg_rt_data_2)
 	);
-	register_hilo register_hi(
+	Register_HiLo register_hi(
 		.clk(clk),
 		.reset(reset),
-		.Write_Enable_1(write_hi_1),
-		.Write_Enable_2(write_hi_2),
-		.Write_Data_1(reg_hi_1),
-		.Write_Data_2(reg_hi_2),
-		.HILO_Data(reg_Hi)
+		.hilo_w_en_1(wb_hi_wr_1),
+		.hilo_w_en_2(wb_lo_wr_2),
+		.hilo_w_data_1(wb_hi_data_1),
+		.hilo_w_data_2(wb_hi_data_2),
+		.hilo_r_data(hi_r_data)
 	);
-	register_hilo register_lo(
+	Register_HiLo register_lo(
 		.clk(clk),
 		.reset(reset),
-		.Write_Enable_1(write_lo_1),
-		.Write_Enable_2(write_lo_2),
-		.Write_Data_1(reg_lo_1),
-		.Write_Data_2(reg_lo_2),
-		.HILO_Data(reg_Lo)
+		.hilo_w_en_1(wb_lo_wr_1),
+		.hilo_w_en_2(wb_lo_wr_2),
+		.hilo_w_data_1(wb_lo_data_1),
+		.hilo_w_data_2(wb_lo_data_2),
+		.hilo_r_data(lo_r_data)
 	);
 	
 	//instruction require
 	wire [31:0] pc_1;
 	wire [31:0] pc_2;
-	wire [31:0]MEM_inst_1;
-	wire [31:0]MEM_inst_2;
+	wire [31:0]if_inst_1;
+	wire [31:0]if_inst_2;
 	wire waitinst;
 	reg waitinst_1;
 	reg waitinst_2;
@@ -519,8 +519,8 @@ module exe_core(
 		end
 	end
 	
-	assign MEM_inst_1 = inst_2_if[31:0];
-	assign MEM_inst_2 = inst_2_if[63:32];
+	assign if_inst_1 = inst_2_if[31:0];
+	assign if_inst_2 = inst_2_if[63:32];
 	// assign pc = rdata;
 	
 	
@@ -600,11 +600,11 @@ module exe_core(
 	
 	
 	//end here
-	assign debug_wb_rf_wen_1 = {4{write_reg_1}};
-	assign debug_wb_rf_wen_2 = {4{write_reg_2}};
-	assign debug_wb_rf_wnum_1 = result_des_1;
-	assign debug_wb_rf_wnum_2 = result_des_2;
-	assign debug_wb_rf_wdata_1 = reg_result_1;
-	assign debug_wb_rf_wdata_2 = reg_result_2;
+	assign debug_wb_rf_wen_1 = {4{wb_reg_wr_1}};
+	assign debug_wb_rf_wen_2 = {4{wb_reg_wr_2}};
+	assign debug_wb_rf_wnum_1 = wb_res_des1;
+	assign debug_wb_rf_wnum_2 = wb_res_des2;
+	assign debug_wb_rf_wdata_1 = wb_reg_data_1;
+	assign debug_wb_rf_wdata_2 = wb_reg_data_2;
 	
 endmodule

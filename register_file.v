@@ -20,39 +20,39 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module register_file(
+module Register_File(
 	input clk,
 	input reset,
-	input [4:0] RS_Addr_1,
-	input [4:0] RS_Addr_2,
-	input [4:0] RT_Addr_1,
-	input [4:0] RT_Addr_2,
-	input Write_Enable_1,
-	input Write_Enable_2,
-	input [4:0] Write_Addr_1,
-	input [4:0] Write_Addr_2,
-	input [31:0] Write_Data_1,
-	input [31:0] Write_Data_2,
+	input [4:0] reg_rs_addr_1,
+	input [4:0] reg_rs_addr_2,
+	input [4:0] reg_rt_addr_1,
+	input [4:0] reg_rt_addr_2,
+	input reg_w_en_1,
+	input reg_w_en_2,
+	input [4:0] reg_w_addr_1,
+	input [4:0] reg_w_addr_2,
+	input [31:0] reg_w_data_1,
+	input [31:0] reg_w_data_2,
 	// Output
-	output [31:0] RS_Data_1,
-	output [31:0] RS_Data_2,
-	output [31:0] RT_Data_1,
-	output [31:0] RT_Data_2
+	output [31:0] reg_rs_data_1,
+	output [31:0] reg_rs_data_2,
+	output [31:0] reg_rt_data_1,
+	output [31:0] reg_rt_data_2
     );
 	
 	reg [31:0] Register[31:0];
 	
-	assign RS_Data_1 = (RS_Addr_1 == 0) ? 0 : Register[RS_Addr_1];
-	assign RT_Data_1 = (RT_Addr_1 == 0) ? 0 : Register[RT_Addr_1];
-	assign RS_Data_2 = (RS_Addr_2 == 0) ? 0 : Register[RS_Addr_2];
-	assign RT_Data_2 = (RT_Addr_2 == 0) ? 0 : Register[RT_Addr_2];
+	assign reg_rs_data_1 = (reg_rs_addr_1 == 0) ? 0 : Register[reg_rs_addr_1];
+	assign reg_rt_data_1 = (reg_rt_addr_1 == 0) ? 0 : Register[reg_rt_addr_1];
+	assign reg_rs_data_2 = (reg_rs_addr_2 == 0) ? 0 : Register[reg_rs_addr_2];
+	assign reg_rt_data_2 = (reg_rt_addr_2 == 0) ? 0 : Register[reg_rt_addr_2];
 	
 	always @(posedge clk)
 	begin
-		if(Write_Enable_1 && (Write_Addr_1 != 0) )
+		if(reg_w_en_1 && (reg_w_addr_1 != 0) )
 		begin
-			if(Write_Addr_1 != Write_Addr_2)
-				Register[Write_Addr_1] <= Write_Data_1;
+			if(reg_w_addr_1 != reg_w_addr_2)
+				Register[reg_w_addr_1] <= reg_w_data_1;
 			else
 			    #1;
 		end
@@ -60,9 +60,9 @@ module register_file(
 	
 	always @(posedge clk)
 	begin
-		if(Write_Enable_2 && (Write_Addr_2 != 0) )
+		if(reg_w_en_2 && (reg_w_addr_2 != 0) )
 		begin
-			Register[Write_Addr_2] <= Write_Data_2;
+			Register[reg_w_addr_2] <= reg_w_data_2;
 		end
 	end
 	

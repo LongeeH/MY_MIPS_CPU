@@ -20,32 +20,32 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 //hilo寄存器都用这一个文件生成
-module register_hilo(
+module Register_HiLo(
 	input clk,
 	input reset,
-	input Write_Enable_1,
-	input Write_Enable_2,
-	input [31:0] Write_Data_1,
-	input [31:0] Write_Data_2,
-	output [31:0] HILO_Data
+	input hilo_w_en_1,
+	input hilo_w_en_2,
+	input [31:0] hilo_w_data_1,
+	input [31:0] hilo_w_data_2,
+	output [31:0] hilo_r_data
     );
 	
 	reg [31:0] Register;
-	assign HILO_Data=Register;
+	assign hilo_r_data=Register;
 	
 	always @(posedge clk)
 	begin
-		if(Write_Enable_1)
+		if(hilo_w_en_1)
 		begin
-			Register<= Write_Data_1;
+			Register<= hilo_w_data_1;
 		end
 	end
 	
 	always @(posedge clk)
 	begin
-		if(Write_Enable_2)
+		if(hilo_w_en_2)
 		begin
-			Register<= Write_Data_2;
+			Register<= hilo_w_data_2;
 		end
 	end
 	

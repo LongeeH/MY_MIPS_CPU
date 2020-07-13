@@ -21,150 +21,150 @@
 /*
 	clk
 	reset
-	CONTROLW_ID[31:0]		ID提供的控制字
-	INTCONTROLW_ID[7:0]		ID提供的中断控制字
-	EXEPC[31:0]				ID提供的PC。一周期后给MEMPC[31:0]
-	REGRESA[31:0]			寄存器A数据
-	REGRESB[31:0]			寄存器B数据
-	IDDES[6:0]				ID提供的结果控制信号DES。一周期后给MEMDES[7:0]、ALUDES[6:0]
-	IDWRITEHILO[1:0]		ID提供的WIRITEHILO。一周期后给EXEWRITEHILO[1:0]	、ALUWRITEHILO[1:0]	
-	IMMED[31;0]				32位立即数
+	id_contr_word[31:0]		ID提供的控制字
+	id_int_contr_word[7:0]	ID提供的中断控制字
+	exe_pc[31:0]			ID提供的PC。一周期后给MEMPC[31:0]
+	exe_reg_res_A[31:0]		寄存器A数据
+	exe_reg_res_B[31:0]		寄存器B数据
+	id_des[6:0]				ID提供的结果控制信号DES。一周期后给MEMDES[7:0]、ALUDES[6:0]
+	id_wr_hilo[1:0]			ID提供的WIRITEHILO。一周期后给EXEWRITEHILO[1:0]	、ALUWRITEHILO[1:0]	
+	exe_immed[31;0]			32位立即数
 	
-	EXEDES[6:0]				
-	EXEWRITEHILO[1:0]		
-	ALUDES[6:0]				前?给ID判断数据相关的控制信号
-	ALUWRITEHILO[1:0]		前?给ID判断数据相关的控制信号
-	ALURES[31:0]			ALU计算结果输出EXE
-	MEMDATA[31:0]			输入寄存器REGRESB的数
-	CONTROLW_EXE[31:0]		CONTROLW_ID[31:0]流水
-	INTCONTROLW_EXE[7:0]	INTCONTROLW_ID[7:0]流水，INTCONTROLW_ID[2]替换为移溢出信号
-	MEMPC[31:0]				EXEPC[31:0]流水
-	MEMHILO[31:0]			输入寄存器REGRESA的数捿
-	ALURESULT[31:0]			ALU计算结果输出，数据相关时前递给ID
-	ALUHILORES[31:0]		ALU计算结果输出，数据相关时前递给ID
+	exe_des[6:0]			向后传递判断数据相关的信号
+	exe_wr_hilo[1:0]		向后传递判断数据相关的信号
+	exe_alu_des[6:0]		前?给ID判断数据相关的控制信号
+	exe_alu_wr_hilo[1:0]	前?给ID判断数据相关的控制信号
+	exe_res[31:0]			ALU计算结果输出EXE
+	mem_data[31:0]			输入寄存器REGRESB的数
+	exe_contr_word[31:0]	id_contr_word[31:0]流水
+	exe_int_contr_word[7:0]	id_int_contr_word[7:0]流水，INTCONTROLW_ID[2]替换为移溢出信号
+	mem_pc[31:0]			exe_pc[31:0]流水
+	mem_hilo[31:0]			输入寄存器REGRESA的数捿
+	alu_2id_res[31:0]		ALU计算结果输出，数据相关时前递给ID
+	alu_2id_hilo[31:0]		ALU计算结果输出，数据相关时前递给ID
 	
 */
 
-module exe(
+module EXE(
 	input clk,
 	input reset,
-	input [31:0]CONTROLW_ID,	
-	input [7:0]INTCONTROLW_ID,	
-	input [31:0]EXEPC,
-	input [31:0]REGRESA,
-	input [31:0]REGRESB,
-	input [6:0]IDDES,
-	input [1:0]IDWRITEHILO,
-	input [31:0]IMMED,
-	output [6:0]EXEDES,
-	output [1:0]EXEWRITEHILO,
-	output [6:0]ALUDES,
-	output [1:0]ALUWRITEHILO,
-	output [31:0]ALURES,
-	output [31:0]MEMDATA,
-	output [31:0]CONTROLW_EXE,
-	output [7:0]INTCONTROLW_EXE,
-	output [31:0]MEMPC,
-	output [31:0]MEMHILO,
-	output [31:0]ALURESULT,
-	output [31:0]ALUHILORES
+	input [31:0]id_contr_word,	
+	input [7:0]id_int_contr_word,	
+	input [31:0]exe_pc,
+	input [31:0]exe_reg_res_A,
+	input [31:0]exe_reg_res_B,
+	input [6:0]id_des,
+	input [1:0]id_wr_hilo,
+	input [31:0]exe_immed,
+	output [6:0]exe_des,
+	output [1:0]exe_wr_hilo,
+	output [6:0]exe_alu_des,
+	output [1:0]exe_alu_wr_hilo,
+	output [31:0]exe_res,
+	output [31:0]mem_data,
+	output [31:0]exe_contr_word,
+	output [7:0]exe_int_contr_word,
+	output [31:0]mem_pc,
+	output [31:0]mem_hilo,
+	output [31:0]alu_2id_res,
+	output [31:0]alu_2id_hilo
     );
-	reg [31:0]mux2_out;
-	reg [31:0]mux4_out;
-	wire [31:0]ALURESB;
-	wire ALUINTOV;
+	reg [31:0]alu_data_A;
+	reg [31:0]alu_data_B;
+	wire [31:0]alu_res;
+	wire alu_int_ov;
 	
-	reg [6:0]ALUDES;
-	reg [1:0]ALUWRITEHILO;
-	reg [31:0]ALURES;
-	reg [31:0]MEMDATA;
-	reg [31:0]CONTROLW_EXE;
-	reg [7:0]INTCONTROLW_EXE;
-	reg [31:0]MEMPC;
-	reg [31:0]MEMHILO;
-	reg [6:0]EXEDES;
-	reg [1:0]EXEWRITEHILO;
+	reg [6:0]exe_alu_des;
+	reg [1:0]exe_alu_wr_hilo;
+	reg [31:0]exe_res;
+	reg [31:0]mem_data;
+	reg [31:0]exe_contr_word;
+	reg [7:0]exe_int_contr_word;
+	reg [31:0]mem_pc;
+	reg [31:0]mem_hilo;
+	reg [6:0]exe_des;
+	reg [1:0]exe_wr_hilo;
 	always@(*)//MUX2决定A输入
 	begin
-		case(CONTROLW_ID[5])
+		case(id_contr_word[5])
 			1'b0:begin
-				mux2_out=REGRESA;
+				alu_data_A=exe_reg_res_A;
 			end
 			1'b1:begin
-				{mux2_out[31:16],mux2_out[15:0]}={16'b0,IMMED[15:0]};
+				{alu_data_A[31:16],alu_data_A[15:0]}={16'b0,exe_immed[15:0]};
 			end
 			default:begin
-				mux2_out=32'b0;//默认项，留作调试变量
+				alu_data_A=32'b0;//默认项，留作调试变量
 			end
 		endcase
 	end
 	
 	always@(*)//MUX4决定B输入
 	begin
-		case({CONTROLW_ID[31],CONTROLW_ID[30]})
+		case({id_contr_word[31],id_contr_word[30]})
 			2'b00:begin
-				mux4_out=REGRESB;
+				alu_data_B=exe_reg_res_B;
 			end
 			2'b01:begin
-				mux4_out=IMMED;
+				alu_data_B=exe_immed;
 			end
 			2'b10:begin
-				{mux4_out[31:16],mux4_out[15:0]}={16'b0,IMMED[15:0]};
+				{alu_data_B[31:16],alu_data_B[15:0]}={16'b0,exe_immed[15:0]};
 			end
 			2'b11:begin
-				mux4_out=REGRESA;
+				alu_data_B=exe_reg_res_A;
 			end
 			default:begin
-				mux4_out=32'b0;//默认项，留作调试变量
+				alu_data_B=32'b0;//默认项，留作调试变量
 			end
 		endcase
 	end
 	
-	always @(IDDES or IDWRITEHILO)//数据相关的控制信号
+	always @(id_des or id_wr_hilo)//数据相关的控制信号
 	begin
-		ALUDES<=IDDES;
-		ALUWRITEHILO<=IDWRITEHILO;
+		exe_alu_des<=id_des;
+		exe_alu_wr_hilo<=id_wr_hilo;
     end
 
 	always @(negedge reset or posedge clk)//流水线处理
 	begin
 		if(reset==0)
 		begin
-			ALURES<=32'b0;
-			MEMDATA<=32'b0;
-			CONTROLW_EXE<=32'b0;
-			INTCONTROLW_EXE<=8'b0;
-			MEMPC<=32'b0;
-			MEMHILO<=32'b0;
-			EXEDES<=7'b0;
-			EXEWRITEHILO<=2'b0;
+			exe_res<=32'b0;
+			mem_data<=32'b0;
+			exe_contr_word<=32'b0;
+			exe_int_contr_word<=8'b0;
+			mem_pc<=32'b0;
+			mem_hilo<=32'b0;
+			exe_des<=7'b0;
+			exe_wr_hilo<=2'b0;
             end
         else
 		begin
-			ALURES<=ALURESB;
-            MEMDATA<=REGRESB;
-            MEMPC<=EXEPC;
-            MEMHILO<=REGRESA;
-            EXEDES<=IDDES;
-            EXEWRITEHILO<=IDWRITEHILO;
-			CONTROLW_EXE[31:0]<=CONTROLW_ID[31:0];
-			INTCONTROLW_EXE[7:0]<={INTCONTROLW_ID[7:3],ALUINTOV,INTCONTROLW_ID[1:0]};
+			exe_res<=alu_res;
+            mem_data<=exe_reg_res_B;
+            mem_pc<=exe_pc;
+            mem_hilo<=exe_reg_res_A;
+            exe_des<=id_des;
+            exe_wr_hilo<=id_wr_hilo;
+			exe_contr_word[31:0]<=id_contr_word[31:0];
+			exe_int_contr_word[7:0]<={id_int_contr_word[7:3],alu_int_ov,id_int_contr_word[1:0]};
 		end
 	end
 	
-	alu  _ALU(
+	ALU alu(
 		.clk(clk),
 		.reset(reset),
-		.a(mux2_out),
-		.b(mux4_out),
-		.control(CONTROLW_ID[4:0]),
-		.r(ALURESB),
-		.intov(ALUINTOV)
+		.alu_a(alu_data_A),
+		.alu_b(alu_data_B),
+		.alu_op(id_contr_word[4:0]),
+		.alu_res(alu_res),
+		.alu_int_ov(alu_int_ov)
 	);
 	
 	//以下两行为推测，直连能跳过一个寄存器，但仍然不正常。。。
-	assign ALURESULT=ALURESB;
-	assign ALUHILORES=ALURESB;
+	assign alu_2id_res=alu_res;
+	assign alu_2id_hilo=alu_res;
 	
 	
 endmodule

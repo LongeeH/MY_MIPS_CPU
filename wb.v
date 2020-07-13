@@ -19,39 +19,39 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 /*
-	clk			                    Ê±ÖÓĞÅºÅ
-	reset		                    ÖØÖÃĞÅºÅ
-	controlw_MEM                    [24:20]¼Ä´æÆ÷¶ÑÖĞµÄ¼Ä´æÆ÷ºÅÂë£¨IDÖĞµÄresultdes£ß
-                                    ¿ØÖÆ£¬[9]¿ØÖÆ¼Ä´æÆ÷¶ÑÊÇ·ñĞ´Èë£¨IDÖĞµÄwrite_reg£ß
-                                    ¿ØÖÆ£¬[27]ºÍ[28]·Ö±ğ¿ØÖÆloºÍhiµÄĞ´Èë£¨¶ÔÓ¦IDÖĞµÄwrite_loºÍwrite_hi£ß
-	result			                MEMÖ¸ÁîÊı¾İ½á¹û
-	WB_hi_lo(write_back_hight_low)  ÒªĞ´ÈëµÄÊı¾İ
+	clk			                            æ—¶é’Ÿä¿¡å·
+	reset		                            é‡ç½®ä¿¡å·
+	mem_contr_word_                          [24:20]å¯„å­˜å™¨å †ä¸­çš„å¯„å­˜å™¨å·ç ï¼ˆIDä¸­çš„resultdesï¼¿
+                                            æ§åˆ¶ï¼Œ[9]æ§åˆ¶å¯„å­˜å™¨å †æ˜¯å¦å†™å…¥ï¼ˆIDä¸­çš„write_regï¼¿
+                                            æ§åˆ¶ï¼Œ[27]å’Œ[28]åˆ†åˆ«æ§åˆ¶loå’Œhiçš„å†™å…¥ï¼ˆå¯¹åº”IDä¸­çš„write_loå’Œwrite_hiï¼¿
+	result			                        MEMæŒ‡ä»¤æ•°æ®ç»“æœ
+	wb_hilo_data(write_back_hight_low)      è¦å†™å…¥çš„æ•°æ®
 	
-    reg_result                      Ö¸Áî–cÖÕÔËĞĞ½á–¨
-	write_reg                       ±êÖ¾£¬ÊÇ·ñ°Ñ½á¹ûĞ´Èë¼Ä´æÆ÷¶ÑØ¯
-    write_hi                        ±êÖ¾£¬ÊÇ·ñ°ÑÊı¾İĞ´Èëµ½¼Ä´æÆ÷hiØ¯
-    write_lo                        ±êÖ¾£¬ÊÇ·ñ°ÑÊı¾İĞ´Èëµ½¼Ä´æÆ÷loØ¯
-    reg_hi                          ¼Ä´æÆ÷hi
-    reg_lo                          ¼Ä´æÆ÷lo
-    result_des                      ±êÊ¶WBÖ´ĞĞ½×¶ÎÖĞ½á¹ûĞèÒªĞ´ÈëµÄ¼Ä´æÆ÷?
+    wb_reg_data                             æŒ‡ä»¤æœ¿ç»ˆè¿è¡Œç»“æ¿
+	wb_reg_wr                               æ ‡å¿—ï¼Œæ˜¯å¦æŠŠç»“æœå†™å…¥å¯„å­˜å™¨å †ä¸¿
+    wb_hi_wr                                æ ‡å¿—ï¼Œæ˜¯å¦æŠŠæ•°æ®å†™å…¥åˆ°å¯„å­˜å™¨hiä¸¿
+    wb_lo_wr                                æ ‡å¿—ï¼Œæ˜¯å¦æŠŠæ•°æ®å†™å…¥åˆ°å¯„å­˜å™¨loä¸¿
+    wb_hi_data                              å¯„å­˜å™¨hi
+    wb_lo_data                              å¯„å­˜å™¨lo
+    wb_res_des                              æ ‡è¯†WBæ‰§è¡Œé˜¶æ®µä¸­ç»“æœéœ€è¦å†™å…¥çš„å¯„å­˜å™¨?
 
 	
 				            	wb
 		-------------------------------------------------
 		|								                |
-		|	clk				        reg_result[31:0]    |
+		|	clk				        wb_reg_data[31:0]   |
 		|								                |
-		|	reset				    write_reg           |
+		|	reset				    wb_reg_wr           |
 		|								                |
-		|	controlw_MEM[31:0]		write_hi            |
+		|	mem_contr_word_[31:0]		wb_hi_wr        |
 		|								                |
-		|	result[31:0]			write_lo            |
+		|	mem_res[31:0]			wb_lo_wr            |
 		|								                |
-		|	WB_hi_lo[4:0]			reg_hi[31:0]        |
+		|	wb_hilo_data[4:0]			wb_hi_data[31:0]|
         |								                |
-        |	WBPC[31:0] 				reg_lo[31:0]        |
+        |	WBPC[31:0] 				wb_lo_data[31:0]    |
 		|								                |
-        |	         				result_des[4:0]     |
+        |	         				wb_res_des[4:0]     |
         |								                |
 		-------------------------------------------------
 
@@ -59,53 +59,53 @@
 module WB(
 	input clk,
 	input reset,
-	input [31:0]controlw_MEM,
-    input [31:0]result,
-    input [31:0]WB_hi_lo,
-    input [31:0]WB_PC,
-    output [31:0]reg_result,
-    output write_reg,
-    output write_hi,
-    output write_lo,
-    output [4:0]result_des,
-    output [31:0]reg_hi,
-    output [31:0]reg_lo,
+	input [31:0]mem_contr_word,
+    input [31:0]mem_res,
+    input [31:0]wb_hilo_data,
+    input [31:0]wb_pc,
+    output [31:0]wb_reg_data,
+    output wb_reg_wr,
+    output wb_hi_wr,
+    output wb_lo_wr,
+    output [4:0]wb_res_des,
+    output [31:0]wb_hi_data,
+    output [31:0]wb_lo_data,
 	output [31:0]wb_pc_debug
     );
 
-reg write_reg;
-reg write_hi;
-reg write_lo;
-reg [31:0]reg_hi;
-reg [31:0]reg_lo;
-reg [4:0]result_des;
-reg [31:0]reg_result;
+reg wb_reg_wr;
+reg wb_hi_wr;
+reg wb_lo_wr;
+reg [31:0]wb_hi_data;
+reg [31:0]wb_lo_data;
+reg [4:0]wb_res_des;
+reg [31:0]wb_reg_data;
 reg [31:0]wb_pc_debug;
 
-// assign wb_pc_debug=WB_PC;
+// assign wb_pc_debug=wb_pc;
 
 always @(negedge reset or posedge clk)
     begin
         if(reset==0)
             begin
-                reg_result<=32'b0;
-                reg_hi<=32'b0;
-                reg_lo<=32'b0;
-                result_des<=5'b0;
-                write_reg<=0;
-                write_hi<=0;
-                write_lo<=0;
+                wb_reg_data<=32'b0;
+                wb_hi_data<=32'b0;
+                wb_lo_data<=32'b0;
+                wb_res_des<=5'b0;
+                wb_reg_wr<=0;
+                wb_hi_wr<=0;
+                wb_lo_wr<=0;
             end
         else
             begin
-				wb_pc_debug<=WB_PC;
-                reg_result<=result;
-                result_des<=controlw_MEM[24:20];
-                write_reg<=controlw_MEM[9];
-                write_hi<=controlw_MEM[28];
-                write_lo=controlw_MEM[27];
-                reg_hi<=WB_hi_lo;
-                reg_lo<=WB_hi_lo;
+				wb_pc_debug<=wb_pc;
+                wb_reg_data<=mem_res;
+                wb_res_des<=mem_contr_word[24:20];
+                wb_reg_wr<=mem_contr_word[9];
+                wb_hi_wr<=mem_contr_word[28];
+                wb_lo_wr=mem_contr_word[27];
+                wb_hi_data<=wb_hilo_data;
+                wb_lo_data<=wb_hilo_data;
             end
     end
 endmodule
