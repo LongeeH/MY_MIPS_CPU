@@ -91,7 +91,7 @@ module ALU(
                 else {result[31:0],result[32]}=alu_b>>>(alu_a-1);
 			end
 			5'b10100:begin
-				result=alu_b<<alu_a;
+				result=alu_b<<alu_a[10:6];
 			end
 			5'b11100:begin
 				result={alu_b[15:0],16'b0};

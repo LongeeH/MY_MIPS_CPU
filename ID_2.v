@@ -364,8 +364,8 @@ assign mem_2_reg = lw_inst;
 assign write_lo = mtlo_inst;
 assign write_hi = mthi_inst;
 assign alu_srcA = (sll_inst || sra_inst || srl_inst);
-assign alu_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst);
-assign alu_srcB[1] = (ori_inst || andi_inst ||xori_inst||jal_inst);
+assign alu_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst||jal_inst);
+assign alu_srcB[1] = (ori_inst || andi_inst ||xori_inst);
 assign alu_res_ok = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst || subu_inst ||
                      and_inst || andi_inst || or_inst || ori_inst || slt_inst || sltu_inst ||
                      slti_inst || sltiu_inst ||sll_inst || sra_inst || srav_inst || srl_inst ||nor_inst||
@@ -440,9 +440,13 @@ assign hi_target = mthi_inst;
 assign lo_source = mflo_inst;
 assign lo_target = mtlo_inst;
 //id-id conflict
+// wire non_zero;
+// assign non_zero=|RSI;
 always@(*)
 	begin
-		if(((self_des[6]||self_des[5])&&((rs_source && (RSI[4:0]==self_des[4:0]))||(rt_source && (RTI[4:0]==self_des[4:0]))))||((self_hilo[0]&&lo_source)||(self_hilo[1]&&hi_source)))
+		if((((self_des[6]||self_des[5])&&((rs_source && (RSI[4:0]==self_des[4:0]))||(rt_source && (RTI[4:0]==self_des[4:0]))))
+		||((self_hilo[0]&&lo_source)||(self_hilo[1]&&hi_source)))
+		&&(|self_des[4:0]))
 		begin
 			delay_self_mix<=1;//id-id conflict
 		end 
@@ -577,7 +581,7 @@ begin
                 r_slt_z <= 0;        
 end
 
-always @ (j_inst or jr_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
+always @ (j_inst or jr_inst or jal_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
           blez_inst or rs_eq_z or bgtz_inst or r_slt_z or bgez_inst)
 begin
         branch <= j_inst || jr_inst || jal_inst ||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||
@@ -619,13 +623,16 @@ always @ (negedge reset or posedge clk)
             begin
                 id_des[6:0]<=des[6:0];
                 id_wr_hilo[1:0] <=write_hilo[1:0];
-                reg_esa[31:0] <= reg_A[31:0];
+				if(jal_inst)
+					reg_esa[31:0] <= 32'b0;//如果不冲突，改成由FWDA选择也许更好
+				else
+					reg_esa[31:0] <= reg_A[31:0];
                 reg_esb[31:0] <= reg_B[31:0];
                 exe_pc[31:0] <= id_pc[31:0];
                 id_contr_word[31:0] <= contr_word[31:0];
                 id_int_contr_word[7:0] <= int_contr_word[7:0];
 				if(jal_inst)
-					immed<=id_pc+4;
+					immed<=id_pc+8;
                 else if(id_inst[15])
                     immed[31:0]<={16'b1111111111111111,id_inst[15:0]};
                 else

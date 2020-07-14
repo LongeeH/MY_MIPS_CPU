@@ -588,6 +588,7 @@ module exe_core(
 	wire if_delay;
 	// wire if_delay;
 	assign if_delay = delay_out_1 | delay_out_2;
+	
 	// assign if_delay_1 = delay | inst_req_1;
 	// assign if_delay_2 = delay | inst_req_2;
 	// assign if_delay_1 = delay;

@@ -107,6 +107,10 @@ reg j_req;
 reg jr_req;
 reg [31:0]jr_data_cache;
 //reg jr_data_ok;
+wire [31:0]pc_slot;
+wire [31:0]pc_slot_2;
+assign pc_slot=pc-4;
+assign pc_slot_2=pc-8;
 
 always @ (negedge reset or posedge clk)
     begin
@@ -120,17 +124,18 @@ always @ (negedge reset or posedge clk)
             begin
                 if(j_req)
 				begin
-                    next_pc<=pc+(last_inst_1[25:0]<<2)-4;
+                    next_pc[31:28]<=pc_slot_2[31:28];
+					next_pc[27:0]<=(last_inst_1[25:0]<<2)+4;
 					j_req<=1'b0;
 				end
                 else if(jr_req)
 				begin
                     next_pc<=jr_data_cache+4;
-					jr_req<=0;
+					jr_req<=1'b0;
 				end
 				else
 				begin
-					next_pc<=pc+(last_inst_1[15:0]<<2)-4;
+					next_pc<=pc_slot+(last_inst_1[15:0]<<2);
 				end
 				branch_req_1<=1'b0;
             end
@@ -139,8 +144,9 @@ always @ (negedge reset or posedge clk)
 			begin
                 if(j_req)
 				begin
-                    next_pc<=pc+(last_inst[25:0]<<2);
-					j_req<=0;
+                    next_pc[31:28]<=pc_slot[31:28];
+					next_pc[27:0]<=(last_inst[25:0]<<2)+4;
+					j_req<=1'b0;
 				end
 				else if(jr_req)
 				begin
