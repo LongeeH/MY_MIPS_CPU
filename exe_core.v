@@ -24,20 +24,24 @@ module exe_core(
 	input clk,
 	input reset,
 	//test axi port here
-	output reg arvalid,
-	output reg [31:0]araddr,
+	//read address channel
 	output reg [3:0]arid,
+	output reg [31:0]araddr,
 	output reg [3:0]arlen,
+	output reg [2:0]arsize,
 	output reg [1:0]arburst,
 	output reg [1:0]arlock,
 	output reg [3:0]arcache,
-	output reg [2:0]arprot,
-	output reg [2:0]arsize,
-	output reg rready,
-	
-	input rvalid,
-	input [31:0]rdata,
+	output reg [2:0]arprot,	
+	output reg arvalid,
 	input arready,
+	
+	//read data channel
+	input [3:0]rid,
+	input rvalid,	
+	input [31:0]rdata,
+	output reg rready,	
+	
 	//No function port (copied)
 	input   [5 :0]      int,
     output              inst_req,
@@ -93,8 +97,8 @@ module exe_core(
 	wire j_2;//useless
 	wire jr_1;
 	wire jr_2;
-	wire [31:0]jr_data;//三�?�门
-	wire jr_data_ok;//三�?�门
+	wire [31:0]jr_data;//三态门
+	wire jr_data_ok;//三态门
 	wire delay;
 	//ID-ID
 	wire delay_mix;
@@ -201,7 +205,7 @@ module exe_core(
 		.branch_1(branch_1),
 		.branch_2(branch_2),
 		.delay_soft(delay_soft_inst|delay_mix),
-		.delay_hard(if_delay),
+		.delay_hard(if_delay|delay_hard_data_r_req),
 		.IADEE(),
 		.IADFE(),
 		.exc_pc(),
@@ -225,7 +229,7 @@ module exe_core(
 		.branch_1(branch_1),
 		.branch_2(branch_2),
 		.delay_soft(delay_soft_inst),
-		.delay_hard(if_delay|delay_mix),
+		.delay_hard(if_delay|delay_mix|delay_hard_data_r_req),
 		.IADEE(),
 		.IADFE(),
 		.exc_pc(),
@@ -277,6 +281,7 @@ module exe_core(
     EXE exe1(
 		.clk(clk),
 		.reset(reset),
+		.delay(delay_hard_data_r_req),
 		.id_contr_word(id_contr_word_1),	
 		.id_int_contr_word(id_int_contr_word_1),	
 		.exe_pc(exe_pc_1),
@@ -301,6 +306,7 @@ module exe_core(
 	EXE exe2(
 		.clk(clk),
 		.reset(reset),
+		.delay(delay_hard_data_r_req),
 		.id_contr_word(id_contr_word_2),	
 		.id_int_contr_word(id_int_contr_word_2),	
 		.exe_pc(exe_pc_2),
@@ -326,10 +332,11 @@ module exe_core(
     MEM mem1(
 		.clk(clk),
 		.reset(reset),
+		.delay(delay_hard_data_r_req),
 		.exe_contr_word(exe_contr_word_1),
 		.exe_int_contr_word(exe_int_contr_word_1),
 		.exe_res(exe_res1),
-		.mem_data_in(),
+		.mem_data_in(mem_data_in_1),
 		.mem_cp0_data_in(),
 		.mem_hilo_data(mem_hilo_1),
 		.mem_data(mem_data_1),
@@ -338,11 +345,12 @@ module exe_core(
 		.exe_wr_hilo(exe_wr_hilo_1),
 		.mem_tran_data_addr(),
 		.mem_sorl(),
+		.mem_load_en(mem_load_en_1),
 		.mem_wr(),
 		.mem_rd_cp0_reg(),
 		.mem_wr_cp0_reg(),
 		.mem_tlb_op_en(),
-		.mem_data_addr(),
+		.mem_data_addr(mem_data_addr_1),
 		.mem_data_out(),
 		.mem_int_contr(),
 		.mem_cp0_reg_index(),
@@ -360,10 +368,11 @@ module exe_core(
 	MEM mem2(
 		.clk(clk),
 		.reset(reset),
+		.delay(delay_hard_data_r_req),
 		.exe_contr_word(exe_contr_word_2),
 		.exe_int_contr_word(exe_int_contr_word_2),
 		.exe_res(exe_res2),
-		.mem_data_in(),
+		.mem_data_in(mem_data_in_2),
 		.mem_cp0_data_in(),
 		.mem_hilo_data(mem_hilo_2),
 		.mem_data(mem_data_2),
@@ -372,11 +381,12 @@ module exe_core(
 		.exe_wr_hilo(exe_wr_hilo_2),
 		.mem_tran_data_addr(),
 		.mem_sorl(),
+		.mem_load_en(mem_load_en_2),
 		.mem_wr(),
 		.mem_rd_cp0_reg(),
 		.mem_wr_cp0_reg(),
 		.mem_tlb_op_en(),
-		.mem_data_addr(),
+		.mem_data_addr(mem_data_addr_2),
 		.mem_data_out(),
 		.mem_int_contr(),
 		.mem_cp0_reg_index(),
@@ -474,35 +484,119 @@ module exe_core(
 	reg waitinst_1;
 	reg waitinst_2;
 	reg rready;
-	wire delay_soft;
+	// wire delay_soft;
 	wire inst_req;
 	reg inst_rec;
 	reg inst_req_1;
 	reg inst_req_2;
-	reg inst_req_en;//which pipeline req?
+	//reg inst_req_en;//which pipeline req?
 	reg arvalid_rst;
 	reg arvalid_use;
+	//mem signal
+	reg data_r_req_1;
+	reg data_r_req_2;
+	reg data_r_ok_1;
+	reg data_r_ok_2;
+	wire [31:0]mem_data_addr_1;
+	wire [31:0]mem_data_addr_2;
+	reg [31:0]mem_data_in_1;
+	reg [31:0]mem_data_in_2;
+
+	// always @ (posedge clk)
+	// begin
+		// if(data_req&inst_req_use)
+		// begin
+			// data_req_wait<=1;
+		// end
+		// else if(data_req&!inst_req_use)
+		// begin
+			// data_req_use<=1;
+		// end 
+		// else if(data_req_use&inst_req)
+		// begin
+			// inst_req_wait<=1;
+		// end
+		// else if(!data_req_use&inst_req)
+		// begin
+			// inst_req_use<=1;
+		// end
+	// end
+	// always@(posedge clk)
+	// begin
+		// if(data_r_req_1 & data_r_ok_1 & arready)//有效请求and前指到齐and外设可用
+		// begin
+			// araddr<=mem_data_addr_1;// 
+			// arvalid<=1;
+			// data_r_ok_1<=0;
+			// arid<=1;
+			// arvalid_use<=1;
+			// arlen<=4'b0000;
+		// end 
+	// end
 	
-	//req
+	// always@(posedge clk)
+	// begin
+	
+		// if(data_r_req_2 & data_r_ok_2 & arready)//有效请求and前指到齐and外设可用
+		// begin
+			// araddr<=mem_data_addr_2;// 
+			// arvalid<=1;
+			// data_r_ok_2<=0;
+			// arid<=2;
+			// arvalid_use<=1;
+			// arlen<=4'b0000;
+		// end 
+	// end
+	
+
+	
+	
+	
+	
+	
+	
+	//axi read apply module
 	always@(posedge clk)
 	begin
-		if(inst_req & inst_rec & arready)
+		if(inst_req & inst_rec & arready)//有效请求and前指到齐and外设可用
 		begin
 			araddr<=pc_1;// is new pc or before? perhaps late... 
 			arvalid<=1;
 			inst_rec<=0;
+			arid<=0;
 			arvalid_use<=1;
+			arlen<=4'b0001;
 		end 
+		else if(data_r_req_1 & data_r_ok_1 & arready)//请求and前指到齐and外设可用
+		begin
+			araddr<=mem_data_addr_1;// 
+			arvalid<=1;
+			data_r_ok_1<=0;//?
+			arid<=1;
+			arvalid_use<=1;
+			arlen<=4'b0000;
+		end
+		else if(data_r_req_2 & data_r_ok_2 & arready)//有效请求and前指到齐and外设可用
+		begin
+			araddr<=mem_data_addr_2;// 
+			arvalid<=1;
+			data_r_ok_2<=0;//?
+			arid<=2;
+			arvalid_use<=1;
+			arlen<=4'b0000;
+		end 	
+		
 	end
+	//axi read apply end
 	
 	
+	//axi read receive module
+	//inst rec
 	reg flag;
 	reg [63:0]inst_2_if;
-	//wire [31:0]pc; 
-	//rec
-	always @ (posedge clk)
+	always @ (posedge clk)//虚拟cache-指令对交替分配
 	begin
-		if(rvalid==1)
+		if(rvalid==1&rid==0)
 		begin
 		// arvalid=0;
 			if(flag)
@@ -518,12 +612,28 @@ module exe_core(
 			flag = !flag;
 		end
 	end
+	//try merge up
+	//data rec 
+	always @ (posedge clk)
+	begin
+		if(rvalid==1&rid==1)
+		begin
+			mem_data_in_1 <= rdata;
+			data_r_req_1 <= 0;
+			data_r_ok_1<=1;
+		end 
+		else if(rvalid==1&rid==2)
+		begin
+			mem_data_in_2 <= rdata;
+			data_r_req_2 <= 0;
+			data_r_ok_2<=1;
+		end
+	end
+	
 	
 	assign if_inst_1 = inst_2_if[31:0];
 	assign if_inst_2 = inst_2_if[63:32];
-	// assign pc = rdata;
-	
-	
+		
 	
 	always @(pc_1)
 	begin
@@ -535,23 +645,16 @@ module exe_core(
 		inst_req_2<=1;
 		inst_2_if[63:32]<=32'b0;
 	end
+	always @(mem_load_en_1 or mem_load_en_2)
+	begin
+		if(mem_load_en_1)
+			data_r_req_1<=1;
+		if(mem_load_en_2)
+			data_r_req_2<=1;
+	end
 	
-	// always@(posedge arready)
-	// begin
-		// if(arvalid_use)
-		// begin
-			// arvalid_rst<=1;
-		// end
-	// end
-	// always@(posedge clk)
-	// begin
-		// if(arvalid_rst)
-		// begin
-			// arvalid<=0;
-			// arvalid_rst<=0;
-			// arvalid_use<=0;
-		// end
-	// end
+	
+
 	always@(posedge clk)
 	begin
 		if(arvalid)
@@ -560,8 +663,12 @@ module exe_core(
 		end
 	end
 	
-	assign inst_req = inst_req_1 & inst_req_2;
-	assign delay_soft_inst = inst_req_1 | inst_req_2;
+	assign inst_req = inst_req_1 & inst_req_2;//必须12流水线同时请求时，才请求取指令对。
+	assign delay_soft_inst = inst_req_1 | inst_req_2;//任一流水线请求时，进行软暂停。只暂停pc的更新行为。其他状况不会保留
+	
+	assign delay_hard_data_r_req = data_r_req_1 | data_r_req_2;
+	
+	
 	
 	initial
 	begin
@@ -575,20 +682,24 @@ module exe_core(
 		arcache=0;
 		arprot=0;
 		rready=1;
-		inst_req_en=0;
+		// inst_req_en=0;
 		waitinst_1=0;
 		waitinst_2=0;
 		inst_rec=1;
 		arvalid_use=0;
 		inst_req_1=1;
 		inst_req_2=1;
+		data_r_ok_1=1;
+		data_r_ok_2=1;
+		
+		data_r_req_1=0;
+		data_r_req_2=0;
 	end
-
+	// always #500 arid=arid+1;
 	
 	wire if_delay;
 	// wire if_delay;
 	assign if_delay = delay_out_1 | delay_out_2;
-	
 	// assign if_delay_1 = delay | inst_req_1;
 	// assign if_delay_2 = delay | inst_req_2;
 	// assign if_delay_1 = delay;

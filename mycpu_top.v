@@ -112,22 +112,24 @@ module mycpu_top(
         .reset(aresetn),
         .int(ext_int),
         //test axi port here
-        .arvalid(arvalid),
-		.araddr(araddr),
+		//read address channel
 		.arid(arid),
+		.araddr(araddr),
 		.arlen(arlen),
+		.arsize(arsize),
 		.arburst(arburst),
 		.arlock(arlock),
 		.arcache(arcache),
 		.arprot(arprot),
-		.arsize(arsize),
+		.arvalid(arvalid),
+		.arready(arready),
 		
+
+        //read data channel
+		.rid(rid),
         .rvalid(rvalid),
         .rdata(rdata),
-        .arready(arready),
-		.rready(rready),
-        
-        
+		.rready(rready),       
         
 		//No function port (copied)
         .inst_req(cpu_inst_req),

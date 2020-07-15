@@ -48,6 +48,7 @@
 module EXE(
 	input clk,
 	input reset,
+	input delay,
 	input [31:0]id_contr_word,	
 	input [7:0]id_int_contr_word,	
 	input [31:0]exe_pc,
@@ -139,7 +140,7 @@ module EXE(
 			exe_des<=7'b0;
 			exe_wr_hilo<=2'b0;
             end
-        else
+        else if(!delay)
 		begin
 			exe_res<=alu_res;
             mem_data<=exe_reg_res_B;

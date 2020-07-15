@@ -57,6 +57,7 @@
 module MEM(
     input clk,
     input reset,
+    input delay,
 	input [31:0]exe_contr_word,
 	input [7:0]exe_int_contr_word,
 	input [31:0]exe_res,
@@ -69,6 +70,7 @@ module MEM(
 	input [1:0]exe_wr_hilo,
 	output mem_tran_data_addr,
 	output mem_sorl,
+	output mem_load_en,
 	output mem_wr,
 	output mem_rd_cp0_reg,
 	output mem_wr_cp0_reg,
@@ -95,6 +97,7 @@ module MEM(
 	reg [31:0]mem_data_out;
 	reg mem_tran_data_addr;
 	reg mem_sorl;
+	reg mem_load_en;
 	reg [7:0]mem_int_contr;
 	reg mem_wr;
 	reg	mem_rd_cp0_reg;
@@ -112,12 +115,14 @@ module MEM(
 	reg[6:0]mem_des;
 	reg[1:0]mem_wr_hilo;
 	
+	
 	always@(*)//CP0操作相关指令
 	begin 
 		mem_data_addr<=exe_res; 
 		mem_data_out<=mem_data; 
 		mem_tran_data_addr<=(exe_contr_word[7]||exe_contr_word[8]); 
 		mem_sorl<=exe_contr_word[7]; 
+		mem_load_en<=exe_contr_word[8];
 		mem_int_contr<=exe_int_contr_word; 
 		mem_wr<=exe_contr_word[7]; 
 		mem_rd_cp0_reg<=exe_contr_word[16]; 
@@ -154,7 +159,7 @@ module MEM(
 				mem_contr_word<=32'b0; 
 				wb_hilo_data<=32'b0; 
 			end 
-        else  
+        else if(!delay)
 			begin 
 				wb_hilo_data<=mem_hilo_data; 
 				mem_contr_word<=exe_contr_word; 
