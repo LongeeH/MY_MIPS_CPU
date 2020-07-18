@@ -111,6 +111,7 @@ wire [31:0]pc_slot;
 wire [31:0]pc_slot_2;
 assign pc_slot=pc-4;
 assign pc_slot_2=pc-8;
+reg [31:0]branch_offset;
 
 always @ (negedge reset or posedge clk)
     begin
@@ -135,7 +136,7 @@ always @ (negedge reset or posedge clk)
 				end
 				else
 				begin
-					next_pc<=pc_slot+(last_inst_1[15:0]<<2);
+					next_pc<=pc_slot+(branch_offset<<2);
 				end
 				branch_req_1<=1'b0;
             end
@@ -155,7 +156,7 @@ always @ (negedge reset or posedge clk)
 				end
                 else
 				begin
-                    next_pc<=pc+(last_inst[15:0]<<2);
+                    next_pc<=pc+(branch_offset<<2);
 				end
                 branch_req_2<=1'b0;
             end
@@ -224,4 +225,17 @@ always @ (jr_data)
 	
 assign last_inst_2=last_inst;
 
+always@(*)
+begin
+	if(branch_req_1)
+		begin
+			branch_offset[31:16]<=last_inst_1[15]?16'hffff:16'h0;
+			branch_offset[15:0]<=last_inst_1[15:0];
+		end
+	else
+		begin
+			branch_offset[31:16]<=last_inst[15]?16'hffff:16'h0;
+			branch_offset[15:0]<=last_inst[15:0];
+		end
+end
 endmodule
