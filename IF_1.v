@@ -118,7 +118,7 @@ always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
             next_pc<=32'hbfc0_0000;			
-            // next_pc<=32'hbfaf_f02c;				
+            // next_pc<=32'h1faf_f02c;				
         else if(int)
             next_pc<=exc_pc;
         else if(delay_hard|delay_soft)

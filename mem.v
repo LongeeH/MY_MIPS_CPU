@@ -33,7 +33,7 @@
 	exe_wr_hilo[1:0]	
 	mem_tran_data_addr			是否需要协处理器 CP0 进行虚拟地址到物理地址的地址转换 
 	mem_sorl					存取存储器的操作是写操作还是读操作
-	mem_wr						是否把数据写入存储器
+	mem_wr_en						是否把数据写入存储器
 	mem_rd_cp0_reg				存取 CP0 的操作是读操作
 	mem_wr_cp0_reg				存取 CP0 的操作是写操作
 	mem_tlb_op_en				为 CP0 进行 TLB 操作的使能信号
@@ -71,7 +71,7 @@ module MEM(
 	output mem_tran_data_addr,
 	output mem_sorl,
 	output mem_load_en,
-	output mem_wr,
+	output mem_wr_en,
 	output mem_rd_cp0_reg,
 	output mem_wr_cp0_reg,
 	output mem_tlb_op_en,
@@ -99,7 +99,7 @@ module MEM(
 	reg mem_sorl;
 	reg mem_load_en;
 	reg [7:0]mem_int_contr;
-	reg mem_wr;
+	reg mem_wr_en;
 	reg	mem_rd_cp0_reg;
 	reg	mem_wr_cp0_reg;
 	reg	mem_tlb_op_en;
@@ -122,9 +122,9 @@ module MEM(
 		mem_data_out<=mem_data; 
 		mem_tran_data_addr<=(exe_contr_word[7]||exe_contr_word[8]); 
 		mem_sorl<=exe_contr_word[7]; 
-		mem_load_en<=exe_contr_word[8];
 		mem_int_contr<=exe_int_contr_word; 
-		mem_wr<=exe_contr_word[7]; 
+		mem_wr_en<=exe_contr_word[7]; 
+		mem_load_en<=exe_contr_word[8];
 		mem_rd_cp0_reg<=exe_contr_word[16]; 
 		mem_wr_cp0_reg<=exe_contr_word[15]; 
 		mem_tlb_op_en<=exe_contr_word[19]; 
@@ -165,7 +165,15 @@ module MEM(
 				mem_contr_word<=exe_contr_word; 
 				mem_res<=mem_mux; 
 				wb_pc<=mem_pc; 
-            end 
+            end
+		else
+			begin
+				wb_hilo_data<=32'b0; 
+				mem_contr_word<=32'b0; 
+				mem_res<=32'b0; 
+				wb_pc<=32'b0; 
+			end
+			
     end 
 	always @(exe_des or exe_wr_hilo) 
 	begin  

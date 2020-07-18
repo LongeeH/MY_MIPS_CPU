@@ -390,43 +390,47 @@ always @ (reg_des or RDI or RTI)
     end
 
 always @ (*)//changed
-begin
-	if(!delay)
 	begin
-		contr_word[4:0]<=alu_op[4:0];
-		contr_word[5] <= alu_srcA;
-		contr_word[6] <= reg_des;
-		contr_word[7] <= write_mem;
-		contr_word[8] <= mem_2_reg;
-		contr_word[9] <= write_reg;
-		contr_word[14:10] <= cp0_reg_index[4:0];
-		contr_word[15] <= write_cp0_reg;
-		contr_word[16] <= read_cp0_reg;
-		contr_word[18:17] <= tlb_OP[1:0];
-		contr_word[19] <= tlb_OP_e;
-		contr_word[24:20] <= result_des[4:0];
-		contr_word[25] <= alu_res_ok;
-		contr_word[26] <= mem_res_ok;
-		contr_word[27] <= write_lo;
-		contr_word[28] <= write_hi;
-		contr_word[29] <= cp0type;
-		contr_word[31:30] <= alu_srcB[1:0];
+		if(!delay)
+			begin
+				contr_word[4:0]<=alu_op[4:0];
+				contr_word[5] <= alu_srcA;
+				contr_word[6] <= reg_des;
+				contr_word[7] <= write_mem;
+				contr_word[8] <= mem_2_reg;
+				contr_word[9] <= write_reg;
+				contr_word[14:10] <= cp0_reg_index[4:0];
+				contr_word[15] <= write_cp0_reg;
+				contr_word[16] <= read_cp0_reg;
+				contr_word[18:17] <= tlb_OP[1:0];
+				contr_word[19] <= tlb_OP_e;
+				contr_word[24:20] <= result_des[4:0];//
+				contr_word[25] <= alu_res_ok;
+				contr_word[26] <= mem_res_ok;
+				contr_word[27] <= write_lo;
+				contr_word[28] <= write_hi;
+				contr_word[29] <= cp0type;
+				contr_word[31:30] <= alu_srcB[1:0];
+			end
+		else
+			contr_word<=32'b0;
 	end
-end
 
 always @ (posedge clk)
-begin
-	if(!delay)
 	begin
-		int_contr_word[1:0]<=IC_IF[1:0];
-		int_contr_word[2]<=(add_inst || addi_inst ||sub_inst);
-		int_contr_word[3]<=break_inst;
-		int_contr_word[4]<=syscall_inst;
-		int_contr_word[5]<=rfe_inst;
-		int_contr_word[6]<=write_mem;
-		int_contr_word[7]<=branch;
+		if(!delay)
+			begin
+				int_contr_word[1:0]<=IC_IF[1:0];
+				int_contr_word[2]<=(add_inst || addi_inst ||sub_inst);
+				int_contr_word[3]<=break_inst;
+				int_contr_word[4]<=syscall_inst;
+				int_contr_word[5]<=rfe_inst;
+				int_contr_word[6]<=write_mem;
+				int_contr_word[7]<=branch;
+			end
+		else
+			int_contr_word<=8'b0;
 	end
-end
 
 
 //数据相关
@@ -440,7 +444,7 @@ assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
 assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||
                     sw_inst || sub_inst || subu_inst || slt_inst || sltu_inst ||
                     srlv_inst || srav_inst || sllv_inst || nor_inst || xor_inst ||beq_inst ||
-                    bne_inst || bltz_inst ||blez_inst ||bgez_inst);
+                    bne_inst || bltz_inst ||blez_inst ||bgez_inst||sll_inst);
 
 assign hi_source = mfhi_inst ;
 assign hi_target = mthi_inst;
@@ -549,38 +553,41 @@ always @(*)
 
         end
 
-always @ (reg_rs, reg_rt)
+always @ (reg_A, reg_B)
 begin
-	if(reg_rs == reg_rt)
+	if(reg_A == reg_B)
 		rs_eq_rt <= 1;
     else
         rs_eq_rt <= 0;
 end
 
-always @ (reg_rs)
+always @ (reg_A)
 begin
-        if(reg_rs == 0)
+        if(reg_A == 0)
                 rs_eq_z <= 1;
         else
                 rs_eq_z <= 0;        
 end
 
-always @ (reg_rs)
+always @ (reg_A)
 begin
-        if(reg_rs[31] == 0)
+        if(reg_A[31] == 0)
                 r_slt_z <= 1;
         else
                 r_slt_z <= 0;        
 end
+reg self_branch;
+reg self_j;
+reg self_jr;
 
 always @ (j_inst or jr_inst or jal_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
           blez_inst or rs_eq_z or bgtz_inst or r_slt_z or bgez_inst)
 begin
-        branch <= j_inst || jr_inst || jal_inst ||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||
+        self_branch <= j_inst || jr_inst || jal_inst ||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||
                   (blez_inst && rs_eq_z) || (bgtz_inst && ! (rs_eq_rt || r_slt_z)) ||
                   (bgez_inst && !r_slt_z);
-        j<= j_inst||jal_inst;
-		jr<= jr_inst;
+        self_j<= j_inst||jal_inst;
+		self_jr<= jr_inst;
 end
 // assign jr_data = jr_data_ok?reg_A:32'bZ;
 always@(*)
@@ -629,7 +636,22 @@ always @ (negedge reset or posedge clk)
                     immed[31:0]<={16'b1111111111111111,id_inst[15:0]};
                 else
                     immed[31:0]<={16'b0,id_inst[15:0]};
-                end
+				branch<=self_branch;
+				j<=self_j;
+				jr<=self_jr;
+            end
+			
+		else
+			begin
+				id_des[6:0]<=7'b0;
+                id_wr_hilo[1:0] <= 2'b0;
+                reg_esa[31:0] <= 32'b0;
+                reg_esb[31:0] <= 32'b0;
+                exe_pc[31:0] <= 32'b0;
+                id_contr_word[31:0] <= 32'b0;
+                id_int_contr_word[7:0] <= 32'b0;
+                immed[31:0] <= 32'b0;			
+			end	
 	end
 
 endmodule

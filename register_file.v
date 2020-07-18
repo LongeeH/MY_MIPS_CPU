@@ -47,7 +47,7 @@ module Register_File(
 	assign reg_rs_data_2 = (reg_rs_addr_2 == 0) ? 0 : Register[reg_rs_addr_2];
 	assign reg_rt_data_2 = (reg_rt_addr_2 == 0) ? 0 : Register[reg_rt_addr_2];
 	
-	always @(posedge clk)
+	always @(negedge clk)
 	begin
 		if(reg_w_en_1 && (reg_w_addr_1 != 0) )
 		begin
@@ -58,7 +58,7 @@ module Register_File(
 		end
 	end
 	
-	always @(posedge clk)
+	always @(negedge clk)
 	begin
 		if(reg_w_en_2 && (reg_w_addr_2 != 0) )
 		begin

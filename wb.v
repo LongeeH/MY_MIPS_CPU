@@ -73,39 +73,49 @@ module WB(
 	output [31:0]wb_pc_debug
     );
 
-reg wb_reg_wr;
-reg wb_hi_wr;
-reg wb_lo_wr;
-reg [31:0]wb_hi_data;
-reg [31:0]wb_lo_data;
-reg [4:0]wb_res_des;
-reg [31:0]wb_reg_data;
-reg [31:0]wb_pc_debug;
+// reg wb_reg_wr;
+// reg wb_hi_wr;
+// reg wb_lo_wr;
+// reg [31:0]wb_hi_data;
+// reg [31:0]wb_lo_data;
+// reg [4:0]wb_res_des;
+// reg [31:0]wb_reg_data;
+// reg [31:0]wb_pc_debug;
 
 // assign wb_pc_debug=wb_pc;
 
-always @(negedge reset or posedge clk)
-    begin
-        if(reset==0)
-            begin
-                wb_reg_data<=32'b0;
-                wb_hi_data<=32'b0;
-                wb_lo_data<=32'b0;
-                wb_res_des<=5'b0;
-                wb_reg_wr<=0;
-                wb_hi_wr<=0;
-                wb_lo_wr<=0;
-            end
-        else
-            begin
-				wb_pc_debug<=wb_pc;
-                wb_reg_data<=mem_res;
-                wb_res_des<=mem_contr_word[24:20];
-                wb_reg_wr<=mem_contr_word[9];
-                wb_hi_wr<=mem_contr_word[28];
-                wb_lo_wr=mem_contr_word[27];
-                wb_hi_data<=wb_hilo_data;
-                wb_lo_data<=wb_hilo_data;
-            end
-    end
+// always @(negedge reset or negedge clk)
+    // begin
+        // if(reset==0)
+            // begin
+                // wb_reg_data<=32'b0;
+                // wb_hi_data<=32'b0;
+                // wb_lo_data<=32'b0;
+                // wb_res_des<=5'b0;
+                // wb_reg_wr<=0;
+                // wb_hi_wr<=0;
+                // wb_lo_wr<=0;
+            // end
+        // else
+            // begin
+				// wb_pc_debug<=wb_pc;
+                // wb_reg_data<=mem_res;
+                // wb_res_des<=mem_contr_word[24:20];
+                // wb_reg_wr<=mem_contr_word[9];
+                // wb_hi_wr<=mem_contr_word[28];
+                // wb_lo_wr=mem_contr_word[27];
+                // wb_hi_data<=wb_hilo_data;
+                // wb_lo_data<=wb_hilo_data;
+            // end
+    // end
+	assign wb_pc_debug=wb_pc;
+    assign wb_reg_data=mem_res;
+    assign wb_res_des=mem_contr_word[24:20];
+	assign wb_reg_wr=mem_contr_word[9];
+	assign wb_hi_wr=mem_contr_word[28];
+    assign wb_lo_wr=mem_contr_word[27];
+    assign wb_hi_data=wb_hilo_data;
+    assign wb_lo_data=wb_hilo_data;	
+	
+	
 endmodule

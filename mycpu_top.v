@@ -103,9 +103,16 @@ module mycpu_top(
     wire [6 :0] cache_op;
     wire [31:0] cache_tag;    
     reg cache_op_r;
-    
-
-
+    //
+	
+	wire [31:0]araddr_v;
+	// wire [31:0]awaddr_v;
+	assign araddr[28:0]=araddr_v[28:0];
+	assign araddr[31:29]=(araddr_v[31:30]==2'b10)?3'b000:araddr_v[31:29];
+	// assign araddr[31:29]=araddr_v[31:29];
+	// assign awaddr[28:0]=awaddr_v[28:0];
+	// assign awaddr[31:29]=(awaddr_v[31:30]==2'b10)?3'b000:awaddr_v[31:29];	
+	// assign awaddr[31:29]=awaddr_v[31:29];	
 
     exe_core core(
         .clk(aclk),
@@ -114,7 +121,7 @@ module mycpu_top(
         //test axi port here
 		//read address channel
 		.arid(arid),
-		.araddr(araddr),
+		.araddr_v(araddr_v),
 		.arlen(arlen),
 		.arsize(arsize),
 		.arburst(arburst),
@@ -129,8 +136,34 @@ module mycpu_top(
 		.rid(rid),
         .rvalid(rvalid),
         .rdata(rdata),
-		.rready(rready),       
-        
+		.rready(rready),       	
+	
+		//write address channel
+		.awid(awid),
+		// .awaddr(awaddr),
+		.awlen(awlen),
+		.awsize(),
+		.awburst(),
+		.awlock(),
+		.awcache(),
+		.awprot(),
+		// .awvalid(awvalid),
+		.awready(awready),
+		//write data channel
+		.wid(wid),
+		.wdata(wdata),
+		.wstrb(),
+		.wlast(wlast),
+		// .wvalid(wvalid),
+		.wready(wready),
+		//write response channel
+		.bid(),
+		.bresp(),
+		.bvalid(bvalid),
+		.bready(bready),
+		
+		
+		
 		//No function port (copied)
         .inst_req(cpu_inst_req),
         .inst_addr(cpu_inst_addr),
