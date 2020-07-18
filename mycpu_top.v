@@ -106,12 +106,12 @@ module mycpu_top(
     //
 	
 	wire [31:0]araddr_v;
-	// wire [31:0]awaddr_v;
+	wire [31:0]awaddr_v;
 	assign araddr[28:0]=araddr_v[28:0];
 	assign araddr[31:29]=(araddr_v[31:30]==2'b10)?3'b000:araddr_v[31:29];
 	// assign araddr[31:29]=araddr_v[31:29];
-	// assign awaddr[28:0]=awaddr_v[28:0];
-	// assign awaddr[31:29]=(awaddr_v[31:30]==2'b10)?3'b000:awaddr_v[31:29];	
+	assign awaddr[28:0]=awaddr_v[28:0];
+	assign awaddr[31:29]=(awaddr_v[31:30]==2'b10)?3'b000:awaddr_v[31:29];	
 	// assign awaddr[31:29]=awaddr_v[31:29];	
 
     exe_core core(
@@ -135,30 +135,31 @@ module mycpu_top(
         //read data channel
 		.rid(rid),
         .rvalid(rvalid),
+		.rlast(rlast),
         .rdata(rdata),
 		.rready(rready),       	
 	
 		//write address channel
 		.awid(awid),
-		// .awaddr(awaddr),
+		.awaddr_v(awaddr_v),
 		.awlen(awlen),
-		.awsize(),
-		.awburst(),
-		.awlock(),
-		.awcache(),
-		.awprot(),
-		// .awvalid(awvalid),
+		.awsize(awsize),
+		.awburst(awburst),
+		.awlock(awlock),
+		.awcache(awcache),
+		.awprot(awprot),
+		.awvalid(awvalid),
 		.awready(awready),
-		//write data channel
+//		write data channel
 		.wid(wid),
 		.wdata(wdata),
-		.wstrb(),
+		.wstrb(wstrb),
 		.wlast(wlast),
-		// .wvalid(wvalid),
+		.wvalid(wvalid),
 		.wready(wready),
 		//write response channel
 		.bid(),
-		.bresp(),
+		.bresp(bresp),
 		.bvalid(bvalid),
 		.bready(bready),
 		

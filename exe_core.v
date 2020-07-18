@@ -600,22 +600,33 @@ module exe_core(
 		end
 		else if(data_r_req_2 & data_r_ok_2 & arready)//有效请求and前指到齐and外设可用
 		begin
-			araddr_v<=mem_data_addr_2;// 
-			arvalid<=1;
-			data_r_ok_2<=0;//?
-			arid<=2;
-			arvalid_use<=1;
-			arlen<=4'b0000;
+			if((mem_data_addr_2==mem_data_addr_1)&&data_w_req_1)
+				begin
+					data_r_req_2<=0;
+					mem_forward<=1;
+				end
+			else
+				begin
+					araddr_v<=mem_data_addr_2;// 
+					arvalid<=1;
+					data_r_ok_2<=0;//?
+					arid<=2;
+					arvalid_use<=1;
+					arlen<=4'b0000;
+					mem_forward<=0;
+				end
 		end 	
-		
+		else if(arvalid)
+			arvalid<=0;
 	end
 	//axi read apply end
-	
+	reg mem_forward;
 	
 	//axi read receive module
 	//inst rec
 	reg flag;
 	reg [63:0]inst_2_if;
+	reg [63:0]data_2_mem;
 	always @ (posedge clk)//虚拟cache-指令对交替分�?
 	begin
 		if(rvalid==1&rid==0)
@@ -636,25 +647,25 @@ module exe_core(
 	end
 	//try merge up
 	//data rec 
-	always @ (*)
+	always @ (posedge clk)
 	begin
-		if(rvalid==1&rid==1)
+		if((rvalid==1)&&(rid==1))
 		begin
 			// mem_data_in_1 <= rdata;
 			data_r_req_1 <= 0;
-
+			data_2_mem[31:0]<=rdata;
 			data_r_ok_1<=1;
 		end 
-		else if(rvalid==1&rid==2)
+		else if((rvalid==1)&&(rid==2))
 		begin
 			// mem_data_in_2 <= rdata;
 			data_r_req_2 <= 0;
-
+			data_2_mem[63:32]<=rdata;
 			data_r_ok_2<=1;
 		end
 	end
-	assign mem_data_in_1 = rdata;
-	assign mem_data_in_2 = rdata;
+	assign mem_data_in_1 = data_2_mem[31:0];
+	assign mem_data_in_2 = mem_forward?mem_data_out_1:data_2_mem[63:32];
 	
 	assign if_inst_1 = inst_2_if[31:0];
 	assign if_inst_2 = inst_2_if[63:32];
@@ -693,13 +704,13 @@ module exe_core(
 	
 	
 	//
-	always@(posedge clk)
-	begin
-		if(arvalid)
-		begin
-			arvalid<=0;
-		end
-	end
+	// always@(posedge clk)
+	// begin
+		// if(arvalid)
+		// begin
+			// arvalid<=0;
+		// end
+	// end
 	
 	assign inst_req = inst_req_1 & inst_req_2;//必须12流水线同时请求时，才请求取指令对�?
 	assign delay_soft_inst = inst_req_1 | inst_req_2;//任一流水线请求时，进行软暂停。只暂停pc的更新行为�?�其他状况不会保�?
@@ -713,14 +724,21 @@ module exe_core(
 	begin
 		flag = 1;
 		arid=0;
+		wid=0;
 		// arlen=4'b1111;
 		arlen=4'b0001;
 		arsize=3'b010;
+		awsize=3'b000;
 		arburst=1'b1;
+		awburst=1'b1;
 		arlock=0;
+		awlock=0;
 		arcache=0;
+		awcache=0;
 		arprot=0;
+		awprot=0;
 		rready=1;
+		wstrb=4'b1111;
 		// inst_req_en=0;
 		waitinst_1=0;
 		waitinst_2=0;
@@ -739,6 +757,10 @@ module exe_core(
 		
 		data_w_req_1=0;
 		data_w_req_2=0;
+		data_w_ok_1=1;
+		data_w_ok_2=1;
+		
+		mem_forward=0;
 	end
 	// always #500 arid=arid+1;
 	
@@ -754,8 +776,8 @@ module exe_core(
 	
 	//need data distributor divide instruction or data
 	
-	//axi write module here
 	
+	//axi write module here	
 	wire mem_wr_en_1;
 	wire mem_wr_en_2;
 	reg data_w_ok_1;
@@ -765,17 +787,17 @@ module exe_core(
 	wire [31:0]mem_data_out_1;
 	wire [31:0]mem_data_out_2;
 	
-	//w req
+	//w req add
 
 	always@(posedge clk)
 	begin
-		if(data_w_req_1 & data_w_ok_1 & awready)//请求and前指到齐and外设可用//�?要互斥！
+		if(data_w_req_1 & data_w_ok_1 & data_w_ok_2 & awready)//请求and前指到齐and外设可用//�?要互斥！
 		begin
 			awaddr_v<=mem_data_addr_1;// 
 			awvalid<=1;
-			wdata <= mem_data_out_1;
-			wvalid <=1;
-			wlast <=1;
+			// wdata <= mem_data_out_1;
+			// wvalid <=1;
+			// wlast <=1;
 			bready <=1;
 			data_w_ok_1<=0;//?
 			//
@@ -786,48 +808,70 @@ module exe_core(
 		begin
 			awaddr_v<=mem_data_addr_2;// 
 			awvalid<=1;
-			wdata <= mem_data_out_2;
-			wvalid <=1;
-			wlast <=1;
+			// wdata <= mem_data_out_2;
+			// wvalid <=1;
+			// wlast <=1;
 			bready <=1;
 			data_w_ok_2<=0;//?
 			//
 			awid<=0;
 			awlen<=4'b0000;
 		end 	
-		
 	end
+	//w req data
+	always@(posedge clk)
+	begin
+		if(awvalid==1&data_w_req_1)
+		begin
+			wdata <= mem_data_out_1;
+			wvalid <=1;
+			wlast <=1;
+		end
+		else if(awvalid==1&data_w_req_2)//有效请求and前指到齐and外设可用
+		begin
+			wdata <= mem_data_out_2;
+			wvalid <=1;
+			wlast <=1;
+		end 	
+	end
+	
 	//???修改下方 w rec
 	always @ (posedge clk)
 	begin
-		if(wready==1 & data_w_req_1)
+		if(wready==1 & data_w_req_1==1 & wlast==1)
 		begin
-			wdata <= mem_data_out_1;
-			data_r_req_1 <= 0;
-			data_r_ok_1<=1;
+			// wdata <= mem_data_out_1;
+			data_w_req_1 <= 0;
+			data_w_ok_1<=1;
+			awvalid<=0;
+			wlast<=0;
+			wvalid<=0;
 		end 
-		else if(wready==1 & data_w_req_2)
+		else if(wready==1 & data_w_req_2==1 & wlast==1)
 		begin
-			wdata <= mem_data_out_2;
-			data_r_req_2 <= 0;
-			data_r_ok_2<=1;
+			// wdata <= mem_data_out_2;
+			data_w_req_2 <= 0;
+			data_w_ok_2<=1;
+			awvalid<=0;
+			wlast<=0;
+			wvalid<=0;
 		end
-		wlast<=0;
+		
 	end
 	// 修改 
-	always @ (posedge clk)
-	begin
-		if(wready==1 & data_w_req_1)
-		begin
-			data_w_req_1 <= 0;
-			data_w_ok_1 <= 1;
-		end 
-		else if(wready==1 & data_w_req_2)
-		begin
-			data_w_req_2 <= 0;
-			data_w_ok_2 <= 1;
-		end
-	end
+	// always @ (posedge clk)
+	// begin
+		// if(wready==1 & data_w_req_1)
+		// begin
+			// data_w_req_1 <= 0;
+			// data_w_ok_1 <= 1;
+		// end 
+		// else if(wready==1 & data_w_req_2)
+		// begin
+			// data_w_req_2 <= 0;
+			// data_w_ok_2 <= 1;
+		// end
+	// end
 	//
 	always @(mem_wr_en_1 or mem_wr_en_2)
 	begin

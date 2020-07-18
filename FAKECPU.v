@@ -58,7 +58,7 @@ module FAKECPU(
     output reg[31:0] wdata        ,
     output reg[3 :0] wstrb        ,
     output  reg     wlast        ,
-    output        wvalid       ,
+    output  reg      wvalid       ,
     input         wready       ,
     //write response channel
     input  [3 :0] bid          ,
@@ -117,41 +117,80 @@ module FAKECPU(
 	initial
 	begin
 		arid=0;
+		wid=1;
+		awid=1;
 		// arlen=4'b1111;
-		arlen=4'b0000;
+		arlen=4'b0001;
+		awlen=4'b0000;
 		arsize=3'b010;
+		awsize=3'b000;
 		arburst=1'b1;
+		awburst=1'b1;
 		arlock=0;
+		awlock=0;
 		arcache=0;
+		awcache=0;
 		arprot=0;
+		awprot=0;
 		rready=1;
-		// inst_req_en=0;
-		cnt =0;
+		wstrb=4'b1111;
+		wdata=32'habcdeef0;
+		cnt=0;
+		bready=1;
+		awaddr=32'hbfaf_f004;
 	end
-	reg cnt;
+	reg [4:0]cnt;
+
 	always@(posedge aclk)
 	begin
-		if(!cnt)
+		if(!cnt&aresetn&awready)
 		begin
-			arvalid<=1;
-			araddr<=32'h1faf_f02c;
+			// awaddr<=32'h1faf_f02c;
+			awvalid<=1;
 			cnt<=1;
 		end
-		else
+	end	
+	always@(negedge awvalid)
+	begin		
+			wvalid<=1;
+			wlast<=1;
+			cnt<=2;
+
+	end	
+	
+	always@(posedge aclk)
+	begin
+		if(cnt==3&wready&aresetn)
 		begin
-			arvalid<=1;
-			araddr<=32'h1faf_f02c;
+			
+			wvalid<=0;
+			wlast<=0;
+			cnt<=4;
 		end
-		
+		else if(cnt==2)
+			cnt<=3;
+	end	
+	always@(posedge aclk)
+	begin
+		if(cnt>=4&&aresetn)
+		begin
+			
+			arvalid<=1;
+			araddr<=32'hbfaf_f004;
+			cnt<=4;
+		end
 	end
-		
 		
 	always@(posedge aclk)
 	begin
-		if(arvalid)
+		if(awvalid&aresetn)
+			awvalid<=0;
+	end
+	always@(posedge aclk)
+	begin
+		if(arvalid&aresetn)
 			arvalid<=0;
 	end
-	
 	
 	
 	
