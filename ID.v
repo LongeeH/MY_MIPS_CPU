@@ -320,8 +320,10 @@ begin
                 alu_op<=5'b00001;
         else if(sub_inst || subu_inst)
                 alu_op<=5'b01001;
-        else if(slt_inst || sltu_inst || slti_inst || sltiu_inst)
+        else if(slt_inst || slti_inst)
                 alu_op<=5'b01010;
+        else if(sltu_inst || sltiu_inst)
+                alu_op<=5'b01011;
         else if(srl_inst || srlv_inst)
                 alu_op<=5'b00100;
         else if(sra_inst || srav_inst)
@@ -330,6 +332,8 @@ begin
                 alu_op<=5'b10100;
         else if(xor_inst || xori_inst)
                 alu_op<=5'b11000;
+        else if(nor_inst)
+                alu_op<=5'b10000;
 		else if(lui_inst)
 				alu_op<=5'b11100;
         else
@@ -358,7 +362,7 @@ always @ (tlbp_inst or tlbr_inst or tlbwi_inst or tlbwr_inst)
 //控制信号
 assign reg_des = Rtype;
 assign write_reg = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst ||
-                     subu_inst || and_inst || or_inst || ori_inst || slt_inst ||
+                     subu_inst || and_inst || andi_inst || or_inst || ori_inst || slt_inst ||
                      sltu_inst || slti_inst || sltiu_inst || sll_inst || sllv_inst ||
                      sra_inst || srav_inst ||srl_inst ||srlv_inst ||nor_inst||xor_inst||
                      xori_inst ||lw_inst||mfc0_inst||mfhi_inst||mflo_inst||lui_inst|| jal_inst);

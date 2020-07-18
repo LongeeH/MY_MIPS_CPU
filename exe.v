@@ -159,6 +159,7 @@ module EXE(
 		.alu_a(alu_data_A),
 		.alu_b(alu_data_B),
 		.alu_op(id_contr_word[4:0]),
+		.alu_srcA(id_contr_word[5]),
 		.alu_res(alu_res),
 		.alu_int_ov(alu_int_ov)
 	);

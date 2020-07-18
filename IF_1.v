@@ -145,7 +145,7 @@ always @ (negedge reset or posedge clk)
             end
 		else if(branch_req_2)
             begin
-                if(j)
+                if(j_req)
 				begin
                     next_pc[31:28]<=pc[31:28];
 					next_pc[27:0]<=(last_inst_2[25:0]<<2);
