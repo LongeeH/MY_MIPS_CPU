@@ -228,12 +228,16 @@ wire lw_inst;
 wire sw_inst;
 wire j_inst;
 wire jr_inst;
+wire jal_inst;
+wire jalr_inst;
 wire beq_inst;
 wire bne_inst;
 wire bltz_inst;
+wire bltzal_inst;
 wire blez_inst;
 wire bgtz_inst;
 wire bgez_inst;
+wire bgezal_inst;
 wire syscall_inst;
 wire mtc0_inst;
 wire mfc0_inst;
@@ -288,12 +292,15 @@ assign sw_inst     = (OP == 6'b101011);
 assign j_inst      = (OP == 6'b000010);
 assign jr_inst     = Rtype && (func == 6'b001000);
 assign jal_inst    = (OP == 6'b000011);
+assign jalr_inst    = Rtype && (func == 6'b001001);
 assign beq_inst    = (OP == 6'b000100);
 assign bne_inst    = (OP == 6'b000101);
 assign bltz_inst   = (OP == 6'b000001)&&(OP_subB==5'b00000);
+assign bltzal_inst   = (OP == 6'b000001)&&(OP_subB==5'b10000);
 assign blez_inst   = (OP == 6'b000110)&&(OP_subB==5'b00000);
 assign bgtz_inst   = (OP == 6'b000111)&&(OP_subB==5'b00000);
 assign bgez_inst   = (OP == 6'b000001)&&(OP_subB==5'b00001);
+assign bgezal_inst   = (OP == 6'b000001)&&(OP_subB==5'b10001);
 assign syscall_inst= Rtype && (func==6'b001100);
 assign mtc0_inst   = cp0type && (OP_subA==5'b00100);
 assign mfc0_inst   = cp0type && (OP_subA==5'b00000);
@@ -316,7 +323,7 @@ begin
                 alu_op<=5'b00000;
         else if(or_inst || ori_inst)
                 alu_op<=5'b01000;
-        else if(add_inst || addi_inst || addu_inst || addiu_inst || lw_inst || sw_inst || jal_inst)
+        else if(add_inst || addi_inst || addu_inst || addiu_inst || lw_inst || sw_inst || jal_inst||jalr_inst||bgezal_inst || bltzal_inst)
                 alu_op<=5'b00001;
         else if(sub_inst || subu_inst)
                 alu_op<=5'b01001;
@@ -365,18 +372,18 @@ assign write_reg = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst
                      subu_inst || and_inst || andi_inst || or_inst || ori_inst || slt_inst ||
                      sltu_inst || slti_inst || sltiu_inst || sll_inst || sllv_inst ||
                      sra_inst || srav_inst ||srl_inst ||srlv_inst ||nor_inst||xor_inst||
-                     xori_inst ||lw_inst||mfc0_inst||mfhi_inst||mflo_inst||lui_inst|| jal_inst);
+                     xori_inst ||lw_inst||mfc0_inst||mfhi_inst||mflo_inst||lui_inst|| jal_inst||jalr_inst||bltzal_inst|| bgezal_inst );
 assign write_mem = sw_inst;
 assign mem_2_reg = lw_inst;
 assign write_lo = mtlo_inst;
 assign write_hi = mthi_inst;
 assign alu_srcA = (sll_inst || sra_inst || srl_inst);
-assign alu_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst||jal_inst);
+assign alu_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst||jal_inst||jalr_inst||bltzal_inst|| bgezal_inst);
 assign alu_srcB[1] = (ori_inst || andi_inst ||xori_inst);
 assign alu_res_ok = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst || subu_inst ||
                      and_inst || andi_inst || or_inst || ori_inst || slt_inst || sltu_inst ||
-                     slti_inst || sltiu_inst ||sll_inst || sra_inst || srav_inst || srl_inst ||nor_inst||
-                     xor_inst || xori_inst||lui_inst||jal_inst);
+                     slti_inst || sltiu_inst ||sll_inst ||sllv_inst|| sra_inst || srav_inst || srl_inst|| srlv_inst ||nor_inst||
+                     xor_inst || xori_inst||lui_inst||jal_inst||jalr_inst||bltzal_inst|| bgezal_inst);
 assign mem_res_ok = (lw_inst || mfc0_inst);
 
 assign delay = delay_in | delay_self;
@@ -385,7 +392,7 @@ assign delay_out = delay_self;
 
 always @ (reg_des or RDI or RTI)
     begin
-		if(jal_inst)
+		if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)
 			result_des <=5'b11111;
         else if(reg_des)
             result_des <= RDI;
@@ -442,12 +449,12 @@ assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
                     addi_inst || addu_inst || addiu_inst || lw_inst ||
                     sw_inst || sub_inst || subu_inst ||slt_inst || sltu_inst ||
                     slti_inst || sltiu_inst || srlv_inst || srav_inst ||
-                    sllv_inst || nor_inst || xor_inst || xori_inst || beq_inst ||
-                    bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst||jr_inst);
+                    sllv_inst || nor_inst || xor_inst || xori_inst || beq_inst ||bltzal_inst|| bgezal_inst||
+                    bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst||jr_inst||jalr_inst);
 					
 assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||
                     sw_inst || sub_inst || subu_inst || slt_inst || sltu_inst ||
-                    srlv_inst || srav_inst || sllv_inst || nor_inst || xor_inst ||beq_inst ||
+                    srlv_inst || srav_inst || sllv_inst || nor_inst || xor_inst ||beq_inst ||bltzal_inst|| bgezal_inst||
                     bne_inst || bltz_inst ||blez_inst ||bgez_inst||sll_inst);
 
 assign hi_source = mfhi_inst ;
@@ -576,22 +583,22 @@ end
 always @ (reg_A)
 begin
         if(reg_A[31] == 0)
-                r_slt_z <= 1;
+                r_slt_z <= 0;
         else
-                r_slt_z <= 0;        
+                r_slt_z <= 1;        
 end
 reg self_branch;
 reg self_j;
 reg self_jr;
 
-always @ (j_inst or jr_inst or jal_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
+always @ (j_inst or jr_inst or jal_inst or jalr_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
           blez_inst or rs_eq_z or bgtz_inst or r_slt_z or bgez_inst)
 begin
-        self_branch <= j_inst || jr_inst || jal_inst ||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||
-                  (blez_inst && rs_eq_z) || (bgtz_inst && ! (rs_eq_rt || r_slt_z)) ||
-                  (bgez_inst && !r_slt_z);
+        self_branch <= j_inst || jr_inst || jal_inst || jalr_inst ||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||((bltz_inst||bltzal_inst) && r_slt_z)||
+                  (blez_inst && ((rs_eq_z)||(r_slt_z))) || (bgtz_inst && ! (rs_eq_rt || r_slt_z)) ||
+                  ((bgez_inst|| bgezal_inst) && !r_slt_z);
         self_j<= j_inst||jal_inst;
-		self_jr<= jr_inst;
+		self_jr<= jr_inst||jalr_inst;
 end
 // assign jr_data = jr_data_ok?reg_A:32'bZ;
 always@(*)
@@ -603,7 +610,7 @@ begin
 end
 always@(*)
 begin
-	if(jr_inst&&(!delay))
+	if((jr_inst||jalr_inst)&&(!delay))
 		jr_data_ok<=1'b1;
 	else
 		jr_data_ok<=1'bZ;
@@ -626,7 +633,7 @@ always @ (negedge reset or posedge clk)
             begin
                 id_des[6:0]<=des[6:0];
                 id_wr_hilo[1:0] <=write_hilo[1:0];
-                if(jal_inst)
+                if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)
 					reg_esa[31:0] <= 32'b0;//如果不冲突，改成由FWDA选择也许更好
 				else
 					reg_esa[31:0] <= reg_A[31:0];
@@ -634,7 +641,7 @@ always @ (negedge reset or posedge clk)
                 exe_pc[31:0] <= id_pc[31:0];
                 id_contr_word[31:0] <= contr_word[31:0];
                 id_int_contr_word[7:0] <= int_contr_word[7:0];
-				if(jal_inst)
+				if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)
 					immed<=id_pc+8;
                 else if(id_inst[15])
                     immed[31:0]<={16'b1111111111111111,id_inst[15:0]};
