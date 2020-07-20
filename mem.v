@@ -63,7 +63,8 @@ module MEM(
 	input [31:0]exe_res,
 	input [31:0]mem_data_in,
 	input [31:0]mem_cp0_data_in,
-	input [31:0]mem_hilo_data,
+	input [31:0]exe_hi_data,
+	input [31:0]exe_lo_data,
 	input [31:0]mem_data,
 	input [31:0]mem_pc,
 	input [6:0]exe_des,
@@ -82,7 +83,8 @@ module MEM(
 	output [1:0]mem_tlb_op,
 	output [31:0]mem_res,
 	output [31:0]mem_contr_word,
-	output [31:0]wb_hilo_data,
+	output [31:0]mem_hi_data,
+	output [31:0]mem_lo_data,
 	output [31:0]mem_2id_res,
 	output [31:0]mem_2id_hilo,
 	output [6:0]mem_des,
@@ -106,12 +108,13 @@ module MEM(
 	reg	[4:0]mem_cp0_reg_index;
 	reg	[1:0]mem_tlb_op;
 	reg	[31:0]mem_int_pc;
-	reg	[31:0]wb_hilo_data;
+	reg	[31:0]mem_hi_data;
+	reg	[31:0]mem_lo_data;
 	reg	[31:0]mem_contr_word;
 	reg	[31:0]mem_res;
 	reg	[31:0]wb_pc;
 	wire[31:0]mem_2id_res;
-	wire[31:0]mem_2id_hilo;
+	reg[31:0]mem_2id_hilo;
 	reg[6:0]mem_des;
 	reg[1:0]mem_wr_hilo;
 	
@@ -157,18 +160,21 @@ module MEM(
 			begin 
 				mem_res<=32'b0; 
 				mem_contr_word<=32'b0; 
-				wb_hilo_data<=32'b0; 
+				mem_hi_data<=32'b0; 
+				mem_lo_data<=32'b0; 
 			end 
         else if(!delay)
 			begin 
-				wb_hilo_data<=mem_hilo_data; 
+				mem_hi_data<=exe_hi_data; 
+				mem_lo_data<=exe_lo_data; 
 				mem_contr_word<=exe_contr_word; 
 				mem_res<=mem_mux; 
 				wb_pc<=mem_pc; 
             end
 		else
 			begin
-				wb_hilo_data<=32'b0; 
+				mem_hi_data<=32'b0; 
+				mem_lo_data<=32'b0;
 				mem_contr_word<=32'b0; 
 				mem_res<=32'b0; 
 				wb_pc<=32'b0; 
@@ -184,7 +190,21 @@ module MEM(
 	
 	//和EXE一样的处理方式，在寄存器前直接相连结果，将数据前递提前，也许并不正确
 	assign mem_2id_res=mem_mux;
-	assign mem_2id_hilo=mem_mux;
-
+	// assign mem_2id_hilo=mem_mux;
+	always@(*)
+	begin
+		case(mem_wr_hilo)//ALUOP参迃page45
+			2'b01:begin
+				mem_2id_hilo<=exe_hi_data;
+			end
+			2'b10:begin
+				mem_2id_hilo<=exe_lo_data;
+			end			
+			default:begin
+				mem_2id_hilo<=exe_lo_data;//数据从寄存器堆来hi==lo
+				
+			end
+		endcase			
+	end
 
 endmodule

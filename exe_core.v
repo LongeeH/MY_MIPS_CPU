@@ -179,8 +179,10 @@ module exe_core(
 	wire [7:0]exe_int_contr_word_2;
 	wire [31:0]mem_pc_1;
 	wire [31:0]mem_pc_2;
-	wire [31:0]mem_hilo_1;
-	wire [31:0]mem_hilo_2;
+	wire [31:0]exe_hi_data_1;
+	wire [31:0]exe_lo_data_1;
+	wire [31:0]exe_hi_data_2;
+	wire [31:0]exe_lo_data_2;
 	wire [1:0]exe_wr_hilo_1;
 	wire [1:0]exe_wr_hilo_2;
 	//MEM-WB
@@ -188,8 +190,10 @@ module exe_core(
 	wire [31:0]mem_res_2;
 	wire [31:0]mem_contr_word_1;
 	wire [31:0]mem_contr_word_2;
-	wire [31:0]wb_hilo_data_1;
-	wire [31:0]wb_hilo_data_2;
+	wire [31:0]mem_hi_data_1;
+	wire [31:0]mem_lo_data_1;
+	wire [31:0]mem_hi_data_2;
+	wire [31:0]mem_lo_data_2;
 	wire [31:0]wb_pc_1;
 	wire [31:0]wb_pc_2;
 	//ID-REG
@@ -326,7 +330,8 @@ module exe_core(
 		.exe_contr_word(exe_contr_word_1),
 		.exe_int_contr_word(exe_int_contr_word_1),
 		.mem_pc(mem_pc_1),
-		.mem_hilo(mem_hilo_1),
+		.exe_hi_data(exe_hi_data_1),
+		.exe_lo_data(exe_lo_data_1),
 		.alu_2id_res(alu_res_1),
 		.alu_2id_hilo(alu_2id_hilo_1)
 	);
@@ -351,7 +356,8 @@ module exe_core(
 		.exe_contr_word(exe_contr_word_2),
 		.exe_int_contr_word(exe_int_contr_word_2),
 		.mem_pc(mem_pc_2),
-		.mem_hilo(mem_hilo_2),
+		.exe_hi_data(exe_hi_data_2),
+		.exe_lo_data(exe_lo_data_2),
 		.alu_2id_res(alu_res_2),
 		.alu_2id_hilo(alu_2id_hilo_2)
 	);
@@ -365,7 +371,8 @@ module exe_core(
 		.exe_res(exe_res1),
 		.mem_data_in(mem_data_in_1),
 		.mem_cp0_data_in(),
-		.mem_hilo_data(mem_hilo_1),
+		.exe_hi_data(exe_hi_data_1),
+		.exe_lo_data(exe_lo_data_1),
 		.mem_data(mem_data_1),
 		.mem_pc(mem_pc_1),
 		.exe_des(exe_des_1),
@@ -384,7 +391,8 @@ module exe_core(
 		.mem_tlb_op(),
 		.mem_res(mem_res_1),
 		.mem_contr_word(mem_contr_word_1),
-		.wb_hilo_data(wb_hilo_data_1),
+		.mem_hi_data(mem_hi_data_1),
+		.mem_lo_data(mem_lo_data_1),
 		.mem_2id_res(mem_2id_res_1),
 		.mem_2id_hilo(mem_2id_hilo_1),
 		.mem_des(mem_des_1),
@@ -401,7 +409,8 @@ module exe_core(
 		.exe_res(exe_res2),
 		.mem_data_in(mem_data_in_2),
 		.mem_cp0_data_in(),
-		.mem_hilo_data(mem_hilo_2),
+		.exe_hi_data(exe_hi_data_2),
+		.exe_lo_data(exe_lo_data_2),
 		.mem_data(mem_data_2),
 		.mem_pc(mem_pc_2),
 		.exe_des(exe_des_2),
@@ -420,7 +429,8 @@ module exe_core(
 		.mem_tlb_op(),
 		.mem_res(mem_res_2),
 		.mem_contr_word(mem_contr_word_2),
-		.wb_hilo_data(wb_hilo_data_2),
+		.mem_hi_data(mem_hi_data_2),
+		.mem_lo_data(mem_lo_data_2),
 		.mem_2id_res(mem_2id_res_2),
 		.mem_2id_hilo(mem_2id_hilo_2),
 		.mem_des(mem_des_2),
@@ -434,7 +444,8 @@ module exe_core(
 		.reset(reset),
 		.mem_contr_word(mem_contr_word_1),
 		.mem_res(mem_res_1),
-		.wb_hilo_data(wb_hilo_data_1),
+		.mem_hi_data(mem_hi_data_1),
+		.mem_lo_data(mem_lo_data_1),
 		.wb_pc(wb_pc_1),
 		//
 		.wb_reg_data(wb_reg_data_1),
@@ -451,7 +462,8 @@ module exe_core(
 		.reset(reset),
 		.mem_contr_word(mem_contr_word_2),
 		.mem_res(mem_res_2),
-		.wb_hilo_data(wb_hilo_data_1),
+		.mem_hi_data(mem_hi_data_2),
+		.mem_lo_data(mem_lo_data_2),
 		.wb_pc(wb_pc_2),
 		//
 		.wb_reg_data(wb_reg_data_2),

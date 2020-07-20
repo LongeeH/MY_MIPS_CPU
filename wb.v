@@ -61,7 +61,8 @@ module WB(
 	input reset,
 	input [31:0]mem_contr_word,
     input [31:0]mem_res,
-    input [31:0]wb_hilo_data,
+    input [31:0]mem_hi_data,
+    input [31:0]mem_lo_data,
     input [31:0]wb_pc,
     output [31:0]wb_reg_data,
     output wb_reg_wr,
@@ -114,8 +115,8 @@ module WB(
 	assign wb_reg_wr=mem_contr_word[9];
 	assign wb_hi_wr=mem_contr_word[28];
     assign wb_lo_wr=mem_contr_word[27];
-    assign wb_hi_data=wb_hilo_data;
-    assign wb_lo_data=wb_hilo_data;	
+    assign wb_hi_data=mem_hi_data;
+    assign wb_lo_data=mem_lo_data;	
 	
 	
 endmodule
