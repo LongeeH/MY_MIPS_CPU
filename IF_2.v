@@ -186,7 +186,7 @@ always @ (negedge reset or posedge clk)
 		end else if(delay_soft)
 		begin
 			id_inst<=32'b0;
-		end else if(!delay_hard)
+		end else if(!delay_hard)//Õý³£ÖÃÈë
 		begin
 			last_inst<=if_inst;
 			id_inst<=if_inst;

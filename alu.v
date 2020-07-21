@@ -94,13 +94,13 @@ module ALU(
 				result=(alu_a_u<alu_b_u)?1:0;
 			end
 			5'b00100:begin//可以另一种实现方�?
-				result=alu_srcA?alu_b_u>>alu_a_u[10:6]:alu_b_u>>alu_a_u;
+				result=alu_srcA?alu_b_u>>alu_a_u[10:6]:alu_b_u>>alu_a_u[4:0];
 			end
 			5'b01100:begin
-				result=alu_srcA?alu_b>>>alu_a[10:6]:alu_b>>>alu_a;
+				result=alu_srcA?alu_b>>>alu_a[10:6]:alu_b>>>alu_a[4:0];
 			end
 			5'b10100:begin
-				result=alu_srcA?alu_b<<alu_a[10:6]:alu_b<<alu_a;
+				result=alu_srcA?alu_b<<alu_a[10:6]:alu_b<<alu_a[4:0];
 			end
 			5'b11100:begin
 				result={alu_b[15:0],16'b0};

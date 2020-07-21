@@ -132,6 +132,7 @@ module exe_core(
 	wire delay_out_1;
 	wire delay_out_2;
 	wire [6:0]self_des;
+	wire [1:0]self_hilo;
 	//ID-EXE
 	wire [6:0]alu_des_1;
 	wire [6:0]alu_des_2;
@@ -145,6 +146,8 @@ module exe_core(
 	wire [31:0]id_contr_word_2;
 	wire [7:0]id_int_contr_word_1;
 	wire [7:0]id_int_contr_word_2;
+	wire [2:0]id_size_contr_1;
+	wire [2:0]id_size_contr_2;
 	wire [31:0]exe_pc_1;
 	wire [31:0]exe_pc_2;
 	wire [31:0]reg_esa_1;
@@ -177,6 +180,8 @@ module exe_core(
 	wire [31:0]exe_contr_word_2;
 	wire [7:0]exe_int_contr_word_1;
 	wire [7:0]exe_int_contr_word_2;
+	wire [2:0]exe_size_contr_1;
+	wire [2:0]exe_size_contr_2;
 	wire [31:0]mem_pc_1;
 	wire [31:0]mem_pc_2;
 	wire [31:0]exe_hi_data_1;
@@ -287,7 +292,7 @@ module exe_core(
 		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
 		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_mix(delay_mix),.delay_in(delay_hard_data_req),
          //output
-        .branch(branch_1),.j(j_1),.jr(jr_1),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_1),.id_contr_word(id_contr_word_1),.id_int_contr_word(id_int_contr_word_1),.exe_pc(exe_pc_1),
+        .branch(branch_1),.j(j_1),.jr(jr_1),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_1),.id_contr_word(id_contr_word_1),.id_int_contr_word(id_int_contr_word_1),.id_size_contr(id_size_contr_1),.exe_pc(exe_pc_1),
 		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.id_des(id_des_1),.self_des(self_des),.self_hilo(self_hilo),
 		.id_wr_hilo(id_wr_hilo_1),.RSO(RSO_1),.RTO(RTO_1)
 	);	
@@ -304,7 +309,7 @@ module exe_core(
 		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
 		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_in(delay_hard_data_req),
          //output
-        .branch(branch_2),.j(j_2),.jr(jr_2),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_2),.delay_mix(delay_mix),.id_contr_word(id_contr_word_2),.id_int_contr_word(id_int_contr_word_2),.exe_pc(exe_pc_2),
+        .branch(branch_2),.j(j_2),.jr(jr_2),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_2),.delay_mix(delay_mix),.id_contr_word(id_contr_word_2),.id_int_contr_word(id_int_contr_word_2),.id_size_contr(id_size_contr_2),.exe_pc(exe_pc_2),
 		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.id_des(id_des_2),.self_des(self_des),.self_hilo(self_hilo),
 		.id_wr_hilo(id_wr_hilo_2),.RSO(RSO_2),.RTO(RTO_2)
 	);
@@ -314,7 +319,8 @@ module exe_core(
 		.reset(reset),
 		.delay(delay_hard_data_req),
 		.id_contr_word(id_contr_word_1),	
-		.id_int_contr_word(id_int_contr_word_1),	
+		.id_int_contr_word(id_int_contr_word_1),
+		.id_size_contr(id_size_contr_1),
 		.exe_pc(exe_pc_1),
 		.exe_reg_res_A(reg_esa_1),
 		.exe_reg_res_B(reg_esb_1),
@@ -329,6 +335,7 @@ module exe_core(
 		.mem_data(mem_data_1),
 		.exe_contr_word(exe_contr_word_1),
 		.exe_int_contr_word(exe_int_contr_word_1),
+		.exe_size_contr(exe_size_contr_1),
 		.mem_pc(mem_pc_1),
 		.exe_hi_data(exe_hi_data_1),
 		.exe_lo_data(exe_lo_data_1),
@@ -340,7 +347,8 @@ module exe_core(
 		.reset(reset),
 		.delay(delay_hard_data_req),
 		.id_contr_word(id_contr_word_2),	
-		.id_int_contr_word(id_int_contr_word_2),	
+		.id_int_contr_word(id_int_contr_word_2),
+		.id_size_contr(id_size_contr_2),		
 		.exe_pc(exe_pc_2),
 		.exe_reg_res_A(reg_esa_2),
 		.exe_reg_res_B(reg_esb_2),
@@ -355,6 +363,7 @@ module exe_core(
 		.mem_data(mem_data_2),
 		.exe_contr_word(exe_contr_word_2),
 		.exe_int_contr_word(exe_int_contr_word_2),
+		.exe_size_contr(exe_size_contr_2),
 		.mem_pc(mem_pc_2),
 		.exe_hi_data(exe_hi_data_2),
 		.exe_lo_data(exe_lo_data_2),
@@ -368,6 +377,7 @@ module exe_core(
 		.delay(delay_hard_data_req),
 		.exe_contr_word(exe_contr_word_1),
 		.exe_int_contr_word(exe_int_contr_word_1),
+		.exe_size_contr(exe_size_contr_1),
 		.exe_res(exe_res1),
 		.mem_data_in(mem_data_in_1),
 		.mem_cp0_data_in(),
@@ -391,6 +401,7 @@ module exe_core(
 		.mem_tlb_op(),
 		.mem_res(mem_res_1),
 		.mem_contr_word(mem_contr_word_1),
+		.mem_size_contr(mem_size_contr_1),
 		.mem_hi_data(mem_hi_data_1),
 		.mem_lo_data(mem_lo_data_1),
 		.mem_2id_res(mem_2id_res_1),
@@ -406,6 +417,7 @@ module exe_core(
 		.delay(delay_hard_data_req),
 		.exe_contr_word(exe_contr_word_2),
 		.exe_int_contr_word(exe_int_contr_word_2),
+		.exe_size_contr(exe_size_contr_2),
 		.exe_res(exe_res2),
 		.mem_data_in(mem_data_in_2),
 		.mem_cp0_data_in(),
@@ -429,6 +441,7 @@ module exe_core(
 		.mem_tlb_op(),
 		.mem_res(mem_res_2),
 		.mem_contr_word(mem_contr_word_2),
+		.mem_size_contr(mem_size_contr_2),
 		.mem_hi_data(mem_hi_data_2),
 		.mem_lo_data(mem_lo_data_2),
 		.mem_2id_res(mem_2id_res_2),
@@ -499,7 +512,7 @@ module exe_core(
 		.clk(clk),
 		.reset(reset),
 		.hilo_w_en_1(wb_hi_wr_1),
-		.hilo_w_en_2(wb_lo_wr_2),
+		.hilo_w_en_2(wb_hi_wr_2),
 		.hilo_w_data_1(wb_hi_data_1),
 		.hilo_w_data_2(wb_hi_data_2),
 		.hilo_r_data(hi_r_data)
@@ -540,6 +553,9 @@ module exe_core(
 	wire [31:0]mem_data_addr_2;
 	wire [31:0]mem_data_in_1;
 	wire [31:0]mem_data_in_2;
+
+	wire[2:0]mem_size_contr_1;
+	wire[2:0]mem_size_contr_2;
 
 	// always @ (posedge clk)
 	// begin
@@ -592,7 +608,7 @@ module exe_core(
 	//axi read apply module
 	always@(posedge clk)
 	begin
-		if(inst_req & inst_rec & arready)//有效请求and前指到齐and外设可用
+		if(inst_req && inst_rec && arready)//有效请求and前指到齐and外设可用
 		begin
 			araddr_v<=pc_1;// is new pc or before? perhaps late... 
 			arvalid<=1;
@@ -600,8 +616,9 @@ module exe_core(
 			arid<=0;
 			arvalid_use<=1;
 			arlen<=4'b0001;
+			arsize<=3'b010;
 		end 
-		else if(data_r_req_1 & data_r_ok_1 & arready)//请求and前指到齐and外设可用
+		else if(data_r_req_1 && data_r_ok_1 && arready)//请求and前指到齐and外设可用
 		begin
 			araddr_v<=mem_data_addr_1;// 
 			arvalid<=1;
@@ -609,8 +626,16 @@ module exe_core(
 			arid<=1;
 			arvalid_use<=1;
 			arlen<=4'b0000;
+			// if(mem_size_contr_1[1:0]==2'b01)//switch case
+				// arsize<=3'b000;
+			// else if(mem_size_contr_1[1:0]==2'b10)
+				// arsize<=3'b001;
+			// else if(mem_size_contr_1[1:0]==2'b11)
+				// arsize<=3'b010;
+			// arsize<=mem_size_contr_1[1:0]-1;
+			// arsize<=3'b010;
 		end
-		else if(data_r_req_2 & data_r_ok_2 & arready)//有效请求and前指到齐and外设可用
+		else if(data_r_req_2 && data_r_ok_2 && arready)//有效请求and前指到齐and外设可用
 		begin
 			if((mem_data_addr_2==mem_data_addr_1)&&data_w_req_1)
 				begin
@@ -625,7 +650,14 @@ module exe_core(
 					arid<=2;
 					arvalid_use<=1;
 					arlen<=4'b0000;
+					// arsize<=mem_size_contr_2[1:0]-1;
 					mem_forward<=0;
+					// if(mem_size_contr_2[1:0]==2'b01)//switch case
+						// arsize<=3'b000;
+					// else if(mem_size_contr_2[1:0]==2'b10)
+						// arsize<=3'b001;
+					// else if(mem_size_contr_2[1:0]==2'b11)
+						// arsize<=3'b010;
 				end
 		end 	
 		else if(arvalid)
@@ -659,7 +691,7 @@ module exe_core(
 	end
 	//try merge up
 	//data rec 
-	always @ (posedge clk)
+	always @ (posedge clk)//****
 	begin
 		if((rvalid==1)&&(rid==1))
 		begin
@@ -740,7 +772,7 @@ module exe_core(
 		// arlen=4'b1111;
 		arlen=4'b0001;
 		arsize=3'b010;
-		awsize=3'b000;
+		awsize=3'b010;
 		arburst=1'b1;
 		awburst=1'b1;
 		arlock=0;
@@ -831,20 +863,120 @@ module exe_core(
 		end 	
 	end
 	//w req data
+	wire [3:0]wstrb_case_1;
+	wire [3:0]wstrb_case_2;
+	assign wstrb_case_1 = {mem_size_contr_1[1:0],mem_data_addr_1[1:0]};
+	assign wstrb_case_2 = {mem_size_contr_2[1:0],mem_data_addr_2[1:0]};
 	always@(posedge clk)
 	begin
-		if(awvalid==1&data_w_req_1)
+		if(awvalid==1&&data_w_req_1&&!data_w_ok_1)
 		begin
 			wdata <= mem_data_out_1;
 			wvalid <=1;
 			wlast <=1;
+			// if(mem_size_contr_1[1:0]==2'b01)//switch case
+			// 1根据地址地位判断
+			// 2根据地址地位判断wstrb的值×
+			// begin
+				// wstrb<=4'b0001;
+				// awsize<=3'b000;
+			// end
+			// else if(mem_size_contr_1[1:0]==2'b10)
+			// begin
+				// wstrb<=4'b0011;
+				// awsize<=3'b001;
+			// end
+			// else if(mem_size_contr_1[1:0]==2'b11)
+			// begin
+				// wstrb<=4'b1111;
+				// awsize<=3'b010;
+			// end
+			case(wstrb_case_1)
+			4'b0100:begin
+				wstrb<=4'b0001;
+			end
+			4'b0101:begin
+				wstrb<=4'b0010;
+			end			
+			4'b0110:begin
+				wstrb<=4'b0100;
+			end	
+			4'b0111:begin
+				wstrb<=4'b1000;
+			end
+			4'b1000:begin
+				wstrb<=4'b0011;
+			end			
+			4'b1010:begin
+				wstrb<=4'b1100;
+			end
+			4'b1100:begin
+				wstrb<=4'b1111;
+			end				
+			default:begin
+				wstrb<=4'b1111;
+			end			
+			endcase
 		end
-		else if(awvalid==1&data_w_req_2)//有效请求and前指到齐and外设可用
+		else if(awvalid==1&&data_w_req_2&&!data_w_ok_2)//有效请求and前指到齐and外设可用
 		begin
 			wdata <= mem_data_out_2;
 			wvalid <=1;
 			wlast <=1;
-		end 	
+			// if(mem_size_contr_2[1:0]==2'b01)//switch case
+			case(wstrb_case_2)
+			4'b0100:begin
+				wstrb<=4'b0001;
+			end
+			4'b0101:begin
+				wstrb<=4'b0010;
+			end			
+			4'b0110:begin
+				wstrb<=4'b0100;
+			end	
+			4'b0111:begin
+				wstrb<=4'b1000;
+			end
+			4'b1000:begin
+				wstrb<=4'b0011;
+			end			
+			4'b1010:begin
+				wstrb<=4'b1100;
+			end
+			4'b1100:begin
+				wstrb<=4'b1111;
+			end				
+			default:begin
+				wstrb<=4'b1111;
+			end			
+			endcase
+			//1根据地址地位判断
+			//2根据地址地位判断wstrb的值×
+			//wstrb 是选择目字的有效，还是来源字的有效，我觉得后者
+			// begin
+				// wstrb<=4'b0001;
+				// awsize<=3'b000;
+			// end
+			// else if(mem_size_contr_2[1:0]==2'b10)
+			// begin
+				// wstrb<=4'b0011;
+				// awsize<=3'b001;
+			// end
+			// else if(mem_size_contr_2[1:0]==2'b11)
+			// begin
+				// wstrb<=4'b1111;
+				// awsize<=3'b010;
+			// end
+		// end 
+		
+		
+		// if(mem_size_contr[1:0]==2'b01)
+			// wstrb<=4'b0001;
+		// else if(mem_size_contr[1:0]==2'b10)
+			// wstrb<=4'b0011;
+		// else if(mem_size_contr[1:0]==2'b11)
+			// wstrb<=4'b1111;	
+		end
 	end
 	
 	//???修改下方 w rec

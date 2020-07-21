@@ -35,13 +35,13 @@ module Register_HiLo(
 	
 	always @(negedge clk)
 	begin
-		if(hilo_w_en_1)
-		begin
-			Register<= hilo_w_data_1;
-		end
-		else if(hilo_w_en_2)
+		if(hilo_w_en_2)
 		begin
 			Register<= hilo_w_data_2;
+		end
+		else if(hilo_w_en_1)
+		begin
+			Register<= hilo_w_data_1;
 		end
 	end
 	

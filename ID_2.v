@@ -33,7 +33,7 @@ module ID_2(//input
             mem_des_2,mem_wr_hilo_2,
             mem_hilo_res_1,mem_hilo_res_2,self_des,self_hilo,delay_in,
          //output
-            branch,j,jr,jr_data,jr_data_ok,delay_out,delay_mix,id_contr_word,id_int_contr_word,exe_pc,
+            branch,j,jr,jr_data,jr_data_ok,delay_out,delay_mix,id_contr_word,id_int_contr_word,id_size_contr,exe_pc,
             reg_esa,reg_esb,immed,id_des,
             id_wr_hilo,RSO,RTO
     );
@@ -139,6 +139,7 @@ output delay_out;
 output delay_mix;
 output [31:0]id_contr_word;
 output [7:0]id_int_contr_word;
+output [7:0]id_size_contr;
 output [31:0]exe_pc;
 output [31:0]reg_esa;
 output [31:0]reg_esb;
@@ -224,7 +225,13 @@ wire ori_inst;
 wire xori_inst;
 wire slti_inst;
 wire sltiu_inst;
+wire lb_inst;
+wire lbu_inst;
+wire lh_inst;
+wire lhu_inst;
 wire lw_inst;
+wire sb_inst;
+wire sh_inst;
 wire sw_inst;
 wire j_inst;
 wire jr_inst;
@@ -292,7 +299,13 @@ assign xori_inst   = (OP == 6'b001110);
 assign slti_inst   = (OP == 6'b001010);
 assign sltiu_inst  = (OP == 6'b001011);
 assign lui_inst    = (OP == 6'b001111);
+assign lb_inst     = (OP == 6'b100000);
+assign lbu_inst     = (OP == 6'b100100);
+assign lh_inst     = (OP == 6'b100001);
+assign lhu_inst     = (OP == 6'b100101);
 assign lw_inst     = (OP == 6'b100011);
+assign sb_inst     = (OP == 6'b101000);
+assign sh_inst     = (OP == 6'b101001);
 assign sw_inst     = (OP == 6'b101011);
 assign j_inst      = (OP == 6'b000010);
 assign jr_inst     = Rtype && (func == 6'b001000);
@@ -332,7 +345,7 @@ begin
                 alu_op<=5'b00000;
         else if(or_inst || ori_inst||mflo_inst||mfhi_inst)
                 alu_op<=5'b01000;
-        else if(add_inst || addi_inst || addu_inst || addiu_inst || lw_inst || sw_inst || jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)
+        else if(add_inst || addi_inst || addu_inst || addiu_inst || lw_inst || sw_inst || jal_inst||jalr_inst||bltzal_inst|| bgezal_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst)
                 alu_op<=5'b00001;
         else if(sub_inst || subu_inst)
                 alu_op<=5'b01001;
@@ -389,19 +402,19 @@ assign write_reg = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst
                      subu_inst || and_inst || andi_inst || or_inst || ori_inst || slt_inst ||
                      sltu_inst || slti_inst || sltiu_inst || sll_inst || sllv_inst ||
                      sra_inst || srav_inst ||srl_inst ||srlv_inst ||nor_inst||xor_inst||
-                     xori_inst ||lw_inst||mfc0_inst||mfhi_inst||mflo_inst||lui_inst || jal_inst||jalr_inst||bltzal_inst|| bgezal_inst);
-assign write_mem = sw_inst;
-assign mem_2_reg = lw_inst;
+                     xori_inst ||lw_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||mfc0_inst||mfhi_inst||mflo_inst||lui_inst || jal_inst||jalr_inst||bltzal_inst|| bgezal_inst);
+assign write_mem = sw_inst||sb_inst||sh_inst;
+assign mem_2_reg = lw_inst||lb_inst||lbu_inst||lh_inst||lhu_inst;
 assign write_lo = mtlo_inst||div_inst||divu_inst||mult_inst||multu_inst;
 assign write_hi = mthi_inst||div_inst||divu_inst||mult_inst||multu_inst;
 assign alu_srcA = (sll_inst || sra_inst || srl_inst);
-assign alu_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst||jal_inst||jalr_inst||bltzal_inst|| bgezal_inst);
+assign alu_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst||jal_inst||jalr_inst||bltzal_inst|| bgezal_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst);
 assign alu_srcB[1] = (ori_inst || andi_inst ||xori_inst);
 assign alu_res_ok = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst || subu_inst ||
                      and_inst || andi_inst || or_inst || ori_inst || slt_inst || sltu_inst ||
                      slti_inst || sltiu_inst ||sll_inst ||sllv_inst|| sra_inst || srav_inst || srl_inst || srlv_inst||nor_inst||
                      xor_inst || xori_inst||lui_inst||jal_inst||jalr_inst||bltzal_inst|| bgezal_inst||div_inst||divu_inst||mult_inst||multu_inst);
-assign mem_res_ok = (lw_inst || mfc0_inst);
+assign mem_res_ok = (lw_inst || lb_inst || lbu_inst || lh_inst || lhu_inst || mfc0_inst);
 
 assign delay = delay_in | delay_self | delay_self_mix;
 assign delay_out = delay_self;
@@ -468,6 +481,7 @@ assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
                     bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst || jr_inst||jalr_inst||
 					bltzal_inst|| bgezal_inst
 					||div_inst||divu_inst||mult_inst||multu_inst
+					||mthi_inst||mtlo_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst
 					);
 					
 assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||
@@ -487,8 +501,13 @@ assign lo_target = mtlo_inst||div_inst||divu_inst||mult_inst||multu_inst;
 // assign non_zero=|RSI;
 always@(*)
 	begin
-		if(((|self_des[4:0]) && (self_des[6]||self_des[5]) && ((rs_source && (RSI[4:0]==self_des[4:0]))||(rt_source && (RTI[4:0]==self_des[4:0]))))
-		||((self_hilo[0]&&lo_source)||(self_hilo[1]&&hi_source))
+		if(
+			(
+				((|self_des[4:0])||(hi_target||lo_target)) //target en
+					&& (self_des[6]||self_des[5]) //line1 wr
+					&& ((rs_source && (RSI[4:0]==self_des[4:0]))||(rt_source && (RTI[4:0]==self_des[4:0])))//line1 target eq line2 source
+			)
+			||((self_hilo[0]&&lo_source)||(self_hilo[1]&&hi_source))
 		)
 		begin
 			delay_self_mix<=1;//id-id conflict
@@ -505,9 +524,9 @@ always @ (*)
 		(alu_des_2[6] && ((rs_source && (RSI[4:0] == alu_des_2[4:0]))|| (rt_source && (RTI[4:0] == alu_des_2[4:0])))))
 		begin
 			delay_self<=1;
-            RSO<=5'b00000;
-            RTO<=5'b00000;
-            RDO<=5'b00000; 
+            // RSO<=5'b00000;
+            // RTO<=5'b00000;
+            // RDO<=5'b00000; 
 
         end else 
 			begin
@@ -524,13 +543,13 @@ always @ (*)
 						FWDA<=4'b0100;
                 else if((mem_wr_hilo_1[0] && lo_source)
                         || (mem_wr_hilo_1[1] && hi_source))              
-						FWDA<=4'b0111;
+						FWDA<=4'b1001;
                 else if((mem_wr_hilo_2[0] && lo_source)
                         || (mem_wr_hilo_2[1] && hi_source))        
-						FWDA<=4'b1000;
+						FWDA<=4'b1010;
                 else if((mem_des_1[5] || mem_des_1[6]) && rs_source &&
                         (RSI[4:0] == mem_des_1[4:0])) 
-						FWDA<=4'b1010;
+						FWDA<=4'b0101;
                 else if((mem_des_2[5] || mem_des_2[6]) && rs_source &&
                         (RSI[4:0] == mem_des_2[4:0]))
 						FWDA<=4'b0110;
@@ -653,6 +672,17 @@ begin
 		jr_data_ok<=1'bZ;
 end
 // assign jr_data_ok = jr_inst&&(!delay)?1'b1:1'bZ;
+reg [2:0]size_contr;
+reg [2:0]id_size_contr;
+always@(*)
+begin
+	size_contr[0]<=lb_inst||lbu_inst||sb_inst||lw_inst||sw_inst;
+	size_contr[1]<=lh_inst||lhu_inst||sh_inst||lw_inst||sw_inst;
+	size_contr[2]<=lbu_inst||lhu_inst;
+end
+
+wire id_cln;
+assign id_cln = delay_self_mix;
 always @ (negedge reset or posedge clk)
 	begin
         if(reset==0)
@@ -666,6 +696,17 @@ always @ (negedge reset or posedge clk)
                 id_int_contr_word[7:0] <= 32'b0;
                 immed[31:0] <= 32'b0;
                 end
+		else if(id_cln)
+			begin
+				id_des[6:0]<=7'b0;
+                id_wr_hilo[1:0] <= 2'b0;
+                reg_esa[31:0] <= 32'b0;
+                reg_esb[31:0] <= 32'b0;
+                exe_pc[31:0] <= 32'b0;
+                id_contr_word[31:0] <= 32'b0;
+                id_int_contr_word[7:0] <= 32'b0;
+                immed[31:0] <= 32'b0;			
+			end
         else if(!delay)
             begin
                 id_des[6:0]<=des[6:0];
@@ -678,6 +719,7 @@ always @ (negedge reset or posedge clk)
                 exe_pc[31:0] <= id_pc[31:0];
                 id_contr_word[31:0] <= contr_word[31:0];
                 id_int_contr_word[7:0] <= int_contr_word[7:0];
+                id_size_contr[2:0] <= size_contr[2:0];
 				if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)
 					immed<=id_pc+8;
                 else if(id_inst[15])
@@ -688,17 +730,7 @@ always @ (negedge reset or posedge clk)
 				j<=self_j;
 				jr<=self_jr;
             end
-		else
-			begin
-				id_des[6:0]<=7'b0;
-                id_wr_hilo[1:0] <= 2'b0;
-                reg_esa[31:0] <= 32'b0;
-                reg_esb[31:0] <= 32'b0;
-                exe_pc[31:0] <= 32'b0;
-                id_contr_word[31:0] <= 32'b0;
-                id_int_contr_word[7:0] <= 32'b0;
-                immed[31:0] <= 32'b0;			
-			end
+
 	end
 
 endmodule

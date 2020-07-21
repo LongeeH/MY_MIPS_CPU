@@ -60,6 +60,7 @@ module MEM(
     input delay,
 	input [31:0]exe_contr_word,
 	input [7:0]exe_int_contr_word,
+	input [2:0]exe_size_contr,
 	input [31:0]exe_res,
 	input [31:0]mem_data_in,
 	input [31:0]mem_cp0_data_in,
@@ -83,6 +84,7 @@ module MEM(
 	output [1:0]mem_tlb_op,
 	output [31:0]mem_res,
 	output [31:0]mem_contr_word,
+	output [2:0]mem_size_contr,
 	output [31:0]mem_hi_data,
 	output [31:0]mem_lo_data,
 	output [31:0]mem_2id_res,
@@ -111,6 +113,7 @@ module MEM(
 	reg	[31:0]mem_hi_data;
 	reg	[31:0]mem_lo_data;
 	reg	[31:0]mem_contr_word;
+	wire[2:0]mem_size_contr;
 	reg	[31:0]mem_res;
 	reg	[31:0]wb_pc;
 	wire[31:0]mem_2id_res;
@@ -118,11 +121,12 @@ module MEM(
 	reg[6:0]mem_des;
 	reg[1:0]mem_wr_hilo;
 	
+	assign mem_size_contr=exe_size_contr; 
 	
 	always@(*)//CP0操作相关指令
 	begin 
 		mem_data_addr<=exe_res; 
-		mem_data_out<=mem_data; 
+		// mem_data_out<=mem_data; 
 		mem_tran_data_addr<=(exe_contr_word[7]||exe_contr_word[8]); 
 		mem_sorl<=exe_contr_word[7]; 
 		mem_int_contr<=exe_int_contr_word; 
@@ -135,24 +139,88 @@ module MEM(
 		mem_tlb_op<=exe_contr_word[18:17]; 
 		mem_int_pc<=mem_pc; 
 	end 
+	always@(*)
+	begin
+		begin 
+		case(exe_size_contr)
+			3'b001:begin
+				// mem_data_out={24'b0,mem_data[7:0]};;
+				mem_data_out={4{mem_data[7:0]}};
+			end
+			3'b010:begin
+				mem_data_out={2{mem_data[15:0]}};
+			end			
+			3'b011:begin
+				mem_data_out=mem_data;
+			end			
+			default:begin
+				mem_data_out=32'b0;
+			end			
+		endcase
+	end 
+	end
 	
-	always@(*)//将原设计的串联2_1译码器改作一个四输入选择器
+	always@(*)//将原设计的串联2_1译码器改作一个四输入选择器//关于输入数据的选择
 	begin 
-		case({exe_contr_word[16],exe_contr_word[8]})
-			2'b00:begin
+		case({exe_contr_word[16],exe_contr_word[8],exe_size_contr})
+			5'b00000:begin
 				mem_mux[31:0]=exe_res;
 			end
-			2'b01:begin
+			5'b01001:begin
+				mem_mux[31:0]={{24{byte_data[7]}},byte_data[7:0]};
+			end			
+			5'b01101:begin
+				mem_mux[31:0]={24'b0,byte_data};
+			end			
+			5'b01010:begin
+				mem_mux[31:0]={{16{hawo_data[15]}},hawo_data[15:0]};
+			end			
+			5'b01110:begin
+				mem_mux[31:0]={16'b0,hawo_data};
+			end
+			5'b01011:begin
 				mem_mux[31:0]=mem_data_in;
 			end
-			2'b10:begin
+			5'b10000:begin
 				mem_mux[31:0]=mem_cp0_data_in;
 			end
-			2'b11:begin
+			5'b11000:begin
 				mem_mux[31:0]=mem_cp0_data_in;
+			end
+			default:begin
+				mem_mux[31:0]=32'b0;
 			end
 		endcase
 	end 
+	
+	reg [7:0]byte_data;
+	reg [15:0]hawo_data;
+	
+	always@(*)//从输入中选择正确的半字和字节
+	begin 
+		case({mem_data_addr[1],mem_data_addr[0]})
+			2'b00:begin
+				byte_data=mem_data_in[7:0];
+			end
+			2'b01:begin
+				byte_data=mem_data_in[15:8];
+			end			
+			2'b10:begin
+				byte_data=mem_data_in[23:16];
+			end			
+			2'b11:begin
+				byte_data=mem_data_in[31:24];
+			end			
+		endcase
+		case(mem_data_addr[1])
+			1'b0:begin
+				hawo_data=mem_data_in[15:0];
+			end
+			1'b1:begin
+				hawo_data=mem_data_in[31:16];
+			end				
+		endcase
+	end
 	
 	always @(negedge reset or posedge clk) //原设计的流水线，结合上一个always重新实现
     begin  
@@ -181,12 +249,12 @@ module MEM(
 			end
 			
     end 
+	
 	always @(exe_des or exe_wr_hilo) 
 	begin  
 		mem_des<=exe_des; 
 		mem_wr_hilo<=exe_wr_hilo; 
 	end 
-
 	
 	//和EXE一样的处理方式，在寄存器前直接相连结果，将数据前递提前，也许并不正确
 	assign mem_2id_res=mem_mux;

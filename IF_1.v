@@ -192,6 +192,7 @@ always @ (negedge reset or posedge clk)
 		else if(delay_soft)
 			begin	
 				id_inst<=32'b0;
+				// id_pc<=32'b0////try
 			end
 		else if(!delay_hard)
 			begin

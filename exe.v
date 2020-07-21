@@ -50,7 +50,8 @@ module EXE(
 	input reset,
 	input delay,
 	input [31:0]id_contr_word,	
-	input [7:0]id_int_contr_word,	
+	input [7:0]id_int_contr_word,
+	input [2:0]id_size_contr,	
 	input [31:0]exe_pc,
 	input [31:0]exe_reg_res_A,
 	input [31:0]exe_reg_res_B,
@@ -65,6 +66,7 @@ module EXE(
 	output [31:0]mem_data,
 	output [31:0]exe_contr_word,
 	output [7:0]exe_int_contr_word,
+	output [2:0]exe_size_contr,
 	output [31:0]mem_pc,
 	output [31:0]exe_hi_data,
 	output [31:0]exe_lo_data,
@@ -82,6 +84,7 @@ module EXE(
 	reg [31:0]mem_data;
 	reg [31:0]exe_contr_word;
 	reg [7:0]exe_int_contr_word;
+	reg [2:0]exe_size_contr;
 	reg [31:0]mem_pc;
 	reg [31:0]exe_hi_data;
 	reg [31:0]exe_lo_data;
@@ -160,6 +163,7 @@ module EXE(
             exe_wr_hilo<=id_wr_hilo;
 			exe_contr_word[31:0]<=id_contr_word[31:0];
 			exe_int_contr_word[7:0]<={id_int_contr_word[7:3],alu_int_ov,id_int_contr_word[1:0]};
+			exe_size_contr<=id_size_contr;
 		end
 	end
 	

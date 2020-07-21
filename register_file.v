@@ -49,21 +49,18 @@ module Register_File(
 	
 	always @(negedge clk)
 	begin
+	
 		if(reg_w_en_1 && (reg_w_addr_1 != 0) )
 		begin
-			if(reg_w_addr_1 != reg_w_addr_2)
+			if((reg_w_addr_1 != reg_w_addr_2)||(!reg_w_en_2))
 				Register[reg_w_addr_1] <= reg_w_data_1;
-			else
-			    #1;
 		end
 	end
 	
 	always @(negedge clk)
 	begin
 		if(reg_w_en_2 && (reg_w_addr_2 != 0) )
-		begin
 			Register[reg_w_addr_2] <= reg_w_data_2;
-		end
 	end
 	
 
