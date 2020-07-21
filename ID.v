@@ -338,7 +338,7 @@ assign multu_inst = Rtype && (func == 6'b011001);;
 always@(and_inst  or andi_inst  or or_inst or ori_inst or add_inst or 
         addu_inst or addiu_inst or subu_inst or slt_inst or sltu_inst or
         slti_inst or sltiu_inst or srl_inst or srlv_inst or sra_inst or
-        sll_inst or sllv_inst or nor_inst or xor_inst or xori_inst or lw_inst or sw_inst)
+        sll_inst or sllv_inst or nor_inst or xor_inst or xori_inst or lw_inst or sw_inst or lui_inst)
 begin
         if (and_inst || andi_inst) 
                 alu_op<=5'b00000;
