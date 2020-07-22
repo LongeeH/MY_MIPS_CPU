@@ -124,8 +124,8 @@ module exe_core(
 	wire j_2;//useless
 	wire jr_1;
 	wire jr_2;
-	wire [31:0]jr_data;//三�?�门
-	wire jr_data_ok;//三�?�门
+	wire [31:0]jr_data;//三濁门
+	wire jr_data_ok;//三濁门
 	wire delay;
 	//ID-ID
 	wire delay_mix;
@@ -144,8 +144,8 @@ module exe_core(
 	wire [31:0]alu_2id_hilo_2;
 	wire [31:0]id_contr_word_1;
 	wire [31:0]id_contr_word_2;
-	wire [7:0]id_int_contr_word_1;
-	wire [7:0]id_int_contr_word_2;
+	wire [15:0]id_int_contr_word_1;
+	wire [15:0]id_int_contr_word_2;
 	wire [2:0]id_size_contr_1;
 	wire [2:0]id_size_contr_2;
 	wire [31:0]exe_pc_1;
@@ -178,8 +178,8 @@ module exe_core(
 	wire [31:0]mem_data_2;
 	wire [31:0]exe_contr_word_1;
 	wire [31:0]exe_contr_word_2;
-	wire [7:0]exe_int_contr_word_1;
-	wire [7:0]exe_int_contr_word_2;
+	wire [15:0]exe_int_contr_word_1;
+	wire [15:0]exe_int_contr_word_2;
 	wire [2:0]exe_size_contr_1;
 	wire [2:0]exe_size_contr_2;
 	wire [31:0]mem_pc_1;
@@ -233,7 +233,7 @@ module exe_core(
     IF_1 _if1(
 		.clk(clk),
 		.reset(reset),
-		.int(), //maybe need CP0
+		.int(cp0_int_occur_1|cp0_int_occur_2), //maybe need CP0
 		.j(j_1|j_2),
 		.jr(jr_1|jr_2),
 		.jr_data(jr_data),
@@ -257,7 +257,7 @@ module exe_core(
     IF_2 _if2(
 		.clk(clk),
 		.reset(reset),
-		.int(),
+		.int(cp0_int_occur_1|cp0_int_occur_2),
 		.j(j_1|j_2),
 		.jr(jr_1|jr_2),
 		.jr_data(jr_data),
@@ -290,7 +290,7 @@ module exe_core(
 		.mem_res_1(mem_2id_res_1),.mem_res_2(mem_2id_res_2),
 		.mem_des_1(mem_des_1),.mem_wr_hilo_1(mem_wr_hilo_1),
 		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
-		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_mix(delay_mix),.delay_in(delay_hard_data_req),
+		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_mix(delay_mix),.delay_in(delay_hard_data_req),.id_cln_in(cp0_int_occur_1|cp0_int_occur_2),.cp0_epc(EPC_o),
          //output
         .branch(branch_1),.j(j_1),.jr(jr_1),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_1),.id_contr_word(id_contr_word_1),.id_int_contr_word(id_int_contr_word_1),.id_size_contr(id_size_contr_1),.exe_pc(exe_pc_1),
 		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.id_des(id_des_1),.self_des(self_des),.self_hilo(self_hilo),
@@ -307,7 +307,7 @@ module exe_core(
 		.mem_res_1(mem_2id_res_1),.mem_res_2(mem_2id_res_2),
 		.mem_des_1(mem_des_1),.mem_wr_hilo_1(mem_wr_hilo_1),
 		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
-		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_in(delay_hard_data_req),
+		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_in(delay_hard_data_req),.id_cln_in(cp0_int_occur_1|cp0_int_occur_2),.cp0_epc(EPC_o),
          //output
         .branch(branch_2),.j(j_2),.jr(jr_2),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_2),.delay_mix(delay_mix),.id_contr_word(id_contr_word_2),.id_int_contr_word(id_int_contr_word_2),.id_size_contr(id_size_contr_2),.exe_pc(exe_pc_2),
 		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.id_des(id_des_2),.self_des(self_des),.self_hilo(self_hilo),
@@ -327,6 +327,7 @@ module exe_core(
 		.id_des(id_des_1),
 		.id_wr_hilo(id_wr_hilo_1),
 		.exe_immed(immed_1),
+		.exe_cln(cp0_int_occur_1|cp0_int_occur_2),
 		.exe_des(exe_des_1),
 		.exe_wr_hilo(exe_wr_hilo_1),
 		.exe_alu_des(alu_des_1),
@@ -355,6 +356,7 @@ module exe_core(
 		.id_des(id_des_2),
 		.id_wr_hilo(id_wr_hilo_2),
 		.exe_immed(immed_2),
+		.exe_cln(cp0_int_occur_1|cp0_int_occur_2),
 		.exe_des(exe_des_2),
 		.exe_wr_hilo(exe_wr_hilo_2),
 		.exe_alu_des(alu_des_2),
@@ -380,24 +382,26 @@ module exe_core(
 		.exe_size_contr(exe_size_contr_1),
 		.exe_res(exe_res1),
 		.mem_data_in(mem_data_in_1),
-		.mem_cp0_data_in(),
+		.mem_cp0_data_in(cp0_r_data_1),
 		.exe_hi_data(exe_hi_data_1),
 		.exe_lo_data(exe_lo_data_1),
 		.mem_data(mem_data_1),
 		.mem_pc(mem_pc_1),
 		.exe_des(exe_des_1),
 		.exe_wr_hilo(exe_wr_hilo_1),
+		.mem_cln(cp0_int_occur_1),
 		.mem_tran_data_addr(),
 		.mem_sorl(),
 		.mem_load_en(mem_load_en_1),
 		.mem_wr_en(mem_wr_en_1),
 		.mem_rd_cp0_reg(),
-		.mem_wr_cp0_reg(),
+		.mem_wr_cp0_reg(cp0_w_en_1),
 		.mem_tlb_op_en(),
 		.mem_data_addr(mem_data_addr_1),
 		.mem_data_out(mem_data_out_1),
-		.mem_int_contr(),
-		.mem_cp0_reg_index(),
+		.mem_int_contr(cp0_int_contr_word_1),
+		.mem_cp0_reg_index(cp0_r_addr_1),
+		.mem_cp0_data_out(cp0_w_data_1),
 		.mem_tlb_op(),
 		.mem_res(mem_res_1),
 		.mem_contr_word(mem_contr_word_1),
@@ -420,24 +424,26 @@ module exe_core(
 		.exe_size_contr(exe_size_contr_2),
 		.exe_res(exe_res2),
 		.mem_data_in(mem_data_in_2),
-		.mem_cp0_data_in(),
+		.mem_cp0_data_in(cp0_r_data_2),
 		.exe_hi_data(exe_hi_data_2),
 		.exe_lo_data(exe_lo_data_2),
 		.mem_data(mem_data_2),
 		.mem_pc(mem_pc_2),
 		.exe_des(exe_des_2),
 		.exe_wr_hilo(exe_wr_hilo_2),
+		.mem_cln(cp0_int_occur_1|cp0_int_occur_2),
 		.mem_tran_data_addr(),
 		.mem_sorl(),
 		.mem_load_en(mem_load_en_2),
 		.mem_wr_en(mem_wr_en_2),
 		.mem_rd_cp0_reg(),
-		.mem_wr_cp0_reg(),
+		.mem_wr_cp0_reg(cp0_w_en_2),
 		.mem_tlb_op_en(),
 		.mem_data_addr(mem_data_addr_2),
 		.mem_data_out(mem_data_out_2),
-		.mem_int_contr(),
-		.mem_cp0_reg_index(),
+		.mem_int_contr(cp0_int_contr_word_2),
+		.mem_cp0_reg_index(cp0_r_addr_2),
+		.mem_cp0_data_out(cp0_w_data_2),
 		.mem_tlb_op(),
 		.mem_res(mem_res_2),
 		.mem_contr_word(mem_contr_word_2),
@@ -525,6 +531,63 @@ module exe_core(
 		.hilo_w_data_1(wb_lo_data_1),
 		.hilo_w_data_2(wb_lo_data_2),
 		.hilo_r_data(lo_r_data)
+	);
+	
+	//mem-cp0
+	
+	wire cp0_int_occur_1;
+	wire cp0_int_occur_2;
+	wire hard_int_wire;
+	wire cp0_w_en_1;//HIGHeffective
+	wire cp0_w_en_2;
+	wire [4:0]cp0_r_addr_1;
+	wire [4:0]cp0_r_addr_2;
+	// wire [4:0]cp0_w_addr_1;
+	// wire [4:0]cp0_w_addr_2;
+	// assign cp0_w_addr_1 = cp0_r_addr_1;
+	// assign cp0_w_addr_2 = cp0_r_addr_2;
+	
+	wire [31:0]cp0_w_data_1;
+	wire [31:0]cp0_w_data_2;
+	wire [15:0]cp0_int_contr_word_1;
+	wire [15:0]cp0_int_contr_word_2;
+	wire [31:0]PC_1;//thisexceptionPChavebeenchosenfrompcandpc-4
+	wire [31:0]PC_2;//thisexceptionPChavebeenchosenfrompcandpc-4
+	wire [31:0]orginalVritualAddrT_1;
+	wire [31:0]orginalVritualAddrT_2;
+	//output
+	wire [31:0]cp0_r_data_1;
+	wire [31:0]cp0_r_data_2;
+	wire EXL;
+	wire [31:0]EPC_o;
+	wire softWareInt;
+	
+	CP0 cp0(
+	.clk(clk),
+	.reset(reset),
+	.hard_int_wire(6'b0),
+	.cp0_w_en_1(cp0_w_en_1),//HIGHeffective
+	.cp0_w_en_2(cp0_w_en_2),
+	.cp0_r_addr_1(cp0_r_addr_1),
+	.cp0_r_addr_2(cp0_r_addr_2),
+	.cp0_w_addr_1(cp0_r_addr_1),
+	.cp0_w_addr_2(cp0_r_addr_2),
+	.cp0_w_data_1(cp0_w_data_1),
+	.cp0_w_data_2(cp0_w_data_2),
+	.cp0_int_contr_word_1(cp0_int_contr_word_1),
+	.cp0_int_contr_word_2(cp0_int_contr_word_2),
+	.PC_1(mem_pc_1),//thisexceptionPChavebeenchosenfrompcandpc-4
+	.PC_2(mem_pc_2),//thisexceptionPChavebeenchosenfrompcandpc-4
+	.orginalVritualAddrT_1(),
+	.orginalVritualAddrT_2(),
+	// output
+	.cp0_r_data_1(cp0_r_data_1),
+	.cp0_r_data_2(cp0_r_data_2),
+	.EXL(EXL),
+	.EPC_o(EPC_o),
+	.softWareInt(),
+	.cp0_int_occur_1(cp0_int_occur_1),
+	.cp0_int_occur_2(cp0_int_occur_2)
 	);
 	
 	//instruction require
@@ -671,7 +734,7 @@ module exe_core(
 	reg flag;
 	reg [63:0]inst_2_if;
 	reg [63:0]data_2_mem;
-	always @ (posedge clk)//虚拟cache-指令对交替分�?
+	always @ (posedge clk)//虚拟cache-指令对交替分酿
 	begin
 		if(rvalid==1&rid==0)
 		begin
@@ -756,8 +819,8 @@ module exe_core(
 		// end
 	// end
 	
-	assign inst_req = inst_req_1 & inst_req_2;//必须12流水线同时请求时，才请求取指令对�?
-	assign delay_soft_inst = inst_req_1 | inst_req_2;//任一流水线请求时，进行软暂停。只暂停pc的更新行为�?�其他状况不会保�?
+	assign inst_req = inst_req_1 & inst_req_2;//必须12流水线同时请求时，才请求取指令对〿
+	assign delay_soft_inst = inst_req_1 | inst_req_2;//任一流水线请求时，进行软暂停。只暂停pc的更新行为㿂其他状况不会保畿
 	
 	assign delay_hard_data_r_req = data_r_req_1 | data_r_req_2;
 	
@@ -835,7 +898,7 @@ module exe_core(
 
 	always@(posedge clk)
 	begin
-		if(data_w_req_1 & data_w_ok_1 & data_w_ok_2 & awready)//请求and前指到齐and外设可用//�?要互斥！
+		if(data_w_req_1 & data_w_ok_1 & data_w_ok_2 & awready)//请求and前指到齐and外设可用//霿要互斥！
 		begin
 			awaddr_v<=mem_data_addr_1;// 
 			awvalid<=1;

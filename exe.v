@@ -50,7 +50,7 @@ module EXE(
 	input reset,
 	input delay,
 	input [31:0]id_contr_word,	
-	input [7:0]id_int_contr_word,
+	input [15:0]id_int_contr_word,
 	input [2:0]id_size_contr,	
 	input [31:0]exe_pc,
 	input [31:0]exe_reg_res_A,
@@ -58,6 +58,7 @@ module EXE(
 	input [6:0]id_des,
 	input [1:0]id_wr_hilo,
 	input [31:0]exe_immed,
+	input exe_cln,
 	output [6:0]exe_des,
 	output [1:0]exe_wr_hilo,
 	output [6:0]exe_alu_des,
@@ -65,7 +66,7 @@ module EXE(
 	output [31:0]exe_res,
 	output [31:0]mem_data,
 	output [31:0]exe_contr_word,
-	output [7:0]exe_int_contr_word,
+	output [15:0]exe_int_contr_word,
 	output [2:0]exe_size_contr,
 	output [31:0]mem_pc,
 	output [31:0]exe_hi_data,
@@ -83,7 +84,7 @@ module EXE(
 	reg [31:0]exe_res;
 	reg [31:0]mem_data;
 	reg [31:0]exe_contr_word;
-	reg [7:0]exe_int_contr_word;
+	reg [15:0]exe_int_contr_word;
 	reg [2:0]exe_size_contr;
 	reg [31:0]mem_pc;
 	reg [31:0]exe_hi_data;
@@ -141,12 +142,12 @@ module EXE(
 
 	always @(negedge reset or posedge clk)//流水线处理?
 	begin
-		if(reset==0)
+		if(reset==0||exe_cln)
 		begin
 			exe_res<=32'b0;
 			mem_data<=32'b0;
 			exe_contr_word<=32'b0;
-			exe_int_contr_word<=8'b0;
+			exe_int_contr_word<=16'b0;
 			mem_pc<=32'b0;
 			exe_lo_data<=32'b0;
 			exe_des<=7'b0;
@@ -162,7 +163,7 @@ module EXE(
             exe_des<=id_des;
             exe_wr_hilo<=id_wr_hilo;
 			exe_contr_word[31:0]<=id_contr_word[31:0];
-			exe_int_contr_word[7:0]<={id_int_contr_word[7:3],alu_int_ov,id_int_contr_word[1:0]};
+			exe_int_contr_word[15:0]<={id_int_contr_word[15:3],alu_int_ov,id_int_contr_word[1:0]};
 			exe_size_contr<=id_size_contr;
 		end
 	end

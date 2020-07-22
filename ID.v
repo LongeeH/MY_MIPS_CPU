@@ -31,7 +31,7 @@ module ID(//input
             mem_res_1,mem_res_2,
             mem_des_1,mem_wr_hilo_1,
             mem_des_2,mem_wr_hilo_2,
-            mem_hilo_res_1,mem_hilo_res_2,delay_in,delay_mix,
+            mem_hilo_res_1,mem_hilo_res_2,delay_in,delay_mix,id_cln_in,cp0_epc,
          //output
             branch,j,jr,jr_data,jr_data_ok,delay_out,id_contr_word,id_int_contr_word,id_size_contr,exe_pc,
             reg_esa,reg_esb,immed,id_des,self_des,self_hilo,
@@ -128,6 +128,8 @@ input [31:0]mem_hilo_res_1;
 input [31:0]mem_hilo_res_2;
 input delay_in;
 input delay_mix;
+input id_cln_in;
+input [31:0]cp0_epc;
 
 output branch;
 output j;
@@ -136,7 +138,7 @@ output [31:0]jr_data;
 output jr_data_ok;
 output delay_out;
 output [31:0]id_contr_word;
-output [7:0]id_int_contr_word;
+output [15:0]id_int_contr_word;
 output [2:0]id_size_contr;
 output [31:0]exe_pc;
 output [31:0]reg_esa;
@@ -158,7 +160,7 @@ reg jr_data_ok;
 // wire[6:0]id_des_1;
 // reg delay_out;
 reg [31:0]id_contr_word;
-reg [7:0]id_int_contr_word;
+reg [15:0]id_int_contr_word;
 reg [31:0]exe_pc;
 reg [31:0]reg_esa;
 reg [31:0]reg_esb;
@@ -174,7 +176,7 @@ reg [4:0]alu_op;
 reg [1:0]tlb_OP;
 reg [4:0]result_des;
 reg [31:0]contr_word;
-reg [7:0]int_contr_word;
+reg [15:0]int_contr_word;
 reg [3:0]FWDA;
 reg [3:0]FWDB;
 reg [31:0]reg_A;
@@ -252,7 +254,7 @@ wire tlbp_inst;
 wire tlbr_inst;
 wire tlbwi_inst;
 wire tlbwr_inst;
-wire rfe_inst;
+wire eret_inst;
 wire break_inst;
 wire nop_inst;
 wire div_inst;
@@ -325,7 +327,7 @@ assign tlbp_inst   = cp0type && OP_subA[4] && (func==6'b001000);
 assign tlbr_inst   = cp0type && OP_subA[4] && (func==6'b000001);
 assign tlbwi_inst  = cp0type && OP_subA[4] && (func==6'b000010);
 assign tlbwr_inst  = cp0type && OP_subA[4] && (func==6'b000110);
-assign rfe_inst    = cp0type && OP_subA[4] && (func==6'b011000);
+assign eret_inst    = cp0type && OP_subA[4] && (func==6'b011000);
 assign break_inst  = Rtype && (func==6'b001101);
 assign nop_inst    = (id_inst == 32'b0);
 assign div_inst = Rtype && (func == 6'b011010);
@@ -461,16 +463,20 @@ always @ (posedge clk)
 	begin
 		if(!delay)
 			begin
-				int_contr_word[1:0]<=IC_IF[1:0];
+				// int_contr_word[1:0]<=IC_IF[1:0];
+				int_contr_word[1:0]<=2'b00;
 				int_contr_word[2]<=(add_inst || addi_inst ||sub_inst);
 				int_contr_word[3]<=break_inst;
 				int_contr_word[4]<=syscall_inst;
-				int_contr_word[5]<=rfe_inst;
-				int_contr_word[6]<=write_mem;
-				int_contr_word[7]<=branch;
+				int_contr_word[5]<=1'b0;
+				int_contr_word[6]<=eret_inst;
+				// int_contr_word[6]<=write_mem;
+				int_contr_word[7]<=1'b0;
+				int_contr_word[8]<=branch;
+				int_contr_word[15]<=syscall_inst||eret_inst;
 			end
 		else
-			int_contr_word<=8'b0;
+			int_contr_word<=16'b0;
 	end
 
 
@@ -633,19 +639,19 @@ begin
                   (blez_inst && ((rs_eq_z)||(r_slt_z))) || (bgtz_inst && ! (rs_eq_rt || r_slt_z)) ||
                   ((bgez_inst|| bgezal_inst) && !r_slt_z);
         self_j<= j_inst||jal_inst;
-		self_jr<= jr_inst||jalr_inst;
+		self_jr<= jr_inst||jalr_inst||eret_inst;
 end
 // assign jr_data = jr_data_ok?reg_A:32'bZ;
 always@(*)
 begin
 	if(jr_data_ok)
-		jr_data<=reg_A;
+		jr_data<=eret_inst?cp0_epc:reg_A;
 	else
 		jr_data<=32'bZ;
 end
 always@(*)
 begin
-	if((jr_inst||jalr_inst)&&(!delay))
+	if((jr_inst||jalr_inst||eret_inst)&&(!delay))
 		jr_data_ok<=1'b1;
 	else
 		jr_data_ok<=1'bZ;
@@ -660,6 +666,7 @@ begin
 	size_contr[2]<=lbu_inst||lhu_inst;
 end
 wire id_cln;
+assign id_cln = id_cln_in;
 //
 always @ (negedge reset or posedge clk)
 	begin
@@ -671,7 +678,7 @@ always @ (negedge reset or posedge clk)
                 reg_esb[31:0] <= 32'b0;
                 exe_pc[31:0] <= 32'b0;
                 id_contr_word[31:0] <= 32'b0;
-                id_int_contr_word[7:0] <= 32'b0;
+                id_int_contr_word[15:0] <= 16'b0;
                 immed[31:0] <= 32'b0;
             end
 		else if(id_cln)
@@ -682,7 +689,7 @@ always @ (negedge reset or posedge clk)
                 reg_esb[31:0] <= 32'b0;
                 exe_pc[31:0] <= 32'b0;
                 id_contr_word[31:0] <= 32'b0;
-                id_int_contr_word[7:0] <= 32'b0;
+                id_int_contr_word[15:0] <= 16'b0;
                 immed[31:0] <= 32'b0;			
 			end			
         else if(!delay)
@@ -696,7 +703,7 @@ always @ (negedge reset or posedge clk)
                 reg_esb[31:0] <= reg_B[31:0];
                 exe_pc[31:0] <= id_pc[31:0];
                 id_contr_word[31:0] <= contr_word[31:0];
-                id_int_contr_word[7:0] <= int_contr_word[7:0];
+                id_int_contr_word[15:0] <= int_contr_word[15:0];
                 id_size_contr[2:0] <= size_contr[2:0];
 				if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)//link pc
 					immed<=id_pc+8;

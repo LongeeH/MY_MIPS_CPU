@@ -59,7 +59,7 @@ module MEM(
     input reset,
     input delay,
 	input [31:0]exe_contr_word,
-	input [7:0]exe_int_contr_word,
+	input [15:0]exe_int_contr_word,
 	input [2:0]exe_size_contr,
 	input [31:0]exe_res,
 	input [31:0]mem_data_in,
@@ -70,6 +70,7 @@ module MEM(
 	input [31:0]mem_pc,
 	input [6:0]exe_des,
 	input [1:0]exe_wr_hilo,
+	input mem_cln,
 	output mem_tran_data_addr,
 	output mem_sorl,
 	output mem_load_en,
@@ -79,8 +80,9 @@ module MEM(
 	output mem_tlb_op_en,
 	output [31:0]mem_data_addr,
 	output [31:0]mem_data_out,
-	output [7:0]mem_int_contr,
+	output [15:0]mem_int_contr,
 	output [4:0]mem_cp0_reg_index,
+	output [31:0]mem_cp0_data_out,
 	output [1:0]mem_tlb_op,
 	output [31:0]mem_res,
 	output [31:0]mem_contr_word,
@@ -102,12 +104,13 @@ module MEM(
 	reg mem_tran_data_addr;
 	reg mem_sorl;
 	reg mem_load_en;
-	reg [7:0]mem_int_contr;
+	reg [15:0]mem_int_contr;
 	reg mem_wr_en;
 	reg	mem_rd_cp0_reg;
 	reg	mem_wr_cp0_reg;
 	reg	mem_tlb_op_en;
 	reg	[4:0]mem_cp0_reg_index;
+	reg	[31:0]mem_cp0_data_out;
 	reg	[1:0]mem_tlb_op;
 	reg	[31:0]mem_int_pc;
 	reg	[31:0]mem_hi_data;
@@ -127,17 +130,18 @@ module MEM(
 	begin 
 		mem_data_addr<=exe_res; 
 		// mem_data_out<=mem_data; 
-		mem_tran_data_addr<=(exe_contr_word[7]||exe_contr_word[8]); 
+		mem_tran_data_addr<=(exe_contr_word[7]||exe_contr_word[8]); //
 		mem_sorl<=exe_contr_word[7]; 
-		mem_int_contr<=exe_int_contr_word; 
+		mem_int_contr<=exe_int_contr_word; //
 		mem_wr_en<=exe_contr_word[7]; 
 		mem_load_en<=exe_contr_word[8];
-		mem_rd_cp0_reg<=exe_contr_word[16]; 
-		mem_wr_cp0_reg<=exe_contr_word[15]; 
-		mem_tlb_op_en<=exe_contr_word[19]; 
-		mem_cp0_reg_index<=exe_contr_word[14:10]; 
-		mem_tlb_op<=exe_contr_word[18:17]; 
-		mem_int_pc<=mem_pc; 
+		mem_rd_cp0_reg<=exe_contr_word[16]; //
+		mem_wr_cp0_reg<=exe_contr_word[15]; //
+		mem_tlb_op_en<=exe_contr_word[19]; //
+		mem_cp0_reg_index<=exe_contr_word[14:10]; //
+		mem_tlb_op<=exe_contr_word[18:17]; //
+		mem_int_pc<=mem_pc; //
+		mem_cp0_data_out<=mem_data;
 	end 
 	always@(*)
 	begin
@@ -196,7 +200,7 @@ module MEM(
 	reg [7:0]byte_data;
 	reg [15:0]hawo_data;
 	
-	always@(*)//从输入中选择正确的半字和字节
+	always@(*)//从内存输入中选择正确的半字和字节
 	begin 
 		case({mem_data_addr[1],mem_data_addr[0]})
 			2'b00:begin
@@ -224,13 +228,21 @@ module MEM(
 	
 	always @(negedge reset or posedge clk) //原设计的流水线，结合上一个always重新实现
     begin  
-		if(reset==0) 
+		if(reset==0||mem_cln) 
 			begin 
 				mem_res<=32'b0; 
 				mem_contr_word<=32'b0; 
 				mem_hi_data<=32'b0; 
 				mem_lo_data<=32'b0; 
 			end 
+		// else if(mem_cln)
+			// begin
+				// mem_hi_data<=32'b0; 
+				// mem_lo_data<=32'b0;
+				// mem_contr_word<=32'b0; 
+				// mem_res<=32'b0; 
+				// wb_pc<=32'b0; 
+			// end			
         else if(!delay)
 			begin 
 				mem_hi_data<=exe_hi_data; 
@@ -246,7 +258,7 @@ module MEM(
 				mem_contr_word<=32'b0; 
 				mem_res<=32'b0; 
 				wb_pc<=32'b0; 
-			end
+			end			
 			
     end 
 	

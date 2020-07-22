@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module IF_2(//input:
-              clk,reset,int,j,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,IADEE,IADFE,exc_pc,if_inst,last_inst_1,
+              clk,reset,int,j,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,IADEE,IADFE,exc_pc,if_inst,last_inst_1,cp0_epc,
             //output:
               pc,id_inst,id_pc,IC_IF,last_inst_2);
 
@@ -78,6 +78,7 @@ input int;
 input j;
 input jr;
 input [31:0]jr_data;
+input [31:0]cp0_epc;
 input jr_data_ok;
 input branch_1;
 input branch_2;
@@ -105,6 +106,7 @@ reg branch_req_1;
 reg branch_req_2;
 reg j_req;
 reg jr_req;
+reg int_req;
 reg [31:0]jr_data_cache;
 //reg jr_data_ok;
 wire [31:0]pc_slot;
@@ -117,10 +119,16 @@ always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
             next_pc<=32'hbfc0_0004;
-        else if(int)
-            next_pc<=exc_pc+4;
+
+
         else if(delay_hard|delay_soft)
             next_pc<=pc;
+        else if(int_req)
+			begin
+				next_pc<=32'hbfc0_0384;
+				int_req<=0;
+				// next_pc<=exc_pc+4;
+			end
         else if(branch_req_1)
             begin
                 if(j_req)
@@ -172,7 +180,7 @@ always @ (negedge reset or posedge clk)
 			id_inst<=32'b0;
 			IC_IF<=2'b0;
 			//id_pc<=32'hbfc0_0004;
-		end else if(int)
+		end else if(int_req)
 		begin
 			id_inst<=32'b0;
 			id_pc<=pc;
@@ -186,7 +194,7 @@ always @ (negedge reset or posedge clk)
 		end else if(delay_soft)
 		begin
 			id_inst<=32'b0;
-		end else if(!delay_hard)//正常置入
+		end else if(!delay_hard)//正常置入id
 		begin
 			last_inst<=if_inst;
 			id_inst<=if_inst;
@@ -215,6 +223,11 @@ always @ (posedge j)
 always @ (posedge jr)
 	begin
 		jr_req<=1;
+		
+	end
+always @ (posedge int)
+	begin
+		int_req<=1;
 		
 	end
 always @ (jr_data)
