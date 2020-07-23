@@ -290,7 +290,7 @@ module exe_core(
 		.mem_res_1(mem_2id_res_1),.mem_res_2(mem_2id_res_2),
 		.mem_des_1(mem_des_1),.mem_wr_hilo_1(mem_wr_hilo_1),
 		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
-		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_mix(delay_mix),.delay_in(delay_hard_data_req),.id_cln_in(cp0_int_occur_1|cp0_int_occur_2),.cp0_epc(EPC_o),
+		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_mix(delay_mix),.delay_in(delay_hard_data_req),.id_cln_in(cp0_int_occur_1|cp0_int_occur_2|cp0_cln_1|cp0_cln_2),.cp0_epc(EPC_o),
          //output
         .branch(branch_1),.j(j_1),.jr(jr_1),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_1),.id_contr_word(id_contr_word_1),.id_int_contr_word(id_int_contr_word_1),.id_size_contr(id_size_contr_1),.exe_pc(exe_pc_1),
 		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.id_des(id_des_1),.self_des(self_des),.self_hilo(self_hilo),
@@ -307,7 +307,7 @@ module exe_core(
 		.mem_res_1(mem_2id_res_1),.mem_res_2(mem_2id_res_2),
 		.mem_des_1(mem_des_1),.mem_wr_hilo_1(mem_wr_hilo_1),
 		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
-		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_in(delay_hard_data_req),.id_cln_in(cp0_int_occur_1|cp0_int_occur_2),.cp0_epc(EPC_o),
+		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_in(delay_hard_data_req),.id_cln_in(cp0_int_occur_1|cp0_int_occur_2|cp0_cln_1|cp0_cln_2),.cp0_epc(EPC_o),
          //output
         .branch(branch_2),.j(j_2),.jr(jr_2),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_2),.delay_mix(delay_mix),.id_contr_word(id_contr_word_2),.id_int_contr_word(id_int_contr_word_2),.id_size_contr(id_size_contr_2),.exe_pc(exe_pc_2),
 		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.id_des(id_des_2),.self_des(self_des),.self_hilo(self_hilo),
@@ -327,7 +327,7 @@ module exe_core(
 		.id_des(id_des_1),
 		.id_wr_hilo(id_wr_hilo_1),
 		.exe_immed(immed_1),
-		.exe_cln(cp0_int_occur_1|cp0_int_occur_2),
+		.exe_cln(cp0_int_occur_1|cp0_int_occur_2|cp0_cln_1|cp0_cln_2),
 		.exe_des(exe_des_1),
 		.exe_wr_hilo(exe_wr_hilo_1),
 		.exe_alu_des(alu_des_1),
@@ -356,7 +356,7 @@ module exe_core(
 		.id_des(id_des_2),
 		.id_wr_hilo(id_wr_hilo_2),
 		.exe_immed(immed_2),
-		.exe_cln(cp0_int_occur_1|cp0_int_occur_2),
+		.exe_cln(cp0_int_occur_1|cp0_int_occur_2|cp0_cln_1|cp0_cln_2),
 		.exe_des(exe_des_2),
 		.exe_wr_hilo(exe_wr_hilo_2),
 		.exe_alu_des(alu_des_2),
@@ -389,7 +389,7 @@ module exe_core(
 		.mem_pc(mem_pc_1),
 		.exe_des(exe_des_1),
 		.exe_wr_hilo(exe_wr_hilo_1),
-		.mem_cln(cp0_int_occur_1),
+		.mem_cln(cp0_int_occur_1|cp0_cln_1),
 		.mem_tran_data_addr(),
 		.mem_sorl(),
 		.mem_load_en(mem_load_en_1),
@@ -431,7 +431,7 @@ module exe_core(
 		.mem_pc(mem_pc_2),
 		.exe_des(exe_des_2),
 		.exe_wr_hilo(exe_wr_hilo_2),
-		.mem_cln(cp0_int_occur_1|cp0_int_occur_2),
+		.mem_cln(cp0_int_occur_1|cp0_int_occur_2|cp0_cln_1|cp0_cln_2),
 		.mem_tran_data_addr(),
 		.mem_sorl(),
 		.mem_load_en(mem_load_en_2),
@@ -537,6 +537,8 @@ module exe_core(
 	
 	wire cp0_int_occur_1;
 	wire cp0_int_occur_2;
+	wire cp0_cln_1;
+	wire cp0_cln_2;
 	wire hard_int_wire;
 	wire cp0_w_en_1;//HIGHeffective
 	wire cp0_w_en_2;
@@ -587,7 +589,9 @@ module exe_core(
 	.EPC_o(EPC_o),
 	.softWareInt(),
 	.cp0_int_occur_1(cp0_int_occur_1),
-	.cp0_int_occur_2(cp0_int_occur_2)
+	.cp0_int_occur_2(cp0_int_occur_2),
+	.cp0_cln_1(cp0_cln_1),
+	.cp0_cln_2(cp0_cln_2)
 	);
 	
 	//instruction require
@@ -895,7 +899,7 @@ module exe_core(
 	wire [31:0]mem_data_out_2;
 	
 	//w req add
-
+	reg [31:0] writeFcache;
 	always@(posedge clk)
 	begin
 		if(data_w_req_1 & data_w_ok_1 & data_w_ok_2 & awready)//请求and前指到齐and外设可用//霿要互斥！

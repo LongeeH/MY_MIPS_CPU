@@ -61,6 +61,7 @@ module ALU(
 	wire [31:0]alu_b_u;
 	assign alu_a_u=alu_a;
 	assign alu_b_u=alu_b;
+	reg alu_int_ov;
 	
     //reg [31:0]alu_res;
 	reg [32:0]result;//考虑�?位进�?
@@ -72,6 +73,7 @@ module ALU(
 			end
 			5'b00001:begin
 				result=alu_a+alu_b;
+				alu_int_ov=(alu_a[31]^~alu_b[31])&&(result[31]!=alu_a[31]);
 			end			
 			5'b01000:begin
 				result=alu_a|alu_b;
@@ -84,6 +86,7 @@ module ALU(
 			end
 			5'b01001:begin
 				result=alu_a-alu_b;
+				alu_int_ov=(alu_a[31]^alu_b[31])&&(result[31]!=alu_a[31]);
 			end
 			5'b01010:begin
 				// result=(alu_a-alu_b)<0?1:0;
@@ -110,7 +113,8 @@ module ALU(
 			end
 		endcase
 	end
-	assign alu_int_ov=result[32];//溢出�?
+	// assign alu_int_ov=(alu_a[32]^~alu_b[32])&&(result[31]!=alu_a[31]);//溢出�?
+	// assign alu_int_ov=result[32];//溢出�?
 	assign alu_res=result;
 /*	always@(posedge reset or negedge clk)//时序驱动这个时序驱动是推测的�?
 	begin

@@ -49,7 +49,9 @@ module CP0(
 	output reg [31:0] EPC_o,
 	output reg softWareInt,
 	output cp0_int_occur_1,
-	output cp0_int_occur_2
+	output cp0_int_occur_2,
+	output cp0_cln_1,
+	output cp0_cln_2
 );
     reg conflict12;
     reg [31:0] BadVAddr;
@@ -66,13 +68,70 @@ module CP0(
     reg isDelay;
 	//现在int和mem信号同步，下一周期处理中断同时进行跳转准备；
 	//如若放到下一个always中，则必然中断寄存器处理结束后才开始跳转准备。
-	assign cp0_int_occur_1 = cp0_int_contr_word_1[15];
-	assign cp0_int_occur_2 = cp0_int_contr_word_2[15];
-	//solve conflict
-	always@(*)
+	//必须要立刻给出，否则mem2无法及时清零
+	// assign cp0_int_occur_1 = cp0_int_contr_word_1[15];
+	// assign cp0_int_occur_2 = cp0_int_contr_word_2[15];
+	reg cp0_int_occur_1;
+	reg cp0_int_occur_2;
+	reg cp0_cln_1;
+	reg cp0_cln_2;
+	
+	wire cp0_info_des_1;
+	wire cp0_info_des_2;
+	assign cp0_info_des_1 = cp0_cln_1;//碰巧一样转换
+	assign cp0_info_des_2 = cp0_cln_2;
+	
+	
+	always@(*)//中断信号检测器
 	begin
-		case({cp0_int_contr_word_1[15],cp0_int_contr_word_2[15]})
-		2'b10:begin
+		// if(cp0_int_contr_word_1[15]||cp0_int_contr_word_2[15])
+		// begin
+			case(cp0_int_contr_word_1[7:0])
+				8'b00000001,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b10000000:begin//int occur ,8'b00000100
+					cp0_int_occur_1 <= 1'b1;
+					cp0_cln_1<=1'b1;
+				end
+				8'b01000000:begin//eret
+					cp0_int_occur_1<=1'b0;
+					cp0_cln_1<=1'b1;
+				end
+				8'b00000000:begin
+					cp0_int_occur_1 <= 1'b0;
+					cp0_cln_1<=1'b0;
+				end
+				default:begin
+					cp0_int_occur_1 <= 1'b0;
+					cp0_cln_1<=1'b0;
+				end
+			endcase
+			case(cp0_int_contr_word_2[7:0])
+				8'b00000001,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b10000000:begin//int occur,8'b00000100
+					cp0_int_occur_2 <= 1'b1;
+					cp0_cln_2<=1'b1;
+				end
+				8'b01000000:begin//eret
+					cp0_int_occur_2<=1'b0;
+					cp0_cln_2<=1'b1;
+				end
+				8'b00000000:begin
+					cp0_int_occur_2 <= 1'b0;
+					cp0_cln_2<=1'b0;
+				end
+				default:begin
+					cp0_int_occur_2 <= 1'b0;
+					cp0_cln_2<=1'b0;
+				end
+			endcase	
+		// end
+	end
+	
+	
+	//solve conflict
+	always@(*)//中断信息选择器
+	begin
+		// case({cp0_int_contr_word_1[15],cp0_int_contr_word_2[15]})
+		case({cp0_info_des_1,cp0_info_des_2})
+		2'b10,2'b11:begin
 			isDelay = cp0_int_contr_word_1[8];
 			exceptionFlag = {24'b0,cp0_int_contr_word_1[7:0]};
 			exceptionPC = PC_1;
@@ -99,7 +158,7 @@ module CP0(
 	// assign isDelay = cp0_int_contr_word[8];
 	// assign exceptionFlag[7:0] = cp0_int_contr_word_1[7:0]:cp0_int_contr_word_2[7:0];
 	
-    always @ (posedge clk)
+    always @ (posedge clk)//中断信息处理器
     begin
         if(reset == 0)
         begin
@@ -196,7 +255,7 @@ module CP0(
 	end
 	//write
 	always@(posedge clk)begin
-		if(cp0_w_en_1 == 1'b1)//change cp0 status force?
+		if(cp0_w_en_1&&!cp0_int_occur_2)//change cp0 reg force? && other line not int
 			begin
                 case (cp0_w_addr_1)
                 // `CP0CountAddr: 
@@ -232,7 +291,7 @@ module CP0(
                     end
 				endcase
 			end
-		else if(cp0_w_en_2 == 1'b1)//change cp0 status force?
+		else if(cp0_w_en_2&&!cp0_int_occur_1)//change cp0 status force?
 			begin
                 case (cp0_w_addr_2)
                 // `CP0CountAddr: 

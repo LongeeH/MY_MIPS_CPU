@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module IF_2(//input:
-              clk,reset,int,j,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,IADEE,IADFE,exc_pc,if_inst,last_inst_1,cp0_epc,
+              clk,reset,int,j,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,if_cln,IADEE,IADFE,exc_pc,if_inst,last_inst_1,cp0_epc,
             //output:
               pc,id_inst,id_pc,IC_IF,last_inst_2);
 
@@ -84,6 +84,7 @@ input branch_1;
 input branch_2;
 input delay_soft;
 input delay_hard;
+input if_cln;
 input IADEE;
 input IADFE;
 input [31:0]exc_pc;
@@ -187,7 +188,7 @@ always @ (negedge reset or posedge clk)
 			IC_IF<={IADEE,IADFE};
 		end else if(delay_hard)//硬暂停，通常是用于数据相关，级别最高，不允许更新任何，冻结流水线
 		begin
-		end else if(branch_req_1|branch_req_2)//流水线清空
+		end else if(branch_req_1|branch_req_2|if_cln)//流水线清空
 		begin
 			id_inst<=32'b0;
 			id_pc<=32'b0;
@@ -228,7 +229,8 @@ always @ (posedge jr)
 always @ (posedge int)
 	begin
 		int_req<=1;
-		
+		branch_req_1<=1'b0;
+		branch_req_2<=1'b0;		
 	end
 always @ (jr_data)
 	begin

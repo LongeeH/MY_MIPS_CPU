@@ -123,6 +123,7 @@ module MEM(
 	reg[31:0]mem_2id_hilo;
 	reg[6:0]mem_des;
 	reg[1:0]mem_wr_hilo;
+	reg mem_cln_req;
 	
 	assign mem_size_contr=exe_size_contr; 
 	
@@ -228,12 +229,13 @@ module MEM(
 	
 	always @(negedge reset or posedge clk) //原设计的流水线，结合上一个always重新实现
     begin  
-		if(reset==0||mem_cln) 
+		if(reset==0||(!delay&&mem_cln_req)) 
 			begin 
 				mem_res<=32'b0; 
 				mem_contr_word<=32'b0; 
 				mem_hi_data<=32'b0; 
 				mem_lo_data<=32'b0; 
+				mem_cln_req<=1'b0;
 			end 
 		// else if(mem_cln)
 			// begin
@@ -261,6 +263,11 @@ module MEM(
 			end			
 			
     end 
+	always@(posedge mem_cln)
+	begin
+		mem_cln_req<=1'b1;
+	end
+	
 	
 	always @(exe_des or exe_wr_hilo) 
 	begin  

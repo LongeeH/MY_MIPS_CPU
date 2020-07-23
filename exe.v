@@ -97,6 +97,7 @@ module EXE(
 	reg [63:0]divu_res;
 	reg [63:0]alu_hilo_res;
 	reg [32:0]alu_2id_hilo;
+	reg exe_cln_req;
 	
 	always@(*)//MUX2决定A输入
 	begin
@@ -142,7 +143,7 @@ module EXE(
 
 	always @(negedge reset or posedge clk)//流水线处理?
 	begin
-		if(reset==0||exe_cln)
+		if(reset==0||(!delay&&exe_cln_req))
 		begin
 			exe_res<=32'b0;
 			mem_data<=32'b0;
@@ -152,6 +153,7 @@ module EXE(
 			exe_lo_data<=32'b0;
 			exe_des<=7'b0;
 			exe_wr_hilo<=2'b0;
+			exe_cln_req<=1'b0;
             end
         else if(!delay)
 		begin
@@ -163,7 +165,7 @@ module EXE(
             exe_des<=id_des;
             exe_wr_hilo<=id_wr_hilo;
 			exe_contr_word[31:0]<=id_contr_word[31:0];
-			exe_int_contr_word[15:0]<={id_int_contr_word[15:3],alu_int_ov,id_int_contr_word[1:0]};
+			exe_int_contr_word[15:0]<={id_int_contr_word[15:3],(alu_int_ov&&id_int_contr_word[2]),id_int_contr_word[1:0]};
 			exe_size_contr<=id_size_contr;
 		end
 	end
@@ -237,6 +239,12 @@ module EXE(
 	begin
 		multu_res<=alu_data_A*alu_data_B;
 	end
+	
+	always@(posedge exe_cln)
+	begin
+		exe_cln_req<=1'b1;
+	end
+	
 	
 	
 	//以下两行为推测，直连能跳过一个寄存器，但仍然不正常�?��?��??

@@ -459,7 +459,7 @@ always @ (*)//changed
 			contr_word<=32'b0;
 	end
 
-always @ (posedge clk)
+always @ (*)
 	begin
 		if(!delay)
 			begin
@@ -473,7 +473,7 @@ always @ (posedge clk)
 				// int_contr_word[6]<=write_mem;
 				int_contr_word[7]<=1'b0;
 				int_contr_word[8]<=branch;
-				int_contr_word[15]<=syscall_inst||eret_inst;
+				int_contr_word[15]<=syscall_inst||eret_inst||break_inst;
 			end
 		else
 			int_contr_word<=16'b0;
@@ -635,7 +635,7 @@ reg self_jr;
 always @ (j_inst or jr_inst or jal_inst or jalr_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
           blez_inst or rs_eq_z or bgtz_inst or r_slt_z or bgez_inst)
 begin
-        self_branch <= j_inst || jr_inst || jal_inst || jalr_inst ||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||((bltz_inst||bltzal_inst) && r_slt_z)||
+        self_branch <= j_inst || jr_inst || jal_inst || jalr_inst ||eret_inst||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||((bltz_inst||bltzal_inst) && r_slt_z)||
                   (blez_inst && ((rs_eq_z)||(r_slt_z))) || (bgtz_inst && ! (rs_eq_rt || r_slt_z)) ||
                   ((bgez_inst|| bgezal_inst) && !r_slt_z);
         self_j<= j_inst||jal_inst;
@@ -666,11 +666,16 @@ begin
 	size_contr[2]<=lbu_inst||lhu_inst;
 end
 wire id_cln;
+reg id_cln_req;
 assign id_cln = id_cln_in;
+always @(posedge id_cln)
+begin
+	id_cln_req<=1'b1;
+end
 //
 always @ (negedge reset or posedge clk)
 	begin
-        if(reset==0)
+        if(reset==0||(!delay&&id_cln_req))
             begin
                 id_des[6:0]<=7'b0;
                 id_wr_hilo[1:0] <= 2'b0;
@@ -680,18 +685,21 @@ always @ (negedge reset or posedge clk)
                 id_contr_word[31:0] <= 32'b0;
                 id_int_contr_word[15:0] <= 16'b0;
                 immed[31:0] <= 32'b0;
+                id_cln_req <= 1'b0;
             end
-		else if(id_cln)
-			begin
-				id_des[6:0]<=7'b0;
-                id_wr_hilo[1:0] <= 2'b0;
-                reg_esa[31:0] <= 32'b0;
-                reg_esb[31:0] <= 32'b0;
-                exe_pc[31:0] <= 32'b0;
-                id_contr_word[31:0] <= 32'b0;
-                id_int_contr_word[15:0] <= 16'b0;
-                immed[31:0] <= 32'b0;			
-			end			
+		// else if(delay)
+			// ;
+		// else if(id_cln)
+			// begin
+				// id_des[6:0]<=7'b0;
+                // id_wr_hilo[1:0] <= 2'b0;
+                // reg_esa[31:0] <= 32'b0;
+                // reg_esb[31:0] <= 32'b0;
+                // exe_pc[31:0] <= 32'b0;
+                // id_contr_word[31:0] <= 32'b0;
+                // id_int_contr_word[15:0] <= 16'b0;
+                // immed[31:0] <= 32'b0;			
+			// end			
         else if(!delay)
             begin
                 id_des[6:0]<=des[6:0];
