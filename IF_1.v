@@ -117,21 +117,22 @@ reg [31:0]jr_data_cache;
 wire [31:0]pc_slot;
 assign pc_slot=pc-4;
 reg [31:0]branch_offset;
+reg if_cln_req;
 
 always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
             next_pc<=32'hbfc0_0000;			
             // next_pc<=32'h1faf_f02c;				
-
         else if(delay_hard|delay_soft)
             next_pc<=pc;
         else if(int_req)
 			begin
+				// next_pc<=exc_pc;
 				next_pc<=32'hbfc0_0380;
 				int_req<=0;
-			end
-            // next_pc<=exc_pc;
+				if_cln_req<=0;
+			end      
         else if(branch_req_1)
             begin
                 if(j_req)
@@ -150,6 +151,7 @@ always @ (negedge reset or posedge clk)
                     next_pc<=pc_slot+(branch_offset<<2);
 				end
 				branch_req_1<=1'b0;
+				if_cln_req<=1'b0;
             end
 		else if(branch_req_2)
             begin
@@ -169,10 +171,13 @@ always @ (negedge reset or posedge clk)
                     next_pc<=pc+(branch_offset<<2);
 				end
 				branch_req_2<=1'b0;
+				if_cln_req<=1'b0;
             end
-
         else
-			next_pc<=pc+8;
+			begin
+				next_pc<=pc+8;
+				if_cln_req<=1'b0;
+			end
     end
 
 always @ (negedge reset or posedge clk)
@@ -192,7 +197,7 @@ always @ (negedge reset or posedge clk)
 		else if(delay_hard)
 			begin
 			end
-		else if(branch_req_1|if_cln)//流水线清�?
+		else if(branch_req_1||if_cln_req)//流水线清�?
 			begin
 				id_inst<=32'b0;
 				id_pc<=32'b0;
@@ -215,13 +220,47 @@ always @ (*)
 		pc<=next_pc;
 	end
 //用于分支指令的机�?*3 日后尝试整合
-always @ (posedge branch_1 or posedge branch_2)
+// always @ (posedge branch_1 or posedge branch_2 or posedge int)
+always @ (*)
 	begin
-		if(branch_1)
-			branch_req_1<=1'b1;
-		else
-			branch_req_2<=1'b1;
+		case({branch_1,branch_2,int})
+			3'b001:begin
+				if(!branch_req_1)//避免1b2i同时进入的情况，只有1非分支，才认为2i有效。反之1i2b则清2
+				begin
+					int_req<=1'b1;
+					branch_req_2<=1'b0;
+				end 
+				else
+				;
+			end
+			3'b101,3'b011,3'b111:begin//同时到则i一定提前
+				int_req<=1'b1;
+			end
+			3'b100:begin
+				branch_req_1<=1'b1;			
+			end
+			3'b010:begin
+				branch_req_2<=1'b1;			
+			end
+		endcase
+		// if(branch_1)
+			// branch_req_1<=1'b1;
+		// else
+			// branch_req_2<=1'b1;
 	end
+	
+always@(posedge branch_2)begin
+	issolt<=1'b1;
+end
+always@(pc)begin
+	if(issolt)
+		if_solt<=1'b1;
+	else
+		if_solt<=1'b0;
+	
+	issolt
+end
+
 always @ (posedge j)
 	begin
 		j_req<=1'b1;
@@ -231,12 +270,16 @@ always @ (posedge jr)
 		jr_req<=1;
 		
 	end
-always @ (posedge int)
+always @ (posedge if_cln)
 	begin
-		int_req<=1;
-		branch_req_1<=1'b0;
-		branch_req_2<=1'b0;
+		if_cln_req<=1'b1;	
 	end
+// always @ (posedge int)//当中断发生，此前所有的
+	// begin
+		// int_req<=1;
+		// branch_req_1<=1'b0;
+		// branch_req_2<=1'b0;
+	// end
 always @ (jr_data)
 	begin
 		if(jr_data_ok)

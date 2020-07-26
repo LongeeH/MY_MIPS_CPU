@@ -172,19 +172,19 @@ module MEM(
 				mem_mux[31:0]=exe_res;
 			end
 			5'b01001:begin
-				mem_mux[31:0]={{24{byte_data[7]}},byte_data[7:0]};
+				mem_mux[31:0]={{24{byte_data[7]}},byte_data[7:0]};//b
 			end			
 			5'b01101:begin
-				mem_mux[31:0]={24'b0,byte_data};
+				mem_mux[31:0]={24'b0,byte_data};//ub
 			end			
 			5'b01010:begin
-				mem_mux[31:0]={{16{hawo_data[15]}},hawo_data[15:0]};
+				mem_mux[31:0]={{16{hawo_data[15]}},hawo_data[15:0]};//hw
 			end			
 			5'b01110:begin
-				mem_mux[31:0]={16'b0,hawo_data};
+				mem_mux[31:0]={16'b0,hawo_data};//uhw
 			end
 			5'b01011:begin
-				mem_mux[31:0]=mem_data_in;
+				mem_mux[31:0]=mem_data_in;//w
 			end
 			5'b10000:begin
 				mem_mux[31:0]=mem_cp0_data_in;

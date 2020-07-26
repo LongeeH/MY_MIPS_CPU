@@ -165,7 +165,15 @@ module EXE(
             exe_des<=id_des;
             exe_wr_hilo<=id_wr_hilo;
 			exe_contr_word[31:0]<=id_contr_word[31:0];
-			exe_int_contr_word[15:0]<={id_int_contr_word[15:3],(alu_int_ov&&id_int_contr_word[2]),id_int_contr_word[1:0]};
+			//
+			exe_int_contr_word[15:8]<=id_int_contr_word[15:8];//reserved bite
+			exe_int_contr_word[7]<=id_int_contr_word[7]&&((id_size_contr[1:0]==2'b10&&alu_res[0]!=1'b0)||(id_size_contr[1:0]==2'b11&&alu_res[1:0]!=2'b00));
+			exe_int_contr_word[6]<=id_int_contr_word[6];
+			exe_int_contr_word[5]<=id_int_contr_word[5]&&((id_size_contr[1:0]==2'b10&&alu_res[0]!=1'b0)||(id_size_contr[1:0]==2'b11&&alu_res[1:0]!=2'b00));
+			exe_int_contr_word[4:3]<=id_int_contr_word[4:3];
+			exe_int_contr_word[2]<=id_int_contr_word[2]&&alu_int_ov;
+			exe_int_contr_word[1:0]<=id_int_contr_word[1:0];
+			//
 			exe_size_contr<=id_size_contr;
 		end
 	end

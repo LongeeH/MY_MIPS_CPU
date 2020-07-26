@@ -31,7 +31,7 @@ module ID(//input
             mem_res_1,mem_res_2,
             mem_des_1,mem_wr_hilo_1,
             mem_des_2,mem_wr_hilo_2,
-            mem_hilo_res_1,mem_hilo_res_2,delay_in,delay_mix,id_cln_in,cp0_epc,
+            mem_hilo_res_1,mem_hilo_res_2,delay_in,delay_mix,id_cln_in,cp0_epc,after_branch,
          //output
             branch,j,jr,jr_data,jr_data_ok,delay_out,id_contr_word,id_int_contr_word,id_size_contr,exe_pc,
             reg_esa,reg_esb,immed,id_des,self_des,self_hilo,
@@ -130,6 +130,7 @@ input delay_in;
 input delay_mix;
 input id_cln_in;
 input [31:0]cp0_epc;
+input after_branch;
 
 output branch;
 output j;
@@ -227,6 +228,7 @@ wire ori_inst;
 wire xori_inst;
 wire slti_inst;
 wire sltiu_inst;
+wire lui_inst;
 wire lb_inst;
 wire lbu_inst;
 wire lh_inst;
@@ -261,6 +263,7 @@ wire div_inst;
 wire divu_inst;
 wire mult_inst;
 wire multu_inst;
+wire unknown_inst;
 
 
 assign OP[5:0]     = id_inst[31:26];
@@ -332,9 +335,9 @@ assign break_inst  = Rtype && (func==6'b001101);
 assign nop_inst    = (id_inst == 32'b0);
 assign div_inst = Rtype && (func == 6'b011010);
 assign divu_inst= Rtype && (func == 6'b011011);
-assign mult_inst = Rtype && (func == 6'b011000);;
-assign multu_inst = Rtype && (func == 6'b011001);;
-
+assign mult_inst = Rtype && (func == 6'b011000);
+assign multu_inst = Rtype && (func == 6'b011001);
+assign unknown_inst = !(add_inst||addu_inst||sub_inst||subu_inst||and_inst||or_inst||nor_inst||xor_inst||slt_inst||sltu_inst||sll_inst||sllv_inst||sra_inst||srav_inst||srl_inst||srlv_inst||mflo_inst||mfhi_inst||mtlo_inst||mthi_inst||addi_inst||addiu_inst||andi_inst||ori_inst||xori_inst||slti_inst||sltiu_inst||lui_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||lw_inst||sb_inst||sh_inst||sw_inst||j_inst||jr_inst||jal_inst||jalr_inst||beq_inst||bne_inst||bltz_inst||bltzal_inst||blez_inst||bgtz_inst||bgez_inst||bgezal_inst||syscall_inst||mtc0_inst||mfc0_inst||tlbp_inst||tlbr_inst||tlbwi_inst||tlbwr_inst||eret_inst||break_inst||nop_inst||div_inst||divu_inst||mult_inst||multu_inst);
 
 //alu_op
 always@(and_inst  or andi_inst  or or_inst or ori_inst or add_inst or 
@@ -420,6 +423,8 @@ assign mem_res_ok = (lw_inst || lb_inst || lbu_inst || lh_inst || lhu_inst || mf
 
 assign delay = delay_in | delay_self;
 assign delay_out = delay_self;
+
+
 // assign delay_mix_out = delay_self_mix;
 
 always @ (reg_des or RDI or RTI)
@@ -464,21 +469,41 @@ always @ (*)
 		if(!delay)
 			begin
 				// int_contr_word[1:0]<=IC_IF[1:0];
-				int_contr_word[1:0]<=2'b00;
+				// int_contr_word[0]<=(jalr_inst||jr_inst)&&(reg_A[1:0]!=2'b00);
+				int_contr_word[0]<=(id_pc[1:0]!=2'b00);
+				int_contr_word[1]<=unknown_inst;
 				int_contr_word[2]<=(add_inst || addi_inst ||sub_inst);
 				int_contr_word[3]<=break_inst;
 				int_contr_word[4]<=syscall_inst;
-				int_contr_word[5]<=1'b0;
+				int_contr_word[5]<=lw_inst||lh_inst||lhu_inst;//1'b0;////
 				int_contr_word[6]<=eret_inst;
 				// int_contr_word[6]<=write_mem;
-				int_contr_word[7]<=1'b0;
-				int_contr_word[8]<=branch;
+				int_contr_word[7]<=sw_inst||sh_inst;//1'b0;
+				int_contr_word[8]<=self_branch;
+
 				int_contr_word[15]<=syscall_inst||eret_inst||break_inst;
 			end
 		else
 			int_contr_word<=16'b0;
 	end
-
+reg is_solt;
+always@(posedge after_branch)
+begin
+	is_solt<=1'b1;
+end
+always@(id_pc)
+begin
+	if(is_solt&&(!unknown_inst)&&(id_pc!=32'b0))//||nop_inst))
+		begin
+			int_contr_word[9]<=1'b1;
+			is_solt<=1'b0;
+		end
+	else
+		begin
+			int_contr_word[9]<=1'b0;
+			is_solt<=1'b0;
+		end
+end
 
 //数据相关
 assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
@@ -489,14 +514,14 @@ assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
                     bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst||jr_inst||jalr_inst
 					||div_inst||divu_inst||mult_inst||multu_inst
 					||mthi_inst||mtlo_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst
-					);
+					)&&(!nop_inst);
 					
 assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||
                     sw_inst || sub_inst || subu_inst || slt_inst || sltu_inst ||
                     srlv_inst || srav_inst || sllv_inst || nor_inst || xor_inst ||beq_inst ||bltzal_inst|| bgezal_inst||
                     bne_inst || bltz_inst ||blez_inst ||bgez_inst||sll_inst
-					||div_inst||divu_inst||mult_inst||multu_inst
-					);
+					||div_inst||divu_inst||mult_inst||multu_inst||mtc0_inst
+					)&&(!nop_inst);
 
 assign hi_source = mfhi_inst ;
 assign hi_target = mthi_inst||div_inst||divu_inst||mult_inst||multu_inst;
@@ -686,6 +711,8 @@ always @ (negedge reset or posedge clk)
                 id_int_contr_word[15:0] <= 16'b0;
                 immed[31:0] <= 32'b0;
                 id_cln_req <= 1'b0;
+				
+				// int_contr_word[9]<=1'b0;
             end
 		// else if(delay)
 			// ;

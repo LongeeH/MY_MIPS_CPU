@@ -115,7 +115,7 @@ wire [31:0]pc_slot_2;
 assign pc_slot=pc-4;
 assign pc_slot_2=pc-8;
 reg [31:0]branch_offset;
-
+reg if_cln_req;
 always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
@@ -128,6 +128,7 @@ always @ (negedge reset or posedge clk)
 			begin
 				next_pc<=32'hbfc0_0384;
 				int_req<=0;
+				if_cln_req<=0;
 				// next_pc<=exc_pc+4;
 			end
         else if(branch_req_1)
@@ -148,6 +149,7 @@ always @ (negedge reset or posedge clk)
 					next_pc<=pc_slot+(branch_offset<<2);
 				end
 				branch_req_1<=1'b0;
+				if_cln_req<=1'b0;
             end
 		
 		else if(branch_req_2)
@@ -168,10 +170,14 @@ always @ (negedge reset or posedge clk)
                     next_pc<=pc+(branch_offset<<2);
 				end
                 branch_req_2<=1'b0;
+				if_cln_req<=1'b0;
             end
 			
         else
-        next_pc<=pc+8;
+			begin
+				next_pc<=pc+8;
+				if_cln_req<=1'b0;
+			end
     end
 
 always @ (negedge reset or posedge clk)
@@ -188,7 +194,7 @@ always @ (negedge reset or posedge clk)
 			IC_IF<={IADEE,IADFE};
 		end else if(delay_hard)//硬暂停，通常是用于数据相关，级别最高，不允许更新任何，冻结流水线
 		begin
-		end else if(branch_req_1|branch_req_2|if_cln)//流水线清空
+		end else if(branch_req_1||branch_req_2||if_cln_req)//流水线清空
 		begin
 			id_inst<=32'b0;
 			id_pc<=32'b0;
@@ -210,12 +216,34 @@ always @ (*)
 	end
 
 //分支跳转*3
-always @ (posedge branch_1 or posedge branch_2)
+// always @ (posedge branch_1 or posedge branch_2 or posedge int)
+always @ (*)
 	begin
-		if(branch_1)
-			branch_req_1<=1'b1;
-		else
-			branch_req_2<=1'b1;
+		case({branch_1,branch_2,int})
+			3'b001:begin
+				if(!branch_req_1)//not 1b2i
+				begin
+					int_req<=1'b1;
+					// branch_req_1<=1'b0;	
+					branch_req_2<=1'b0;
+				end 
+				else
+				;
+			end
+			3'b101,3'b011,3'b111:begin//同时到则i一定提前
+				int_req<=1'b1;
+			end
+			3'b100:begin
+				branch_req_1<=1'b1;			
+			end
+			3'b010:begin
+				branch_req_2<=1'b1;			
+			end
+		endcase
+		// if(branch_1)
+			// branch_req_1<=1'b1;
+		// else
+			// branch_req_2<=1'b1;
 	end
 always @ (posedge j)
 	begin
@@ -223,15 +251,18 @@ always @ (posedge j)
 	end
 always @ (posedge jr)
 	begin
-		jr_req<=1;
-		
+		jr_req<=1'b1;	
 	end
-always @ (posedge int)
+always @ (posedge if_cln)
 	begin
-		int_req<=1;
-		branch_req_1<=1'b0;
-		branch_req_2<=1'b0;		
+		if_cln_req<=1'b1;	
 	end
+// always @ (posedge int)
+	// begin
+		// int_req<=1;
+		// branch_req_1<=1'b0;
+		// branch_req_2<=1'b0;		
+	// end
 always @ (jr_data)
 	begin
 		if(jr_data_ok)

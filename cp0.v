@@ -42,14 +42,15 @@ module CP0(
 	// input isDelay,
 	input [31:0] orginalVritualAddrT_1,
 	input [31:0] orginalVritualAddrT_2,
+	input  branch_1,
 	
 	output reg [31:0] cp0_r_data_1,
 	output reg [31:0] cp0_r_data_2,
 	output reg EXL,
 	output reg [31:0] EPC_o,
 	output reg softWareInt,
-	output cp0_int_occur_1,
-	output cp0_int_occur_2,
+	output cp0_intexp_1,
+	output cp0_intexp_2,
 	output cp0_cln_1,
 	output cp0_cln_2
 );
@@ -69,60 +70,68 @@ module CP0(
 	//现在int和mem信号同步，下一周期处理中断同时进行跳转准备；
 	//如若放到下一个always中，则必然中断寄存器处理结束后才开始跳转准备。
 	//必须要立刻给出，否则mem2无法及时清零
-	// assign cp0_int_occur_1 = cp0_int_contr_word_1[15];
-	// assign cp0_int_occur_2 = cp0_int_contr_word_2[15];
-	reg cp0_int_occur_1;
-	reg cp0_int_occur_2;
+	// assign cp0_int_1 = cp0_int_contr_word_1[15];
+	// assign cp0_int_2 = cp0_int_contr_word_2[15];
+	reg cp0_int_1;
+	reg cp0_int_2;
+	reg cp0_exp_1;
+	reg cp0_exp_2;
 	reg cp0_cln_1;
 	reg cp0_cln_2;
+	reg cause_change_last;
 	
 	wire cp0_info_des_1;
 	wire cp0_info_des_2;
+	wire cp0_intexp_1;
+	wire cp0_intexp_2;
 	assign cp0_info_des_1 = cp0_cln_1;//碰巧一样转换
 	assign cp0_info_des_2 = cp0_cln_2;
-	
+	assign cp0_intexp_1=cp0_exp_1||cp0_int_1;
+	assign cp0_intexp_2=cp0_exp_2||cp0_int_2;
 	
 	always@(*)//中断信号检测器
 	begin
 		// if(cp0_int_contr_word_1[15]||cp0_int_contr_word_2[15])
 		// begin
 			case(cp0_int_contr_word_1[7:0])
-				8'b00000001,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b10000000:begin//int occur ,8'b00000100
-					cp0_int_occur_1 <= 1'b1;
+				8'b00000001,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b00100000,8'b10000000:begin//int occur ,8'b00000100
+					cp0_exp_1 <= 1'b1;
 					cp0_cln_1<=1'b1;
 				end
 				8'b01000000:begin//eret
-					cp0_int_occur_1<=1'b0;
+					cp0_exp_1<=1'b0;
 					cp0_cln_1<=1'b1;
 				end
 				8'b00000000:begin
-					cp0_int_occur_1 <= 1'b0;
+					cp0_exp_1 <= 1'b0;
 					cp0_cln_1<=1'b0;
 				end
 				default:begin
-					cp0_int_occur_1 <= 1'b0;
+					cp0_exp_1 <= 1'b0;
 					cp0_cln_1<=1'b0;
 				end
 			endcase
-			case(cp0_int_contr_word_2[7:0])
-				8'b00000001,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b10000000:begin//int occur,8'b00000100
-					cp0_int_occur_2 <= 1'b1;
-					cp0_cln_2<=1'b1;
-				end
-				8'b01000000:begin//eret
-					cp0_int_occur_2<=1'b0;
-					cp0_cln_2<=1'b1;
-				end
-				8'b00000000:begin
-					cp0_int_occur_2 <= 1'b0;
-					cp0_cln_2<=1'b0;
-				end
-				default:begin
-					cp0_int_occur_2 <= 1'b0;
-					cp0_cln_2<=1'b0;
-				end
-			endcase	
-		// end
+			if(!branch_1)
+			begin
+				case(cp0_int_contr_word_2[7:0])
+					8'b00000001,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b00100000,8'b10000000:begin//int occur,8'b00000100
+						cp0_exp_2 <= 1'b1;
+						cp0_cln_2<=1'b1;
+					end
+					8'b01000000:begin//eret
+						cp0_exp_2<=1'b0;
+						cp0_cln_2<=1'b1;
+					end
+					8'b00000000:begin
+						cp0_exp_2 <= 1'b0;
+						cp0_cln_2<=1'b0;
+					end
+					default:begin
+						cp0_exp_2 <= 1'b0;
+						cp0_cln_2<=1'b0;
+					end
+				endcase	
+			end
 	end
 	
 	
@@ -134,13 +143,13 @@ module CP0(
 		2'b10,2'b11:begin
 			isDelay = cp0_int_contr_word_1[8];
 			exceptionFlag = {24'b0,cp0_int_contr_word_1[7:0]};
-			exceptionPC = PC_1;
+			exceptionPC = (cp0_int_contr_word_1[9]==1'b1)?PC_1-4:PC_1;
 			orginalVritualAddrT = orginalVritualAddrT_1;
 		end
 		2'b01:begin
 			isDelay = cp0_int_contr_word_2[8];
 			exceptionFlag = {24'b0,cp0_int_contr_word_2[7:0]};
-			exceptionPC = PC_2;
+			exceptionPC = (cp0_int_contr_word_2[9]==1'b1)?PC_2-4:PC_2;
 			orginalVritualAddrT = orginalVritualAddrT_2;
 		end
 		2'b00:begin
@@ -158,7 +167,7 @@ module CP0(
 	// assign isDelay = cp0_int_contr_word[8];
 	// assign exceptionFlag[7:0] = cp0_int_contr_word_1[7:0]:cp0_int_contr_word_2[7:0];
 	
-    always @ (posedge clk)//中断信息处理器
+    always @ (posedge clk)//中断信息处理器*****
     begin
         if(reset == 0)
         begin
@@ -177,7 +186,7 @@ module CP0(
             Cause[15:10] <= hard_int_wire;
             EXL <= Status[1];
             EPC_o <= EPC;
-            pcForSoftwareInt <= exceptionPC + 4; //for software hard_int_wire EPC
+            pcForSoftwareInt <= exceptionPC + 4; //for software hard_int_wire exp
 			if(Compare != 31'h0000_0000 && Compare == Count)
 			begin
 				Cause[1] <= 1'b1;
@@ -193,13 +202,21 @@ module CP0(
                 Cause[31] <= isDelay;//bd
                 Cause[6:2] <= 5'b00000;//not any int code
                 Status[1] <= 1'b1;//exl
+				cp0_int_1<=1'b1;
+				cp0_int_2<=1'b1;
             end
             else if((Status[1] == 1'b0) && ((Cause[9] == 1'b1 && Status[9] == 1'b1) || (Cause[8] == 1'b1 && Status[8] == 1'b1)))//soft ok &sofe int &exl
             begin
-                EPC <= pcForSoftwareInt;
-                Cause[31] <= isDelay;
+                // exp <= pcForSoftwareInt;
+                EPC <= cause_change_last?(PC_2+4):(PC_1+4);
+                // Cause[31] <= isDelay;
+                Cause[31] <= cause_change_last?cp0_int_contr_word_2[8]:cp0_int_contr_word_1[8];
                 Status[1] <= 1'b1;
                 Cause[6:2] <= 5'b00000; 
+				cp0_int_1<=!cause_change_last;
+				cp0_cln_1<=!cause_change_last;
+				cp0_int_2<=cause_change_last;
+				cp0_cln_1<=cause_change_last;
             end         
             else if((((exceptionFlag > 32'h0000_0000) && (exceptionFlag < 32'h0000_0040)) || (exceptionFlag == 32'h0000_0080)) && (Status[1] == 0))
 			//have exception
@@ -245,17 +262,19 @@ module CP0(
 				// cp0_int_occur<=0;
                 Status[1] <= 1'b0;
             end
-            else
-            begin
-                //do nothing
-            end
+			else
+			begin
+				cp0_int_1<=1'b0;
+				cp0_int_2<=1'b0;
+			end
+
             
 
 		end
 	end
 	//write
-	always@(posedge clk)begin
-		if(cp0_w_en_1&&!cp0_int_occur_2)//change cp0 reg force? && other line not int
+	always@(*)begin
+		if(cp0_w_en_1&&!cp0_int_2&&cp0_w_addr_1!=cp0_w_addr_2)//change cp0 reg force? && other line not int
 			begin
                 case (cp0_w_addr_1)
                 // `CP0CountAddr: 
@@ -273,8 +292,9 @@ module CP0(
 				5'b01101:
                     begin
                         Cause[9:8] <= cp0_w_data_1[9:8];
+						cause_change_last<=1'b0;
                     end
-                // `CP0EPCAddr: 
+                // `CP0expAddr: 
 				5'b01110:
                     begin
                         EPC[31:0] <= cp0_w_data_1[31:0];
@@ -291,7 +311,7 @@ module CP0(
                     end
 				endcase
 			end
-		else if(cp0_w_en_2&&!cp0_int_occur_1)//change cp0 status force?
+		if(cp0_w_en_2&&!cp0_int_1)//change cp0 status force?
 			begin
                 case (cp0_w_addr_2)
                 // `CP0CountAddr: 
@@ -309,8 +329,9 @@ module CP0(
 				5'b01101:
                     begin
                         Cause[9:8] <= cp0_w_data_2[9:8];
+						cause_change_last<=1'b1;
                     end
-                // `CP0EPCAddr: 
+                // `CP0expAddr: 
 				5'b01110:
                     begin
                         EPC[31:0] <= cp0_w_data_2[31:0];
@@ -358,7 +379,7 @@ module CP0(
 				5'b01101:begin
 					cp0_r_data_1 <= Cause;
 				end
-				// `CP0EPCAddr: 
+				// `CP0expAddr: 
 				5'b01110:begin
 					cp0_r_data_1 <= EPC;
 				end
@@ -395,7 +416,7 @@ module CP0(
 				5'b01101:begin
 						cp0_r_data_2 <= Cause;
 				end
-				// `CP0EPCAddr: 
+				// `CP0expAddr: 
 				5'b01110:begin
 						cp0_r_data_2 <= EPC;
 				end
