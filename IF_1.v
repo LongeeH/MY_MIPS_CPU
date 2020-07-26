@@ -132,6 +132,10 @@ always @ (negedge reset or posedge clk)
 				next_pc<=32'hbfc0_0380;
 				int_req<=0;
 				if_cln_req<=0;
+				branch_req_1<=0;
+				branch_req_2<=0;
+				j_req<=0;
+				jr_req<=0;
 			end      
         else if(branch_req_1)
             begin
@@ -225,13 +229,14 @@ always @ (*)
 	begin
 		case({branch_1,branch_2,int})
 			3'b001:begin
-				if(!branch_req_1)//避免1b2i同时进入的情况，只有1非分支，才认为2i有效。反之1i2b则清2
-				begin
+				// if(!branch_req_1)//避免1b2i同时进入的情况，只有1非分支，才认为2i有效。反之1i2b则清2
+				// begin
 					int_req<=1'b1;
 					branch_req_2<=1'b0;
-				end 
-				else
-				;
+					branch_req_1<=1'b0;
+				// end 
+				// else
+				// ;
 			end
 			3'b101,3'b011,3'b111:begin//同时到则i一定提前
 				int_req<=1'b1;
@@ -249,17 +254,17 @@ always @ (*)
 			// branch_req_2<=1'b1;
 	end
 	
-always@(posedge branch_2)begin
-	issolt<=1'b1;
-end
-always@(pc)begin
-	if(issolt)
-		if_solt<=1'b1;
-	else
-		if_solt<=1'b0;
+// always@(posedge branch_2)begin
+	// issolt<=1'b1;
+// end
+// always@(pc)begin
+	// if(issolt)
+		// if_solt<=1'b1;
+	// else
+		// if_solt<=1'b0;
 	
-	issolt
-end
+	// issolt
+// end
 
 always @ (posedge j)
 	begin

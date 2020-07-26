@@ -479,7 +479,7 @@ always @ (*)
 				int_contr_word[6]<=eret_inst;
 				// int_contr_word[6]<=write_mem;
 				int_contr_word[7]<=sw_inst||sh_inst;//1'b0;
-				int_contr_word[8]<=self_branch;
+				int_contr_word[8]<=j_inst || jr_inst || jal_inst ||jalr_inst||beq_inst || bne_inst||bltz_inst||		bltzal_inst||blez_inst|| bgtz_inst||bgez_inst|| bgezal_inst;
 
 				int_contr_word[15]<=syscall_inst||eret_inst||break_inst;
 			end

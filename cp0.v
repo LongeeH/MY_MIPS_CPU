@@ -141,13 +141,13 @@ module CP0(
 		// case({cp0_int_contr_word_1[15],cp0_int_contr_word_2[15]})
 		case({cp0_info_des_1,cp0_info_des_2})
 		2'b10,2'b11:begin
-			isDelay = cp0_int_contr_word_1[8];
+			isDelay = cp0_int_contr_word_1[9];
 			exceptionFlag = {24'b0,cp0_int_contr_word_1[7:0]};
 			exceptionPC = (cp0_int_contr_word_1[9]==1'b1)?PC_1-4:PC_1;
 			orginalVritualAddrT = orginalVritualAddrT_1;
 		end
 		2'b01:begin
-			isDelay = cp0_int_contr_word_2[8];
+			isDelay = cp0_int_contr_word_2[9];
 			exceptionFlag = {24'b0,cp0_int_contr_word_2[7:0]};
 			exceptionPC = (cp0_int_contr_word_2[9]==1'b1)?PC_2-4:PC_2;
 			orginalVritualAddrT = orginalVritualAddrT_2;
@@ -210,7 +210,7 @@ module CP0(
                 // exp <= pcForSoftwareInt;
                 EPC <= cause_change_last?(PC_2+4):(PC_1+4);
                 // Cause[31] <= isDelay;
-                Cause[31] <= cause_change_last?cp0_int_contr_word_2[8]:cp0_int_contr_word_1[8];
+                Cause[31] <= cause_change_last?cp0_int_contr_word_2[9]:cp0_int_contr_word_1[9];
                 Status[1] <= 1'b1;
                 Cause[6:2] <= 5'b00000; 
 				cp0_int_1<=!cause_change_last;

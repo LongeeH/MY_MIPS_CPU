@@ -130,6 +130,10 @@ always @ (negedge reset or posedge clk)
 				int_req<=0;
 				if_cln_req<=0;
 				// next_pc<=exc_pc+4;
+				branch_req_1<=0;
+				branch_req_2<=0;
+				j_req<=0;
+				jr_req<=0;
 			end
         else if(branch_req_1)
             begin
@@ -221,14 +225,14 @@ always @ (*)
 	begin
 		case({branch_1,branch_2,int})
 			3'b001:begin
-				if(!branch_req_1)//not 1b2i
-				begin
+				// if(!branch_req_1)//not 1b2i
+				// begin
 					int_req<=1'b1;
-					// branch_req_1<=1'b0;	
+					branch_req_1<=1'b0;	
 					branch_req_2<=1'b0;
-				end 
-				else
-				;
+				// end 
+				// else
+				// ;
 			end
 			3'b101,3'b011,3'b111:begin//同时到则i一定提前
 				int_req<=1'b1;

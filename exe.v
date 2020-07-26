@@ -218,6 +218,11 @@ module EXE(
 	  // .B(alu_data_B),  // input wire [31 : 0] B
 	  // .P(mult_res)  // output wire [63 : 0] P
 	// );
+	// mult_gen_u multu (
+	  // .A(alu_data_A),  // input wire [31 : 0] A
+	  // .B(alu_data_B),  // input wire [31 : 0] B
+	  // .P(multu_res)  // output wire [63 : 0] P
+	// );
 	
 	// div_gen_0 div (
 	  // .s_axis_divisor_tvalid(1),    // input wire s_axis_divisor_tvalid
@@ -225,10 +230,19 @@ module EXE(
 	  // .s_axis_dividend_tvalid(1),  // input wire s_axis_dividend_tvalid
 	  // .s_axis_dividend_tdata(alu_data_A),    // input wire [31 : 0] s_axis_dividend_tdata
 	  // .m_axis_dout_tvalid(m_axis_dout_tvalid),          // output wire m_axis_dout_tvalid
-	  // .m_axis_dout_tdata(div_res)            // output wire [63 : 0] m_axis_dout_tdata
+	  // .m_axis_dout_tdata({div_res[31:0],div_res[63:32]})            // output wire [63 : 0] m_axis_dout_tdata
 	// );
-	//
-
+	
+	// div_gen_u divu (
+	  // .s_axis_divisor_tvalid(1),    // input wire s_axis_divisor_tvalid
+	  // .s_axis_divisor_tdata(alu_data_B),      // input wire [31 : 0] s_axis_divisor_tdata
+	  // .s_axis_dividend_tvalid(1),  // input wire s_axis_dividend_tvalid
+	  // .s_axis_dividend_tdata(alu_data_A),    // input wire [31 : 0] s_axis_dividend_tdata
+	  // .m_axis_dout_tvalid(m_axis_dout_tvalid),          // output wire m_axis_dout_tvalid
+	  // .m_axis_dout_tdata({divu_res[31:0],divu_res[63:32]})            // output wire [63 : 0] m_axis_dout_tdata
+	// );
+	
+	
 	always@(*)//fake div
 	begin
 		div_res[31:0]<=$signed(alu_data_A)/$signed(alu_data_B);
@@ -247,6 +261,9 @@ module EXE(
 	begin
 		multu_res<=alu_data_A*alu_data_B;
 	end
+	
+	
+	
 	
 	always@(posedge exe_cln)
 	begin
