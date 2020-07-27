@@ -94,7 +94,11 @@ module EXE(
 	reg [63:0]mult_res;
 	reg [63:0]multu_res;
 	reg [63:0]div_res;
-	reg [63:0]divu_res;
+	reg [63:0]divu_res;	
+	// wire [63:0]mult_res;
+	// wire [63:0]multu_res;
+	// wire [63:0]div_res;
+	// wire [63:0]divu_res;
 	reg [63:0]alu_hilo_res;
 	reg [32:0]alu_2id_hilo;
 	reg exe_cln_req;
@@ -153,7 +157,8 @@ module EXE(
 			exe_lo_data<=32'b0;
 			exe_des<=7'b0;
 			exe_wr_hilo<=2'b0;
-			exe_cln_req<=1'b0;
+			// exe_cln_req<=1'b0;
+			exe_cln_fin<=1'b1;
             end
         else if(!delay)
 		begin
@@ -175,6 +180,7 @@ module EXE(
 			exe_int_contr_word[1:0]<=id_int_contr_word[1:0];
 			//
 			exe_size_contr<=id_size_contr;
+			exe_cln_fin<=1'b0;
 		end
 	end
 	
@@ -186,8 +192,8 @@ module EXE(
 				alu_hilo_res<=mult_res;
 			end
 			5'b00011:begin
-				alu_hilo_res<=div_res;//除法lo商hi�?
-				// alu_hilo_res<={div_res[31:0],div_res[63:32]};//除法lo商hi�?
+				alu_hilo_res<=div_res;//除法lo商hi余?
+				// alu_hilo_res<={div_res[31:0],div_res[63:32]};//除法lo商hi余?
 			end
 			5'b00110:begin
 				alu_hilo_res<=multu_res;
@@ -264,10 +270,13 @@ module EXE(
 	
 	
 	
-	
-	always@(posedge exe_cln)
+	reg exe_cln_fin;
+	always@(posedge exe_cln or posedge exe_cln_fin)
 	begin
-		exe_cln_req<=1'b1;
+		if(exe_cln_req&&exe_cln_fin)
+			exe_cln_req<=1'b0;
+		else if(exe_cln)
+			exe_cln_req<=1'b1;
 	end
 	
 	

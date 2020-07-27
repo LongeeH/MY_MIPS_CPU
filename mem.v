@@ -235,7 +235,8 @@ module MEM(
 				mem_contr_word<=32'b0; 
 				mem_hi_data<=32'b0; 
 				mem_lo_data<=32'b0; 
-				mem_cln_req<=1'b0;
+				mem_cln_fin<=1'b1;
+				// mem_cln_req<=1'b0;
 			end 
 		// else if(mem_cln)
 			// begin
@@ -251,7 +252,8 @@ module MEM(
 				mem_lo_data<=exe_lo_data; 
 				mem_contr_word<=exe_contr_word; 
 				mem_res<=mem_mux; 
-				wb_pc<=mem_pc; 
+				wb_pc<=mem_pc;
+				mem_cln_fin<=1'b0;
             end
 		else
 			begin
@@ -263,9 +265,14 @@ module MEM(
 			end			
 			
     end 
-	always@(posedge mem_cln)
+	
+	reg mem_cln_fin;
+	always@(posedge mem_cln or posedge mem_cln_fin)
 	begin
-		mem_cln_req<=1'b1;
+		if(mem_cln_req&&mem_cln_fin)
+			mem_cln_req<=1'b0;
+		else if(mem_cln)
+			mem_cln_req<=1'b1;
 	end
 	
 	

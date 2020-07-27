@@ -55,13 +55,17 @@ module Register_File(
 			if((reg_w_addr_1 != reg_w_addr_2)||(!reg_w_en_2))
 				Register[reg_w_addr_1] <= reg_w_data_1;
 		end
-	end
-	
-	always @(negedge clk)
-	begin
+		
 		if(reg_w_en_2 && (reg_w_addr_2 != 0) )
 			Register[reg_w_addr_2] <= reg_w_data_2;
+		
 	end
+	
+	// always @(negedge clk)
+	// begin
+		// if(reg_w_en_2 && (reg_w_addr_2 != 0) )
+			// Register[reg_w_addr_2] <= reg_w_data_2;
+	// end
 	
 
 always @ (negedge reset) begin //Execute when reset is asserted

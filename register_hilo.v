@@ -33,9 +33,11 @@ module Register_HiLo(
 	reg [31:0] Register;
 	assign hilo_r_data=Register;
 	
-	always @(negedge clk)
+	always @(negedge clk or negedge reset)
 	begin
-		if(hilo_w_en_2)
+		if(reset==0)
+			Register <= 32'b0;
+		else if(hilo_w_en_2)
 		begin
 			Register<= hilo_w_data_2;
 		end
@@ -53,7 +55,5 @@ module Register_HiLo(
 		// end
 	// end
 	
-	always @ (negedge reset) begin
-		Register <= 32'b0 ;
-	end
+
 endmodule

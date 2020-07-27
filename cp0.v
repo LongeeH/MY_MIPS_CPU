@@ -86,15 +86,18 @@ module CP0(
 	wire cp0_intexp_2;
 	assign cp0_info_des_1 = cp0_cln_1;//碰巧一样转换
 	assign cp0_info_des_2 = cp0_cln_2;
-	assign cp0_intexp_1=cp0_exp_1||cp0_int_1;
-	assign cp0_intexp_2=cp0_exp_2||cp0_int_2;
+	assign cp0_intexp_1=cp0_exp_1||cp0_int_1||cp0_soft_int_1;
+	assign cp0_intexp_2=cp0_exp_2||cp0_int_2||cp0_soft_int_2;
+	
+	reg cp0_soft_int_1;
+	reg cp0_soft_int_2;
 	
 	always@(*)//中断信号检测器
 	begin
 		// if(cp0_int_contr_word_1[15]||cp0_int_contr_word_2[15])
 		// begin
 			case(cp0_int_contr_word_1[7:0])
-				8'b00000001,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b00100000,8'b10000000:begin//int occur ,8'b00000100
+				8'b00000001,8'b00000011,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b00100000,8'b10000000:begin//int occur ,8'b00000100
 					cp0_exp_1 <= 1'b1;
 					cp0_cln_1<=1'b1;
 				end
@@ -104,17 +107,17 @@ module CP0(
 				end
 				8'b00000000:begin
 					cp0_exp_1 <= 1'b0;
-					cp0_cln_1<=1'b0;
+					cp0_cln_1 <= 1'b0;
 				end
 				default:begin
 					cp0_exp_1 <= 1'b0;
-					cp0_cln_1<=1'b0;
+					cp0_cln_1 <= 1'b0;
 				end
 			endcase
 			if(!branch_1)
 			begin
 				case(cp0_int_contr_word_2[7:0])
-					8'b00000001,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b00100000,8'b10000000:begin//int occur,8'b00000100
+					8'b00000001,8'b00000011,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b00100000,8'b10000000:begin//int occur,8'b00000100
 						cp0_exp_2 <= 1'b1;
 						cp0_cln_2<=1'b1;
 					end
@@ -187,6 +190,7 @@ module CP0(
             EXL <= Status[1];
             EPC_o <= EPC;
             pcForSoftwareInt <= exceptionPC + 4; //for software hard_int_wire exp
+			
 			if(Compare != 31'h0000_0000 && Compare == Count)
 			begin
 				Cause[1] <= 1'b1;
@@ -207,16 +211,17 @@ module CP0(
             end
             else if((Status[1] == 1'b0) && ((Cause[9] == 1'b1 && Status[9] == 1'b1) || (Cause[8] == 1'b1 && Status[8] == 1'b1)))//soft ok &sofe int &exl
             begin
-                // exp <= pcForSoftwareInt;
                 EPC <= cause_change_last?(PC_2+4):(PC_1+4);
-                // Cause[31] <= isDelay;
                 Cause[31] <= cause_change_last?cp0_int_contr_word_2[9]:cp0_int_contr_word_1[9];
                 Status[1] <= 1'b1;
                 Cause[6:2] <= 5'b00000; 
-				cp0_int_1<=!cause_change_last;
-				cp0_cln_1<=!cause_change_last;
-				cp0_int_2<=cause_change_last;
-				cp0_cln_1<=cause_change_last;
+				cp0_soft_int_1<=!cause_change_last;
+				cp0_soft_int_2<=cause_change_last;
+				
+				// cp0_int_1<=!cause_change_last;
+				// cp0_cln_1<=!cause_change_last;
+				// cp0_int_2<=cause_change_last;
+				// cp0_cln_1<=cause_change_last;
             end         
             else if((((exceptionFlag > 32'h0000_0000) && (exceptionFlag < 32'h0000_0040)) || (exceptionFlag == 32'h0000_0080)) && (Status[1] == 0))
 			//have exception
@@ -225,7 +230,7 @@ module CP0(
 					32'h0000_0020,32'h0000_0080:begin//addr exp                    
 						BadVAddr <= orginalVritualAddrT;
 					end
-					32'h0000_0001:begin                    
+					32'h0000_0001,32'h0000_0003:begin                    
 						BadVAddr <= exceptionPC;
 					end
 					default:begin              
@@ -235,7 +240,7 @@ module CP0(
                 Cause[31] <= isDelay;
                 Status[1] <= 1'b1;
                 case(exceptionFlag[7:0])
-					8'b00000001,8'b00100000:begin//addr if 0r ma r                    
+					8'b00000001,8'b00100000,8'b00000011:begin//addr if 0r ma r                    
 						Cause[6:2] <= 5'b00100;
 					end
 					8'b00000010:begin//unknown inst                    
@@ -266,93 +271,144 @@ module CP0(
 			begin
 				cp0_int_1<=1'b0;
 				cp0_int_2<=1'b0;
+				cp0_soft_int_1<=1'b0;
+				cp0_soft_int_2<=1'b0;
 			end
-
-            
-
-		end
-	end
-	//write
-	always@(*)begin
-		if(cp0_w_en_1&&!cp0_int_2&&cp0_w_addr_1!=cp0_w_addr_2)//change cp0 reg force? && other line not int
+		
+		
+        //write
+		if(cp0_w_en_1&&!cp0_intexp_2&&cp0_w_addr_1!=cp0_w_addr_2)//change cp0 reg force? && other line not int
 			begin
                 case (cp0_w_addr_1)
                 // `CP0CountAddr: 
-				5'b01001:
-                    begin
-                        Count <= cp0_w_data_1;
-                    end
+				5'b01001:begin
+                    Count <= cp0_w_data_1;
+                end
                 // `CP0StatusAddr: 
-				5'b01100:
-                    begin
-                        Status[15:8] <= cp0_w_data_1[15:8];//block int
-                        Status[1:0] <= cp0_w_data_1[1:0];
-                    end
+				5'b01100:begin
+                    Status[15:8] <= cp0_w_data_1[15:8];//block int
+                    Status[1:0] <= cp0_w_data_1[1:0];
+                end
                 // `CP0CauseAddr: 
-				5'b01101:
-                    begin
-                        Cause[9:8] <= cp0_w_data_1[9:8];
-						cause_change_last<=1'b0;
-                    end
+				5'b01101:begin
+                    Cause[9:8] <= cp0_w_data_1[9:8];
+					cause_change_last<=1'b0;
+                end
                 // `CP0expAddr: 
-				5'b01110:
-                    begin
-                        EPC[31:0] <= cp0_w_data_1[31:0];
-                    end
+				5'b01110:begin
+                    EPC[31:0] <= cp0_w_data_1[31:0];
+                end
                 // `CP0CompareAddr: 
-				5'b01011:
-                    begin
-                        Compare <= cp0_w_data_1;
-                        Cause[1] <= 1'b0;
-                    end
-                default:
-                    begin
-                        //do nothing
-                    end
+				5'b01011:begin
+                    Compare <= cp0_w_data_1;
+                    Cause[1] <= 1'b0;
+                end
+                default:begin
+                    //do nothing
+                end
 				endcase
 			end
-		if(cp0_w_en_2&&!cp0_int_1)//change cp0 status force?
+		if(cp0_w_en_2&&!cp0_intexp_1)//change cp0 status force?
 			begin
                 case (cp0_w_addr_2)
                 // `CP0CountAddr: 
-				5'b01001:
-                    begin
-                        Count <= cp0_w_data_2;
-                    end
+				5'b01001:begin
+                    Count <= cp0_w_data_2;
+                end
                 // `CP0StatusAddr: 
-				5'b01100:
-                    begin
-                        Status[15:8] <= cp0_w_data_2[15:8];//block int
-                        Status[1:0] <= cp0_w_data_2[1:0];
-                    end
+				5'b01100:begin
+                    Status[15:8] <= cp0_w_data_2[15:8];//block int
+                    Status[1:0] <= cp0_w_data_2[1:0];
+                end
                 // `CP0CauseAddr: 
-				5'b01101:
-                    begin
-                        Cause[9:8] <= cp0_w_data_2[9:8];
-						cause_change_last<=1'b1;
-                    end
+				5'b01101:begin
+                    Cause[9:8] <= cp0_w_data_2[9:8];
+					cause_change_last<=1'b1;
+                end
                 // `CP0expAddr: 
-				5'b01110:
-                    begin
-                        EPC[31:0] <= cp0_w_data_2[31:0];
-                    end
+				5'b01110: begin
+                    EPC[31:0] <= cp0_w_data_2[31:0];
+                end
                 // `CP0CompareAddr: 
-				5'b01011:
-                    begin
-                        Compare <= cp0_w_data_2;
-                        Cause[1] <= 1'b0;
-                    end
+				5'b01011:begin
+                    Compare <= cp0_w_data_2;
+                    Cause[1] <= 1'b0;
+                end
                 default:
                     begin
                         //do nothing
                     end
 				endcase
-			end
-		else
-			begin
-			
-			end			
+		end			
+
+		end
 	end
+	// write
+	// always@(*)begin
+		// if(cp0_w_en_1&&!cp0_int_2&&cp0_w_addr_1!=cp0_w_addr_2)//change cp0 reg force? && other line not int
+			// begin
+                // case (cp0_w_addr_1)
+                // `CP0CountAddr: 
+				// 5'b01001:begin
+                    // Count <= cp0_w_data_1;
+                // end
+                // `CP0StatusAddr: 
+				// 5'b01100:begin
+                    // Status[15:8] <= cp0_w_data_1[15:8];//block int
+                    // Status[1:0] <= cp0_w_data_1[1:0];
+                // end
+                // `CP0CauseAddr: 
+				// 5'b01101:begin
+                    // Cause[9:8] <= cp0_w_data_1[9:8];
+					// cause_change_last<=1'b0;
+                // end
+                // `CP0expAddr: 
+				// 5'b01110:begin
+                    // EPC[31:0] <= cp0_w_data_1[31:0];
+                // end
+                // `CP0CompareAddr: 
+				// 5'b01011:begin
+                    // Compare <= cp0_w_data_1;
+                    // Cause[1] <= 1'b0;
+                // end
+                // default:begin
+                    // do nothing
+                // end
+				// endcase
+			// end
+		// if(cp0_w_en_2&&!cp0_int_1)//change cp0 status force?
+			// begin
+                // case (cp0_w_addr_2)
+                // `CP0CountAddr: 
+				// 5'b01001:begin
+                    // Count <= cp0_w_data_2;
+                // end
+                // `CP0StatusAddr: 
+				// 5'b01100:begin
+                    // Status[15:8] <= cp0_w_data_2[15:8];//block int
+                    // Status[1:0] <= cp0_w_data_2[1:0];
+                // end
+                // `CP0CauseAddr: 
+				// 5'b01101:begin
+                    // Cause[9:8] <= cp0_w_data_2[9:8];
+					// cause_change_last<=1'b1;
+                // end
+                // `CP0expAddr: 
+				// 5'b01110: begin
+                    // EPC[31:0] <= cp0_w_data_2[31:0];
+                // end
+                // `CP0CompareAddr: 
+				// 5'b01011:begin
+                    // Compare <= cp0_w_data_2;
+                    // Cause[1] <= 1'b0;
+                // end
+                // default:
+                    // begin
+                        // do nothing
+                    // end
+				// endcase
+		// end		
+	// end
 	
 	// The logic of read reg from cp0
 	always @ (*) begin

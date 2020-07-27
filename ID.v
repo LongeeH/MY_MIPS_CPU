@@ -690,12 +690,18 @@ begin
 	size_contr[1]<=lh_inst||lhu_inst||sh_inst||lw_inst||sw_inst;
 	size_contr[2]<=lbu_inst||lhu_inst;
 end
+
+assign id_cln = id_cln_in;
 wire id_cln;
 reg id_cln_req;
-assign id_cln = id_cln_in;
-always @(posedge id_cln)
+reg id_cln_fin;
+
+always @(posedge id_cln or posedge id_cln_fin)
 begin
-	id_cln_req<=1'b1;
+	if(id_cln_req&&id_cln_fin)
+		id_cln_req<=1'b0;
+	else if(id_cln)
+		id_cln_req<=1'b1;
 end
 //
 always @ (negedge reset or posedge clk)
@@ -710,7 +716,8 @@ always @ (negedge reset or posedge clk)
                 id_contr_word[31:0] <= 32'b0;
                 id_int_contr_word[15:0] <= 16'b0;
                 immed[31:0] <= 32'b0;
-                id_cln_req <= 1'b0;
+                id_cln_fin <= 1'b1;
+                // id_cln_req <= 1'b0;
 				
 				// int_contr_word[9]<=1'b0;
             end
@@ -749,7 +756,10 @@ always @ (negedge reset or posedge clk)
 				branch<=self_branch;
 				j<=self_j;
 				jr<=self_jr;
+				id_cln_fin <= 1'b0;
             end
+			else
+				id_cln_fin <= 1'b0;
 			
 
 	end

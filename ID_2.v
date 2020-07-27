@@ -692,13 +692,17 @@ begin
 	size_contr[2]<=lbu_inst||lhu_inst;
 end
 
-wire id_cln;
-assign id_cln = delay_self_mix|id_cln_in;
 
+assign id_cln = id_cln_in;
+wire id_cln;
 reg id_cln_req;
-always @(posedge id_cln)
+reg id_cln_fin;
+always @(posedge id_cln or posedge id_cln_fin)
 begin
-	id_cln_req<=1'b1;
+	if(id_cln_req&&id_cln_fin)
+		id_cln_req<=1'b0;
+	else if(id_cln)
+		id_cln_req<=1'b1;
 end
 
 always @ (negedge reset or posedge clk)
@@ -713,21 +717,8 @@ always @ (negedge reset or posedge clk)
                 id_contr_word[31:0] <= 32'b0;
                 id_int_contr_word[15:0] <= 16'b0;
                 immed[31:0] <= 32'b0;
-                id_cln_req <= 1'b0;
+                id_cln_fin <= 1'b1;
                 end
-		// else if(delay)
-			// ;
-		// else if(id_cln)
-			// begin
-				// id_des[6:0]<=7'b0;
-                // id_wr_hilo[1:0] <= 2'b0;
-                // reg_esa[31:0] <= 32'b0;
-                // reg_esb[31:0] <= 32'b0;
-                // exe_pc[31:0] <= 32'b0;
-                // id_contr_word[31:0] <= 32'b0;
-                // id_int_contr_word[15:0] <= 16'b0;
-                // immed[31:0] <= 32'b0;			
-			// end
         else if(!delay)
             begin
                 id_des[6:0]<=des[6:0];
@@ -750,7 +741,10 @@ always @ (negedge reset or posedge clk)
 				branch<=self_branch;
 				j<=self_j;
 				jr<=self_jr;
+				id_cln_fin <= 1'b0;
             end
+			else
+				id_cln_fin <= 1'b0;
 
 	end
 

@@ -119,23 +119,45 @@ assign pc_slot=pc-4;
 reg [31:0]branch_offset;
 reg if_cln_req;
 
+reg j_fin;
+reg jr_fin;
+reg if_cln_fin;
+reg branch_fin;
+reg int_fin;
+
 always @ (negedge reset or posedge clk)
     begin
         if (reset==0)
+		begin
             next_pc<=32'hbfc0_0000;			
-            // next_pc<=32'h1faf_f02c;				
+            // next_pc<=32'h1faf_f02c;
+			if_cln_fin<=0;
+			branch_fin<=0;
+			j_fin<=0;
+			jr_fin<=0;
+			int_fin<=0;
+		end
         else if(delay_hard|delay_soft)
+		begin
             next_pc<=pc;
+			if_cln_fin<=0;
+		end
         else if(int_req)
 			begin
 				// next_pc<=exc_pc;
 				next_pc<=32'hbfc0_0380;
-				int_req<=0;
-				if_cln_req<=0;
-				branch_req_1<=0;
-				branch_req_2<=0;
-				j_req<=0;
-				jr_req<=0;
+				int_fin<=1;
+				if_cln_fin<=1;
+				branch_fin<=1;
+				j_fin<=1;
+				jr_fin<=1;
+				
+				// int_req<=0;
+				// if_cln_req<=0;
+				// branch_req_1<=0;
+				// branch_req_2<=0;
+				// j_req<=0;
+				// jr_req<=0;
 			end      
         else if(branch_req_1)
             begin
@@ -143,19 +165,23 @@ always @ (negedge reset or posedge clk)
 				begin
                     next_pc[31:28]<=pc_slot[31:28];
 					next_pc[27:0]<=(last_inst[25:0]<<2);
-					j_req<=1'b0;
+					// j_req<=1'b0;
+					j_fin<=1;
 				end
                 else if (jr_req)
 				begin
 					next_pc<=jr_data_cache;
-					jr_req<=1'b0;
+					// jr_req<=1'b0;
+					jr_fin<=1;
 				end 
 				else
 				begin
                     next_pc<=pc_slot+(branch_offset<<2);
 				end
-				branch_req_1<=1'b0;
-				if_cln_req<=1'b0;
+				// branch_req_1<=1'b0;
+				// if_cln_req<=1'b0;
+				branch_fin<=1;
+				if_cln_fin<=1;
             end
 		else if(branch_req_2)
             begin
@@ -163,24 +189,33 @@ always @ (negedge reset or posedge clk)
 				begin
                     next_pc[31:28]<=pc[31:28];
 					next_pc[27:0]<=(last_inst_2[25:0]<<2);
-					j_req<=1'b0;
+					// j_req<=1'b0;
+					j_fin<=1;
 				end
 				else if (jr_req)
 				begin
 					next_pc<=jr_data_cache;
-					jr_req<=1'b0;
+					// jr_req<=1'b0;
+					jr_fin<=1;
 				end 
                 else
 				begin
                     next_pc<=pc+(branch_offset<<2);
 				end
-				branch_req_2<=1'b0;
-				if_cln_req<=1'b0;
+				// branch_req_2<=1'b0;
+				// if_cln_req<=1'b0;
+				branch_fin<=1;
+				if_cln_fin<=1;
             end
         else
 			begin
 				next_pc<=pc+8;
-				if_cln_req<=1'b0;
+				
+				int_fin<=0;
+				if_cln_fin<=1;
+				branch_fin<=0;
+				j_fin<=0;
+				jr_fin<=0;
 			end
     end
 
@@ -195,8 +230,8 @@ always @ (negedge reset or posedge clk)
 		else if(int_req)
 			begin
 				id_inst<=32'b0;
-				id_pc<=pc;
-				IC_IF<={IADEE,IADFE};
+				id_pc<=32'b0;
+				//IC_IF<={IADEE,IADFE};
 			end 		
 		else if(delay_hard)
 			begin
@@ -248,10 +283,13 @@ always @ (*)
 				branch_req_2<=1'b1;			
 			end
 		endcase
-		// if(branch_1)
-			// branch_req_1<=1'b1;
-		// else
-			// branch_req_2<=1'b1;
+		
+		if(int_fin&&int_req)
+			int_req<=0;			
+		if(branch_fin&&branch_req_1)
+			branch_req_1<=0;
+		if(branch_fin&&branch_req_2)
+			branch_req_2<=0;
 	end
 	
 // always@(posedge branch_2)begin
@@ -266,25 +304,29 @@ always @ (*)
 	// issolt
 // end
 
-always @ (posedge j)
+
+
+always @ (posedge j or posedge j_fin)
 	begin
-		j_req<=1'b1;
+		if(j_req&&j_fin)
+			j_req<=1'b0;
+		else if(j)
+			j_req<=1'b1;
 	end
-always @ (posedge jr)
+always @ (posedge jr or posedge jr_fin)
 	begin
-		jr_req<=1;
-		
+		if(jr_req&&jr_fin)
+			jr_req<=1'b0;
+		else if(jr)
+			jr_req<=1'b1;
 	end
-always @ (posedge if_cln)
+always @ (posedge if_cln or posedge if_cln_fin)
 	begin
-		if_cln_req<=1'b1;	
+		if(if_cln_req&if_cln_fin)
+			if_cln_req<=1'b0;
+		else if(if_cln)
+			if_cln_req<=1'b1;
 	end
-// always @ (posedge int)//当中断发生，此前所有的
-	// begin
-		// int_req<=1;
-		// branch_req_1<=1'b0;
-		// branch_req_2<=1'b0;
-	// end
 always @ (jr_data)
 	begin
 		if(jr_data_ok)
