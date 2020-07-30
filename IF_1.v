@@ -24,7 +24,7 @@
 module IF_1(//input:
               clk,reset,int,j,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,if_cln,IADEE,IADFE,exc_pc,if_inst,last_inst_2,cp0_epc,
             //output:
-              pc,id_inst,id_pc,IC_IF,last_inst_1);
+              pc,id_inst,id_pc,IC_IF,last_inst_1,pcn);
 
 /*
     branch                                    分支指令（来自分支延迟槽�?
@@ -99,7 +99,9 @@ output [31:0]id_inst;
 output [31:0]id_pc;
 output [1:0]IC_IF;
 output [31:0]last_inst_1;
+output pcn;
 
+reg pcn;
 reg [31:0]next_pc;
 reg [31:0]pc;
 reg [31:0]id_inst;
@@ -125,7 +127,7 @@ reg if_cln_fin;
 reg branch_fin;
 reg int_fin;
 
-always @ (negedge reset or posedge clk)
+always @ (posedge clk)
     begin
         if (reset==0)
 		begin
@@ -136,28 +138,23 @@ always @ (negedge reset or posedge clk)
 			j_fin<=0;
 			jr_fin<=0;
 			int_fin<=0;
+			pcn<=1;
 		end
-        else if(delay_hard|delay_soft)
+        else if(delay_hard||delay_soft)
 		begin
             next_pc<=pc;
 			if_cln_fin<=0;
+			pcn<=0;
 		end
         else if(int_req)
 			begin
-				// next_pc<=exc_pc;
 				next_pc<=32'hbfc0_0380;
 				int_fin<=1;
 				if_cln_fin<=1;
 				branch_fin<=1;
 				j_fin<=1;
 				jr_fin<=1;
-				
-				// int_req<=0;
-				// if_cln_req<=0;
-				// branch_req_1<=0;
-				// branch_req_2<=0;
-				// j_req<=0;
-				// jr_req<=0;
+				pcn<=1;
 			end      
         else if(branch_req_1)
             begin
@@ -165,23 +162,20 @@ always @ (negedge reset or posedge clk)
 				begin
                     next_pc[31:28]<=pc_slot[31:28];
 					next_pc[27:0]<=(last_inst[25:0]<<2);
-					// j_req<=1'b0;
 					j_fin<=1;
 				end
                 else if (jr_req)
 				begin
 					next_pc<=jr_data_cache;
-					// jr_req<=1'b0;
 					jr_fin<=1;
 				end 
 				else
 				begin
                     next_pc<=pc_slot+(branch_offset<<2);
 				end
-				// branch_req_1<=1'b0;
-				// if_cln_req<=1'b0;
 				branch_fin<=1;
 				if_cln_fin<=1;
+				pcn<=1;
             end
 		else if(branch_req_2)
             begin
@@ -206,16 +200,17 @@ always @ (negedge reset or posedge clk)
 				// if_cln_req<=1'b0;
 				branch_fin<=1;
 				if_cln_fin<=1;
+				pcn<=1;
             end
         else
 			begin
-				next_pc<=pc+8;
-				
+				next_pc<=pc+8;			
 				int_fin<=0;
 				if_cln_fin<=1;
 				branch_fin<=0;
 				j_fin<=0;
 				jr_fin<=0;
+				pcn<=1;
 			end
     end
 
@@ -264,7 +259,7 @@ always @ (*)
 	begin
 		case({branch_1,branch_2,int})
 			3'b001:begin
-				// if(!branch_req_1)//避免1b2i同时进入的情况，只有1非分支，才认为2i有效。反之1i2b则清2
+				// if(!branch_req_1)//避免1b2i同时进入的情况，只有1非分支，才认�?2i有效。反�?1i2b则清2
 				// begin
 					int_req<=1'b1;
 					branch_req_2<=1'b0;
@@ -273,7 +268,7 @@ always @ (*)
 				// else
 				// ;
 			end
-			3'b101,3'b011,3'b111:begin//同时到则i一定提前
+			3'b101,3'b011,3'b111:begin//同时到则i�?定提�?
 				int_req<=1'b1;
 			end
 			3'b100:begin

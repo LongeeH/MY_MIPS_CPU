@@ -22,7 +22,7 @@
 module IF_2(//input:
               clk,reset,int,j,jr,jr_data,jr_data_ok,branch_1,branch_2,delay_soft,delay_hard,if_cln,IADEE,IADFE,exc_pc,if_inst,last_inst_1,cp0_epc,
             //output:
-              pc,id_inst,id_pc,IC_IF,last_inst_2);
+              pc,id_inst,id_pc,IC_IF,last_inst_2,pcn);
 
 /*
     branch                                    分支指令（来自分支延迟槽）
@@ -96,7 +96,9 @@ output [31:0]id_inst;
 output [31:0]id_pc;
 output [1:0]IC_IF;
 output [31:0]last_inst_2;
+output pcn;
 
+reg pcn;
 reg [31:0]next_pc;
 reg [31:0]pc;
 reg [31:0]id_inst;
@@ -123,7 +125,7 @@ reg if_cln_fin;
 reg branch_fin;
 reg int_fin;
 
-always @ (negedge reset or posedge clk)
+always @ (posedge clk)
     begin
         if (reset==0)
 		begin
@@ -133,11 +135,13 @@ always @ (negedge reset or posedge clk)
 			j_fin<=0;
 			jr_fin<=0;
 			int_fin<=0;
+			pcn<=1;
 		end
-        else if(delay_hard|delay_soft)
+        else if(delay_hard||delay_soft)
 		begin
             next_pc<=pc;
 			if_cln_fin<=0;
+			pcn<=0;
 		end
         else if(int_req)
 			begin
@@ -154,9 +158,11 @@ always @ (negedge reset or posedge clk)
 				branch_fin<=1;
 				j_fin<=1;
 				jr_fin<=1;
+				pcn<=1;
 			end
         else if(branch_req_1)
             begin
+				pcn<=1;
                 if(j_req)
 				begin
                     next_pc[31:28]<=pc_slot_2[31:28];
@@ -182,7 +188,9 @@ always @ (negedge reset or posedge clk)
 		
 		else if(branch_req_2)
 			begin
+				pcn<=1;
                 if(j_req)
+				
 				begin
                     next_pc[31:28]<=pc_slot[31:28];
 					next_pc[27:0]<=(last_inst[25:0]<<2)+4;
@@ -214,6 +222,8 @@ always @ (negedge reset or posedge clk)
 				branch_fin<=0;
 				j_fin<=0;
 				jr_fin<=0;
+				
+				pcn<=1;
 			end
     end
 

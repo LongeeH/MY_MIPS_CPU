@@ -124,8 +124,8 @@ module exe_core(
 	wire j_2;//useless
 	wire jr_1;
 	wire jr_2;
-	wire [31:0]jr_data;//三濁门
-	wire jr_data_ok;//三濁门
+	wire [31:0]jr_data;//三濁�?
+	wire jr_data_ok;//三濁�?
 	wire delay;
 	//ID-ID
 	wire delay_mix;
@@ -253,7 +253,8 @@ module exe_core(
 		.id_inst(id_inst_1),
 		.id_pc(id_pc_1),
 		.IC_IF(IC_IF_1),
-		.last_inst_1(last_inst_1)
+		.last_inst_1(last_inst_1),
+		.pcn(pcn_1)
 	);
     IF_2 _if2(
 		.clk(clk),
@@ -278,7 +279,8 @@ module exe_core(
 		.id_inst(id_inst_2),
 		.id_pc(id_pc_2),
 		.IC_IF(IC_IF_2),
-		.last_inst_2(last_inst_2)
+		.last_inst_2(last_inst_2),
+		.pcn(pcn_2)
 	);
     
 	ID _id1(
@@ -536,6 +538,9 @@ module exe_core(
 		.hilo_r_data(lo_r_data)
 	);
 	
+	//
+	wire pcn_1;
+	wire pcn_2;
 	//mem-cp0
 	
 	wire cp0_intexp_1;
@@ -599,8 +604,8 @@ module exe_core(
 	);
 	
 	//instruction require
-	wire [31:0] pc_1;
-	wire [31:0] pc_2;
+	(*mark_debug = "true" *)wire [31:0] pc_1;
+	(*mark_debug = "true" *)wire [31:0] pc_2;
 	wire [31:0]if_inst_1;
 	wire [31:0]if_inst_2;
 	wire waitinst;
@@ -636,7 +641,7 @@ module exe_core(
 	
 	//axi read apply module
 	
-	always@(posedge clk or posedge inst_req or posedge data_r_req_1 or posedge data_r_req_2)
+	always@(posedge clk)
 	begin
 		if(inst_req && !inst_apply && arready )
 		begin
@@ -695,13 +700,13 @@ module exe_core(
 	reg [63:0]inst_2_if;
 	reg [63:0]data_2_mem;
 	
-	// always @ (posedge clk or posedge arvalid)//虚拟cache-指令对交替分酿
-	always @ (posedge clk or posedge arvalid)//虚拟cache-指令对交替分酿
+	// always @ (posedge clk or posedge arvalid)//虚拟cache-指令对交替分�?
+	always @ (posedge clk)//虚拟cache-指令对交替分�?
 	begin
 		if(reset==0)
 		begin
-			inst_rec_1<=1'b1;
-			inst_rec_2<=1'b1;		
+			inst_rec_1<=1'b0;
+			inst_rec_2<=1'b0;		
 		end
 		else if(rvalid==1&&rid==0)
 		begin
@@ -717,7 +722,7 @@ module exe_core(
 			endcase
 			flag = !flag;
 		end 
-		else if(arvalid&&rid==0)
+		else// if(arvalid&&rid==0)
 		begin 
 			inst_rec_1<=1'b0;
 			inst_rec_2<=1'b0;
@@ -763,29 +768,31 @@ module exe_core(
 	assign if_inst_2 = inst_2_if[63:32];
 		
 	
-	always @(pc_1 or inst_rec_1)
+	always @(posedge clk or posedge pcn_1)
 	begin
-		if(reset==0)begin
+		if(reset==0)
 			inst_req_1<=1'b1;
-		end
-		else if(inst_rec_1&&inst_req_1)
+		else if(pcn_1)
+			inst_req_1<=1'b1;
+		else if(inst_rec_1)
 			inst_req_1<=1'b0;
-		else begin
-			inst_req_1<=1;
+		else
+		;
 			// inst_2_if[31:0]<=32'b0;
-		end
+		
 	end
-	always @(pc_2 or inst_rec_2)
+	always @(posedge clk or posedge pcn_2)
 	begin
-		if(reset==0)begin
+		if(reset==0)
 			inst_req_2<=1'b1;
-		end
-		else if(inst_rec_2&&inst_req_2)
+		else if(pcn_2)
+			inst_req_2<=1'b1;
+		else if(inst_rec_2)
 			inst_req_2<=1'b0;
-		else begin
-			inst_req_2<=1'b1;
+		else
+		;
 			// inst_2_if[63:32]<=32'b0;			
-		end
+		
 	end
 	
 	always @(posedge mem_load_en_1 or posedge data_r_rec_1 or posedge cp0_intexp_1)
@@ -806,7 +813,7 @@ module exe_core(
 	end
 
 	
-	assign inst_req = inst_req_1 & inst_req_2;//必须12流水线同时请求时，才请求取指令对〿
+	assign inst_req = inst_req_1 & inst_req_2;//必须12流水线同时请求时，才请求取指令对�?
 	assign delay_soft_inst = inst_req_1 | inst_req_2;//任一流水线请求时，进行软暂停。只暂停pc的更新行为㿂其他状况不会保畿
 	
 	assign delay_hard_data_r_req = data_r_req_1 | data_r_req_2;
@@ -882,7 +889,7 @@ module exe_core(
 	reg data_w_apply_2;
 	always@(posedge clk)
 	begin
-		if(data_w_req_1 && !data_w_apply_1 && !data_w_apply_2 && awready && !cp0_intexp_1)//请求and前指到齐and外设可用//霿要互斥！
+		if(data_w_req_1 && !data_w_apply_1 && !data_w_apply_2 && awready && !cp0_intexp_1)//请求and前指到齐and外设可用//霿要互斥�?
 		begin
 			awaddr_v<=mem_data_addr_1;// 
 			awvalid<=1;
