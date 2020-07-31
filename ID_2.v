@@ -34,7 +34,7 @@ module ID_2(//input
             mem_hilo_res_1,mem_hilo_res_2,self_des,self_hilo,delay_in,id_cln_in,cp0_epc,
          //output
             branch,j,jr,jr_data,jr_data_ok,delay_out,delay_mix,id_contr_word,id_int_contr_word,id_size_contr,exe_pc,
-            reg_esa,reg_esb,immed,id_des,
+            reg_esa,reg_esb,immed,id_des,after_branch,
             id_wr_hilo,RSO,RTO
     );
 
@@ -147,6 +147,7 @@ output [31:0]reg_esa;
 output [31:0]reg_esb;
 output [31:0]immed;
 output [6:0]id_des;
+output after_branch;
 
 output [1:0]id_wr_hilo;
 output [4:0]RSO;
@@ -482,7 +483,7 @@ always @ (*)
 		else
 			int_contr_word<=16'b0;
 	end
-
+assign after_branch = int_contr_word[8];
 //数据相关
 assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
                     addi_inst || addu_inst || addiu_inst || lw_inst ||
@@ -699,15 +700,15 @@ reg id_cln_req;
 reg id_cln_fin;
 always @(posedge id_cln or posedge id_cln_fin)
 begin
-	if(id_cln_req&&id_cln_fin)
+	if(id_cln_fin)
 		id_cln_req<=1'b0;
 	else if(id_cln)
 		id_cln_req<=1'b1;
 end
 
-always @ (negedge reset or posedge clk)
+always @ ( posedge clk)
 	begin
-        if(reset==0||(!delay&&id_cln_req)||delay_self_mix)//这里的mix暂时还不能删除,同阶冲突时，由于delay无法立即更新exe，产生重复的exe。
+        if(reset==0||(!delay&&id_cln_req)||delay_self_mix)//这里的mix暂时还不能删�?,同阶冲突时，由于delay无法立即更新exe，产生重复的exe�?
             begin
                 id_des[6:0]<=7'b0;
                 id_wr_hilo[1:0] <= 2'b0;

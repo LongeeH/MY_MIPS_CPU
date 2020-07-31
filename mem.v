@@ -31,17 +31,17 @@
 	mem_pc[31:0]	
 	exe_des[6:0]	
 	exe_wr_hilo[1:0]	
-	mem_tran_data_addr			是否需要协处理器 CP0 进行虚拟地址到物理地址的地址转换 
-	mem_sorl					存取存储器的操作是写操作还是读操作
+	mem_tran_data_addr			是否�?要协处理�? CP0 进行虚拟地址到物理地�?的地�?转换 
+	mem_sorl					存取存储器的操作是写操作还是读操�?
 	mem_wr_en						是否把数据写入存储器
-	mem_rd_cp0_reg				存取 CP0 的操作是读操作
-	mem_wr_cp0_reg				存取 CP0 的操作是写操作
-	mem_tlb_op_en				为 CP0 进行 TLB 操作的使能信号
-	mem_data_addr[31:0]			需要存储的数据地址
-	mem_data_out[31:0]			cpu输出的数据
+	mem_rd_cp0_reg				存取 CP0 的操作是读操�?
+	mem_wr_cp0_reg				存取 CP0 的操作是写操�?
+	mem_tlb_op_en				�? CP0 进行 TLB 操作的使能信�?
+	mem_data_addr[31:0]			�?要存储的数据地址
+	mem_data_out[31:0]			cpu输出的数�?
 	mem_int_contr[7:0]			中断控制信号
 	mem_cp0_reg_index[4:0]		CP0相关寄存器操作的选址信号 
-	mem_tlb_op[1:0]				CP0进行的 TLB 操作类型
+	mem_tlb_op[1:0]				CP0进行�? TLB 操作类型
 	mem_res[31:0]				MEM级的指令数据结果？？
 	mem_contr_word[31:0]		流水下一阶段
 	wb_hilo_data[31:0]			流水下一阶段
@@ -49,7 +49,7 @@
 	mem_2id_hilo[31:0]			数据相关时前递给ID替换来源
 	mem_des[6:0]				反馈ID，处理数据相关的控制信号
 	mem_wr_hilo[1:0]			反馈ID，处理数据相关的控制信号
-	mem_int_pc[31:0]			中断恢复地址。
+	mem_int_pc[31:0]			中断恢复地址�?
 
 
 */
@@ -165,7 +165,7 @@ module MEM(
 	end 
 	end
 	
-	always@(*)//将原设计的串联2_1译码器改作一个四输入选择器//关于输入数据的选择
+	always@(*)//将原设计的串�?2_1译码器改作一个四输入选择�?//关于输入数据的�?�择
 	begin 
 		case({exe_contr_word[16],exe_contr_word[8],exe_size_contr})
 			5'b00000:begin
@@ -269,7 +269,7 @@ module MEM(
 	reg mem_cln_fin;
 	always@(posedge mem_cln or posedge mem_cln_fin)
 	begin
-		if(mem_cln_req&&mem_cln_fin)
+		if(mem_cln_fin)
 			mem_cln_req<=1'b0;
 		else if(mem_cln)
 			mem_cln_req<=1'b1;
@@ -282,7 +282,7 @@ module MEM(
 		mem_wr_hilo<=exe_wr_hilo; 
 	end 
 	
-	//和EXE一样的处理方式，在寄存器前直接相连结果，将数据前递提前，也许并不正确
+	//和EXE�?样的处理方式，在寄存器前直接相连结果，将数据前�?�提前，也许并不正确
 	assign mem_2id_res=mem_mux;
 	// assign mem_2id_hilo=mem_mux;
 	always@(*)

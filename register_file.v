@@ -49,26 +49,8 @@ module Register_File(
 	
 	always @(negedge clk)
 	begin
-	
-		if(reg_w_en_1 && (reg_w_addr_1 != 0) )
-		begin
-			if((reg_w_addr_1 != reg_w_addr_2)||(!reg_w_en_2))
-				Register[reg_w_addr_1] <= reg_w_data_1;
-		end
-		
-		if(reg_w_en_2 && (reg_w_addr_2 != 0) )
-			Register[reg_w_addr_2] <= reg_w_data_2;
-		
-	end
-	
-	// always @(negedge clk)
-	// begin
-		// if(reg_w_en_2 && (reg_w_addr_2 != 0) )
-			// Register[reg_w_addr_2] <= reg_w_data_2;
-	// end
-	
-
-always @ (negedge reset) begin //Execute when reset is asserted
+	if(!reset)
+	begin
 	Register[0] <=32'b0 ;
 	Register[1] <=32'b0 ;
 	Register[2] <=32'b0 ;
@@ -101,7 +83,62 @@ always @ (negedge reset) begin //Execute when reset is asserted
 	Register[29] <=32'b0 ;
 	Register[30] <=32'b0 ;
 	Register[31] <=32'b0 ;
-end
+	end
+	else
+	begin
+	
+		if(reg_w_en_1 && (reg_w_addr_1 != 0) )
+		begin
+			if((reg_w_addr_1 != reg_w_addr_2)||(!reg_w_en_2))
+				Register[reg_w_addr_1] <= reg_w_data_1;
+		end
+		
+		if(reg_w_en_2 && (reg_w_addr_2 != 0) )
+			Register[reg_w_addr_2] <= reg_w_data_2;
+	end	
+	end
+	
+	// always @(negedge clk)
+	// begin
+		// if(reg_w_en_2 && (reg_w_addr_2 != 0) )
+			// Register[reg_w_addr_2] <= reg_w_data_2;
+	// end
+	
+
+//always @ (negedge reset) begin //Execute when reset is asserted
+//	Register[0] <=32'b0 ;
+//	Register[1] <=32'b0 ;
+//	Register[2] <=32'b0 ;
+//	Register[3] <=32'b0 ;
+//	Register[4] <=32'b0 ;
+//	Register[5] <=32'b0 ;
+//	Register[6] <=32'b0 ;
+//	Register[7] <=32'b0 ;
+//	Register[8] <=32'b0 ;
+//	Register[9] <=32'b0 ;
+//	Register[10] <=32'b0 ;
+//	Register[11] <=32'b0 ;
+//	Register[12] <=32'b0 ;
+//	Register[13] <=32'b0 ;
+//	Register[14] <=32'b0 ;
+//	Register[15] <=32'b0 ;
+//	Register[16] <=32'b0 ;
+//	Register[17] <=32'b0 ;
+//	Register[18] <=32'b0 ;
+//	Register[19] <=32'b0 ;
+//	Register[20] <=32'b0 ;
+//	Register[21] <=32'b0 ;
+//	Register[22] <=32'b0 ;
+//	Register[23] <=32'b0 ;
+//	Register[24] <=32'b0 ;
+//	Register[25] <=32'b0 ;
+//	Register[26] <=32'b0 ;
+//	Register[27] <=32'b0 ;
+//	Register[28] <=32'b0 ;
+//	Register[29] <=32'b0 ;
+//	Register[30] <=32'b0 ;
+//	Register[31] <=32'b0 ;
+//end
 
 initial
 begin

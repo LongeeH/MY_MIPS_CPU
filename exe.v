@@ -139,13 +139,13 @@ module EXE(
 		endcase
 	end
 	
-	always @(id_des or id_wr_hilo)//数据相关的控制信号?
+	always @(id_des or id_wr_hilo)//数据相关的控制信�??
 	begin
 		exe_alu_des<=id_des;
 		exe_alu_wr_hilo<=id_wr_hilo;
     end
 
-	always @(negedge reset or posedge clk)//流水线处理?
+	always @(negedge reset or posedge clk)//流水线处�??
 	begin
 		if(reset==0||(!delay&&exe_cln_req))
 		begin
@@ -192,15 +192,15 @@ module EXE(
 				alu_hilo_res<=mult_res;
 			end
 			5'b00011:begin
-				alu_hilo_res<=div_res;//除法lo商hi余?
-				// alu_hilo_res<={div_res[31:0],div_res[63:32]};//除法lo商hi余?
+				alu_hilo_res<=div_res;//除法lo商hi�??
+				// alu_hilo_res<={div_res[31:0],div_res[63:32]};//除法lo商hi�??
 			end
 			5'b00110:begin
 				alu_hilo_res<=multu_res;
 			end
 			5'b00111:begin
-				alu_hilo_res<=divu_res;//除法lo商hi使
-				// alu_hilo_res<={div_res[31:0],div_res[63:32]};//除法lo商hi使
+				alu_hilo_res<=divu_res;//除法lo商hi�?
+				// alu_hilo_res<={div_res[31:0],div_res[63:32]};//除法lo商hi�?
 			end
 			default:begin
 				alu_hilo_res={exe_reg_res_A,exe_reg_res_A};//数据从寄存器堆来
@@ -273,7 +273,7 @@ module EXE(
 	reg exe_cln_fin;
 	always@(posedge exe_cln or posedge exe_cln_fin)
 	begin
-		if(exe_cln_req&&exe_cln_fin)
+		if(exe_cln_fin)
 			exe_cln_req<=1'b0;
 		else if(exe_cln)
 			exe_cln_req<=1'b1;

@@ -133,6 +133,7 @@ module exe_core(
 	wire delay_out_2;
 	wire [6:0]self_des;
 	wire [1:0]self_hilo;
+	wire after_branch;
 	//ID-EXE
 	wire [6:0]alu_des_1;
 	wire [6:0]alu_des_2;
@@ -294,7 +295,7 @@ module exe_core(
 		.mem_res_1(mem_2id_res_1),.mem_res_2(mem_2id_res_2),
 		.mem_des_1(mem_des_1),.mem_wr_hilo_1(mem_wr_hilo_1),
 		.mem_des_2(mem_des_2),.mem_wr_hilo_2(mem_wr_hilo_2),
-		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_mix(delay_mix),.delay_in(delay_hard_data_req),.id_cln_in(cp0_intexp_1|cp0_intexp_2|cp0_cln_1|cp0_cln_2),.cp0_epc(EPC_o),.after_branch(id_int_contr_word_2[8]),
+		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_mix(delay_mix),.delay_in(delay_hard_data_req),.id_cln_in(cp0_intexp_1|cp0_intexp_2|cp0_cln_1|cp0_cln_2),.cp0_epc(EPC_o),.after_branch(after_branch),
          //output
         .branch(branch_1),.j(j_1),.jr(jr_1),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_1),.id_contr_word(id_contr_word_1),.id_int_contr_word(id_int_contr_word_1),.id_size_contr(id_size_contr_1),.exe_pc(exe_pc_1),
 		.reg_esa(reg_esa_1),.reg_esb(reg_esb_1),.immed(immed_1),.id_des(id_des_1),.self_des(self_des),.self_hilo(self_hilo),
@@ -314,7 +315,7 @@ module exe_core(
 		.mem_hilo_res_1(mem_2id_hilo_1),.mem_hilo_res_2(mem_2id_hilo_2),.delay_in(delay_hard_data_req),.id_cln_in(cp0_intexp_1|cp0_intexp_2|cp0_cln_1|cp0_cln_2),.cp0_epc(EPC_o),
          //output
         .branch(branch_2),.j(j_2),.jr(jr_2),.jr_data(jr_data),.jr_data_ok(jr_data_ok),.delay_out(delay_out_2),.delay_mix(delay_mix),.id_contr_word(id_contr_word_2),.id_int_contr_word(id_int_contr_word_2),.id_size_contr(id_size_contr_2),.exe_pc(exe_pc_2),
-		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.id_des(id_des_2),.self_des(self_des),.self_hilo(self_hilo),
+		.reg_esa(reg_esa_2),.reg_esb(reg_esb_2),.immed(immed_2),.id_des(id_des_2),.self_des(self_des),.self_hilo(self_hilo),.after_branch(after_branch),
 		.id_wr_hilo(id_wr_hilo_2),.RSO(RSO_2),.RTO(RTO_2)
 	);
 	
@@ -622,8 +623,8 @@ module exe_core(
 	reg arvalid_rst;
 	// reg arvalid_use;
 	//mem signal
-	reg data_r_req_1;
-	reg data_r_req_2;
+	reg [1:0]data_r_req_1;
+	reg [1:0]data_r_req_2;
 	reg data_r_rec_1;
 	reg data_r_rec_2;
 	wire [31:0]mem_data_addr_1;
@@ -650,10 +651,10 @@ module exe_core(
 			arid<=0;
 			arlen<=4'b0001;
 			arsize<=3'b010;
-			inst_2_if<=64'b0;
+//			inst_2_if<=64'b0;
 			inst_apply<=1;
 		end 
-		else if(data_r_req_1 && !data_apply_1 && arready && !cp0_intexp_1)
+		else if(data_r_req_1==1 && !data_apply_1 && arready && !cp0_intexp_1)
 		begin
 			araddr_v<=mem_data_addr_1;
 			arvalid<=1;
@@ -662,7 +663,7 @@ module exe_core(
 			
 			data_apply_1<=1;
 		end
-		else if(data_r_req_2 && !data_apply_2 && arready && !cp0_intexp_1 && !cp0_intexp_2)
+		else if(data_r_req_2==1 && !data_apply_2 && arready && !cp0_intexp_1 && !cp0_intexp_2)
 		begin
 			if((mem_data_addr_2==mem_data_addr_1)&&data_w_req_1)
 				mem_forward<=1;
@@ -679,17 +680,16 @@ module exe_core(
 		end 	
 		else if(arvalid)
 			arvalid<=0;	
-		else
-		begin		
-			if(mem_forward)
-				mem_forward<=0;
-			if(reset==0||(inst_rec_1&&inst_rec_2))
-				inst_apply<=0;
-			if(reset==0||(data_r_rec_1))
-				data_apply_1<=0;
-			if(reset==0||(data_r_rec_2))
-				data_apply_2<=0;
-		end
+			
+		if(mem_forward)
+			mem_forward<=0;
+		if(reset==0||(inst_rec_1&&inst_rec_2))
+			inst_apply<=0;
+		if(reset==0||(data_r_rec_1))
+			data_apply_1<=0;
+		if(reset==0||(data_r_rec_2))
+			data_apply_2<=0;
+		
 	end
 	//axi read apply end
 	reg mem_forward;
@@ -732,9 +732,14 @@ module exe_core(
 	//data rec 
 	
 	// always @ (posedge clk or posedge arvalid)//****
-	always @ (posedge clk or posedge arvalid)//****
+	always @ (posedge clk)//****
 	begin
-		if(rvalid)
+		if(!reset)
+		begin
+			data_r_rec_1<=1'b0;
+			data_r_rec_2<=1'b0;
+		end
+		else if(rvalid)
 		begin
 			case(rid)
 			1:begin
@@ -748,17 +753,10 @@ module exe_core(
 			default:;
 			endcase
 		end
-		else if(arvalid)
+		else//�?�?0
 		begin
-			case(arid)
-			1:begin
-				data_r_rec_1<=1'b0;
-			end
-			2:begin
-				data_r_rec_2<=1'b0;
-			end
-			default:;	
-			endcase
+			data_r_rec_1<=1'b0;
+			data_r_rec_2<=1'b0;
 		end
 	end
 	assign mem_data_in_1 = data_2_mem[31:0];
@@ -795,28 +793,45 @@ module exe_core(
 		
 	end
 	
-	always @(posedge mem_load_en_1 or posedge data_r_rec_1 or posedge cp0_intexp_1)
+	// mem_load_wait_1
+	// always@(posedge clk or posedge mem_load_en_1)
+	// begin
+		// if(mem_load_wait_1==1)
+			// mem_load_wait_1<=2;
+		// else if(mem_load_en_1)
+			// mem_load_wait_1<=1;
+		// else if(!mem_load_en_1)
+			// mem_load_wait_1<=0;
+	// end
+	
+	
+	always @(posedge clk or posedge mem_load_en_1 or posedge cp0_intexp_1)
 	begin
-		if((data_r_req_1&&cp0_intexp_1)||(data_r_req_1&&data_r_rec_1))
-			data_r_req_1<=1'b0;
-		else if(mem_load_en_1)
-			data_r_req_1<=1'b1;			
+		if(cp0_intexp_1||!mem_load_en_1)//考虑去掉cp0敏感，发送阶段似乎已经做了过�?
+			data_r_req_1<=0;
+		else if(mem_load_en_1&&data_r_req_1==0)//&&!data_r_rec_1)
+			data_r_req_1<=1;	
+		else if(rvalid&&rid==1)
+			data_r_req_1<=2;
 	end
-	always @(posedge mem_load_en_2 or posedge mem_forward or posedge data_r_rec_2 or posedge cp0_intexp_1 or posedge cp0_intexp_2)
+	
+	always @(posedge clk or posedge mem_load_en_2 or posedge mem_forward or posedge cp0_intexp_1 or posedge cp0_intexp_2)
 	begin
-		if((data_r_req_2&&cp0_intexp_1||cp0_intexp_2)||(data_r_req_2&&data_r_rec_2))
-			data_r_req_2<=1'b0;
+		if(cp0_intexp_1||cp0_intexp_2||!mem_load_en_2)
+			data_r_req_2<=0;
 		else if(mem_forward)
-			data_r_req_2<=1'b0;
-		else if(mem_load_en_2)
-			data_r_req_2<=1'b1;
+			data_r_req_2<=0;
+		else if(mem_load_en_2&&data_r_req_2==0)
+			data_r_req_2<=1;
+		else if(rvalid&&rid==2)
+			data_r_req_2<=2;
 	end
 
 	
 	assign inst_req = inst_req_1 & inst_req_2;//必须12流水线同时请求时，才请求取指令对�?
 	assign delay_soft_inst = inst_req_1 | inst_req_2;//任一流水线请求时，进行软暂停。只暂停pc的更新行为㿂其他状况不会保畿
 	
-	assign delay_hard_data_r_req = data_r_req_1 | data_r_req_2;
+	assign delay_hard_data_r_req = (data_r_req_1==1) || (data_r_req_2==1);
 	
 	
 	

@@ -487,21 +487,35 @@ always @ (*)
 			int_contr_word<=16'b0;
 	end
 reg is_solt;
-always@(posedge after_branch)
+reg is_solt_fin;
+reg [31:0]ab_pc;
+always@(posedge clk)
 begin
-	is_solt<=1'b1;
+	if(!reset)
+		is_solt<=1'b0;
+	else if(after_branch)
+		is_solt<=1'b1;
+	else if(is_solt_fin)
+		is_solt<=1'b0;
+	
+	if(!reset)
+		ab_pc<=32'b0;
+	else if((ab_pc!=id_pc)&&(id_pc!=32'b0))
+		ab_pc<=id_pc;
 end
-always@(id_pc)
+
+always@(*)
 begin
-	if(is_solt&&(!unknown_inst)&&(id_pc!=32'b0))//||nop_inst))
+	
+	if(is_solt&&(id_pc!=32'b0)&&(ab_pc!=id_pc))//||nop_inst))
 		begin
-			int_contr_word[9]<=1'b1;
-			is_solt<=1'b0;
+			int_contr_word[9]=1'b1;
+			is_solt_fin=1;
 		end
 	else
 		begin
-			int_contr_word[9]<=1'b0;
-			is_solt<=1'b0;
+			int_contr_word[9]=1'b0;
+			is_solt_fin=0;
 		end
 end
 
@@ -698,7 +712,7 @@ reg id_cln_fin;
 
 always @(posedge id_cln or posedge id_cln_fin)
 begin
-	if(id_cln_req&&id_cln_fin)
+	if(id_cln_fin)
 		id_cln_req<=1'b0;
 	else if(id_cln)
 		id_cln_req<=1'b1;

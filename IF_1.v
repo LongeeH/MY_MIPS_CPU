@@ -303,21 +303,21 @@ always @ (*)
 
 always @ (posedge j or posedge j_fin)
 	begin
-		if(j_req&&j_fin)
+		if(j_fin)
 			j_req<=1'b0;
 		else if(j)
 			j_req<=1'b1;
 	end
 always @ (posedge jr or posedge jr_fin)
 	begin
-		if(jr_req&&jr_fin)
+		if(jr_fin)
 			jr_req<=1'b0;
 		else if(jr)
 			jr_req<=1'b1;
 	end
 always @ (posedge if_cln or posedge if_cln_fin)
 	begin
-		if(if_cln_req&if_cln_fin)
+		if(if_cln_fin)
 			if_cln_req<=1'b0;
 		else if(if_cln)
 			if_cln_req<=1'b1;
