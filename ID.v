@@ -340,45 +340,42 @@ assign multu_inst = Rtype && (func == 6'b011001);
 assign unknown_inst = !(add_inst||addu_inst||sub_inst||subu_inst||and_inst||or_inst||nor_inst||xor_inst||slt_inst||sltu_inst||sll_inst||sllv_inst||sra_inst||srav_inst||srl_inst||srlv_inst||mflo_inst||mfhi_inst||mtlo_inst||mthi_inst||addi_inst||addiu_inst||andi_inst||ori_inst||xori_inst||slti_inst||sltiu_inst||lui_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||lw_inst||sb_inst||sh_inst||sw_inst||j_inst||jr_inst||jal_inst||jalr_inst||beq_inst||bne_inst||bltz_inst||bltzal_inst||blez_inst||bgtz_inst||bgez_inst||bgezal_inst||syscall_inst||mtc0_inst||mfc0_inst||tlbp_inst||tlbr_inst||tlbwi_inst||tlbwr_inst||eret_inst||break_inst||nop_inst||div_inst||divu_inst||mult_inst||multu_inst);
 
 //alu_op
-always@(and_inst  or andi_inst  or or_inst or ori_inst or add_inst or 
-        addu_inst or addiu_inst or subu_inst or slt_inst or sltu_inst or
-        slti_inst or sltiu_inst or srl_inst or srlv_inst or sra_inst or
-        sll_inst or sllv_inst or nor_inst or xor_inst or xori_inst or lw_inst or sw_inst or lui_inst)
+always@(*)
 begin
         if (and_inst || andi_inst) 
-                alu_op<=5'b00000;
+                alu_op=5'b00000;
         else if(or_inst || ori_inst||mflo_inst||mfhi_inst)
-                alu_op<=5'b01000;
+                alu_op=5'b01000;
         else if(add_inst || addi_inst || addu_inst || addiu_inst || lw_inst || sw_inst || jal_inst||jalr_inst||bgezal_inst || bltzal_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst)
-                alu_op<=5'b00001;
+                alu_op=5'b00001;
         else if(sub_inst || subu_inst)
-                alu_op<=5'b01001;
+                alu_op=5'b01001;
         else if(slt_inst || slti_inst)
-                alu_op<=5'b01010;
+                alu_op=5'b01010;
         else if(sltu_inst || sltiu_inst)
-                alu_op<=5'b01011;
+                alu_op=5'b01011;
         else if(srl_inst || srlv_inst)
-                alu_op<=5'b00100;
+                alu_op=5'b00100;
         else if(sra_inst || srav_inst)
-                alu_op<=5'b01100;
+                alu_op=5'b01100;
         else if(sll_inst || sllv_inst)
-                alu_op<=5'b10100;
+                alu_op=5'b10100;
         else if(xor_inst || xori_inst)
-                alu_op<=5'b11000;
+                alu_op=5'b11000;
         else if(nor_inst)
-                alu_op<=5'b10000;
+                alu_op=5'b10000;
 		else if(lui_inst)
-				alu_op<=5'b11100;
+				alu_op=5'b11100;
 		else if(mult_inst)
-				alu_op<=5'b00010;
+				alu_op=5'b00010;
 		else if(multu_inst)
-				alu_op<=5'b00110;
+				alu_op=5'b00110;
 		else if(div_inst)
-				alu_op<=5'b00011;
+				alu_op=5'b00011;
 		else if(divu_inst)
-				alu_op<=5'b00111;
+				alu_op=5'b00111;
         else
-                alu_op<=5'b00000;
+                alu_op=5'b00000;
 end
 
 
@@ -391,13 +388,13 @@ assign tlb_OP_e = (tlbp_inst || tlbr_inst || tlbwi_inst || tlbwr_inst);
 always @ (tlbp_inst or tlbr_inst or tlbwi_inst or tlbwr_inst)
         begin
                 if(tlbp_inst)
-                        tlb_OP<=2'b00;
+                        tlb_OP=2'b00;
                 else if(tlbr_inst)
-                        tlb_OP<=2'b01;
+                        tlb_OP=2'b01;
                 else if(tlbwi_inst)
-                        tlb_OP<=2'b10;
+                        tlb_OP=2'b10;
                 else if(tlbwr_inst)
-                        tlb_OP<=2'b11;
+                        tlb_OP=2'b11;
         end
 
 //控制信号
@@ -430,38 +427,38 @@ assign delay_out = delay_self;
 always @ (reg_des or RDI or RTI)
     begin
 		if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)
-			result_des <=5'b11111;
+			result_des =5'b11111;
         else if(reg_des)
-            result_des <= RDI;
+            result_des = RDI;
         else
-            result_des <= RTI;
+            result_des = RTI;
     end
 
 always @ (*)//changed
 	begin
 		if(!delay)
 			begin
-				contr_word[4:0]<=alu_op[4:0];
-				contr_word[5] <= alu_srcA;
-				contr_word[6] <= reg_des;
-				contr_word[7] <= write_mem;
-				contr_word[8] <= mem_2_reg;
-				contr_word[9] <= write_reg;
-				contr_word[14:10] <= cp0_reg_index[4:0];
-				contr_word[15] <= write_cp0_reg;
-				contr_word[16] <= read_cp0_reg;
-				contr_word[18:17] <= tlb_OP[1:0];
-				contr_word[19] <= tlb_OP_e;
-				contr_word[24:20] <= result_des[4:0];//
-				contr_word[25] <= alu_res_ok;
-				contr_word[26] <= mem_res_ok;
-				contr_word[27] <= write_lo;
-				contr_word[28] <= write_hi;
-				contr_word[29] <= cp0type;
-				contr_word[31:30] <= alu_srcB[1:0];
+				contr_word[4:0]=alu_op[4:0];
+				contr_word[5] = alu_srcA;
+				contr_word[6] = reg_des;
+				contr_word[7] = write_mem;
+				contr_word[8] = mem_2_reg;
+				contr_word[9] = write_reg;
+				contr_word[14:10] = cp0_reg_index[4:0];
+				contr_word[15] = write_cp0_reg;
+				contr_word[16] = read_cp0_reg;
+				contr_word[18:17] = tlb_OP[1:0];
+				contr_word[19] = tlb_OP_e;
+				contr_word[24:20] = result_des[4:0];//
+				contr_word[25] = alu_res_ok;
+				contr_word[26] = mem_res_ok;
+				contr_word[27] = write_lo;
+				contr_word[28] = write_hi;
+				contr_word[29] = cp0type;
+				contr_word[31:30] = alu_srcB[1:0];
 			end
 		else
-			contr_word<=32'b0;
+			contr_word=32'b0;
 	end
 
 always @ (*)
@@ -470,21 +467,21 @@ always @ (*)
 			begin
 				// int_contr_word[1:0]<=IC_IF[1:0];
 				// int_contr_word[0]<=(jalr_inst||jr_inst)&&(reg_A[1:0]!=2'b00);
-				int_contr_word[0]<=(id_pc[1:0]!=2'b00);
-				int_contr_word[1]<=unknown_inst;
-				int_contr_word[2]<=(add_inst || addi_inst ||sub_inst);
-				int_contr_word[3]<=break_inst;
-				int_contr_word[4]<=syscall_inst;
-				int_contr_word[5]<=lw_inst||lh_inst||lhu_inst;//1'b0;////
-				int_contr_word[6]<=eret_inst;
+				int_contr_word[0]=(id_pc[1:0]!=2'b00);
+				int_contr_word[1]=unknown_inst;
+				int_contr_word[2]=(add_inst || addi_inst ||sub_inst);
+				int_contr_word[3]=break_inst;
+				int_contr_word[4]=syscall_inst;
+				int_contr_word[5]=lw_inst||lh_inst||lhu_inst;//1'b0;////
+				int_contr_word[6]=eret_inst;
 				// int_contr_word[6]<=write_mem;
-				int_contr_word[7]<=sw_inst||sh_inst;//1'b0;
-				int_contr_word[8]<=j_inst || jr_inst || jal_inst ||jalr_inst||beq_inst || bne_inst||bltz_inst||		bltzal_inst||blez_inst|| bgtz_inst||bgez_inst|| bgezal_inst;
+				int_contr_word[7]=sw_inst||sh_inst;//1'b0;
+				int_contr_word[8]=j_inst || jr_inst || jal_inst ||jalr_inst||beq_inst || bne_inst||bltz_inst||		bltzal_inst||blez_inst|| bgtz_inst||bgez_inst|| bgezal_inst;
 
-				int_contr_word[15]<=syscall_inst||eret_inst||break_inst;
+				int_contr_word[15]=syscall_inst||eret_inst||break_inst;
 			end
 		else
-			int_contr_word<=16'b0;
+			int_contr_word=16'b0;
 	end
 reg is_solt;
 reg is_solt_fin;
@@ -550,7 +547,7 @@ always @ (*)
         if((alu_des_1[6] && ((rs_source && (RSI[4:0] == alu_des_1[4:0]))||(rt_source && (RTI[4:0] == alu_des_1[4:0]))))||
 		(alu_des_2[6] && ((rs_source && (RSI[4:0] == alu_des_2[4:0]))|| (rt_source && (RTI[4:0] == alu_des_2[4:0])))))
 		begin
-			delay_self<=1;
+			delay_self=1;
             // RSO<=5'b00000;
             // RTO<=5'b00000;
             // RDO<=5'b00000; 
@@ -558,32 +555,32 @@ always @ (*)
 			begin
 				delay_self<=0;
 				if ((alu_w_hilo_1[0] && lo_source)||(alu_w_hilo_1[1] && hi_source))
-					FWDA<=04'b111;
+					FWDA=04'b111;
                 else if ((alu_w_hilo_2[0]&&lo_source)
                         || (alu_w_hilo_2[1] && hi_source))            
-						FWDA<=4'b1000;
+						FWDA=4'b1000;
                 else if((alu_des_1[5] && ((rs_source && (RSI[4:0] == alu_des_1[4:0]))))) 
-						FWDA<=4'b0011;
+						FWDA=4'b0011;
                 else if((alu_des_2[5] && ((rs_source && (RSI[4:0] == alu_des_2[4:0])))))      
-						FWDA<=4'b0100;
+						FWDA=4'b0100;
                 else if((mem_wr_hilo_1[0] && lo_source)
                         || (mem_wr_hilo_1[1] && hi_source))              
-						FWDA<=4'b1001;
+						FWDA=4'b1001;
                 else if((mem_wr_hilo_2[0] && lo_source)
                         || (mem_wr_hilo_2[1] && hi_source))        
-						FWDA<=4'b1010;
+						FWDA=4'b1010;
                 else if((mem_des_1[5] || mem_des_1[6]) && rs_source &&
                         (RSI[4:0] == mem_des_1[4:0])) 
-						FWDA<=4'b0101;
+						FWDA=4'b0101;
                 else if((mem_des_2[5] || mem_des_2[6]) && rs_source &&
                         (RSI[4:0] == mem_des_2[4:0]))
-						FWDA<=4'b0110;
+						FWDA=4'b0110;
                 else if (lo_source)   
-						FWDA<=4'b0010;
+						FWDA=4'b0010;
                 else if (hi_source)
-						FWDA<=4'b0001;
+						FWDA=4'b0001;
                 else   
-						FWDA<=4'b0000;
+						FWDA=4'b0000;
 			end
     end
                 
@@ -592,54 +589,54 @@ always @ (*)
 always @ (*)
         begin
                 if(alu_des_1[5] && rt_source && (RTI[4:0] == alu_des_1[4:0]))
-                        FWDB<=3'b001;
+                        FWDB=3'b001;
                 else if (alu_des_2[5] && rt_source && (RTI[4:0] == alu_des_2[4:0]))
-                        FWDB<=3'b010;
+                        FWDB=3'b010;
                 else if ((mem_des_1[5] || mem_des_1[6]) && rt_source && (RTI[4:0] == mem_des_1[4:0]))
-                        FWDB<=3'b011;
+                        FWDB=3'b011;
                 else if ((mem_des_2[5] || mem_des_2[6]) && rt_source && (RTI[4:0] == mem_des_2[4:0]))
-                        FWDB<=3'b100;
+                        FWDB=3'b100;
                 else
-                        FWDB<=3'b000;
+                        FWDB=3'b000;
         end
 //新增模块 参�?�图4-8
 always @ (*)
 	begin
-		RSO<=id_inst[25:21];
-		RTO<=id_inst[20:16];
+		RSO=id_inst[25:21];
+		RTO=id_inst[20:16];
 	end
 
 
 always @ (*)
     begin
-        des<={mem_res_ok,alu_res_ok,result_des[4:0]};
+        des={mem_res_ok,alu_res_ok,result_des[4:0]};
         write_hilo = {write_hi,write_lo};
     end
 //参�?�图5-10 reg_A reg_B可能不受clk控制
 always @(*)
         begin
                 case (FWDA)
-                        4'b0000 : reg_A <= reg_rs;
-                        4'b0001 : reg_A <= hi_r_data;
-                        4'b0010 : reg_A <= lo_r_data;
-                        4'b0011 : reg_A <= alu_res_1;
-                        4'b0100 : reg_A <= alu_res_2;
-                        4'b0101 : reg_A <= mem_res_1;
-                        4'b0110 : reg_A <= mem_res_2;
-                        4'b0111 : reg_A <= alu_hilo_res_1;
-                        4'b1000 : reg_A <= alu_hilo_res_2;
-                        4'b1001 : reg_A <= mem_hilo_res_1;
-                        4'b1010 : reg_A <= mem_hilo_res_2;
-                        default: reg_A <= 32'b0;
+                        4'b0000 : reg_A = reg_rs;
+                        4'b0001 : reg_A = hi_r_data;
+                        4'b0010 : reg_A = lo_r_data;
+                        4'b0011 : reg_A = alu_res_1;
+                        4'b0100 : reg_A = alu_res_2;
+                        4'b0101 : reg_A = mem_res_1;
+                        4'b0110 : reg_A = mem_res_2;
+                        4'b0111 : reg_A = alu_hilo_res_1;
+                        4'b1000 : reg_A = alu_hilo_res_2;
+                        4'b1001 : reg_A = mem_hilo_res_1;
+                        4'b1010 : reg_A = mem_hilo_res_2;
+                        default: reg_A = 32'b0;
                 endcase
 
                 case (FWDB)
-                        3'b000 : reg_B <= reg_rt;
-                        3'b001 : reg_B <= alu_res_1;
-                        3'b010 : reg_B <= alu_res_2;
-                        3'b011 : reg_B <= mem_res_1;
-                        3'b100 : reg_B <= mem_res_2;
-                        default: reg_B <= 32'b0;
+                        3'b000 : reg_B = reg_rt;
+                        3'b001 : reg_B = alu_res_1;
+                        3'b010 : reg_B = alu_res_2;
+                        3'b011 : reg_B = mem_res_1;
+                        3'b100 : reg_B = mem_res_2;
+                        default: reg_B = 32'b0;
                 endcase
 
         end
@@ -647,25 +644,25 @@ always @(*)
 always @ (reg_A, reg_B)
 begin
 	if(reg_A == reg_B)
-		rs_eq_rt <= 1;
+		rs_eq_rt = 1;
     else
-        rs_eq_rt <= 0;
+        rs_eq_rt = 0;
 end
 
 always @ (reg_A)
 begin
-        if(reg_A == 0)
-                rs_eq_z <= 1;
-        else
-                rs_eq_z <= 0;        
+    if(reg_A == 0)
+        rs_eq_z = 1;
+    else
+        rs_eq_z = 0;        
 end
 
 always @ (reg_A)
 begin
-        if(reg_A[31] == 0)
-                r_slt_z <= 0;
-        else
-                r_slt_z <= 1;        
+    if(reg_A[31] == 0)
+        r_slt_z = 0;
+    else
+        r_slt_z = 1;        
 end
 reg self_branch;
 reg self_j;
@@ -674,35 +671,35 @@ reg self_jr;
 always @ (j_inst or jr_inst or jal_inst or jalr_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
           blez_inst or rs_eq_z or bgtz_inst or r_slt_z or bgez_inst)
 begin
-        self_branch <= j_inst || jr_inst || jal_inst || jalr_inst ||eret_inst||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||((bltz_inst||bltzal_inst) && r_slt_z)||
+        self_branch = j_inst || jr_inst || jal_inst || jalr_inst ||eret_inst||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||((bltz_inst||bltzal_inst) && r_slt_z)||
                   (blez_inst && ((rs_eq_z)||(r_slt_z))) || (bgtz_inst && ! (rs_eq_rt || r_slt_z)) ||
                   ((bgez_inst|| bgezal_inst) && !r_slt_z);
-        self_j<= j_inst||jal_inst;
-		self_jr<= jr_inst||jalr_inst||eret_inst;
+        self_j = j_inst||jal_inst;
+		self_jr = jr_inst||jalr_inst||eret_inst;
 end
 // assign jr_data = jr_data_ok?reg_A:32'bZ;
 always@(*)
 begin
-	if(jr_data_ok)
-		jr_data<=eret_inst?cp0_epc:reg_A;
+	if((jr_inst||jalr_inst||eret_inst)&&(!delay))
+		jr_data=eret_inst?cp0_epc:reg_A;
 	else
-		jr_data<=32'bZ;
+		jr_data=32'bZ;
 end
 always@(*)
 begin
 	if((jr_inst||jalr_inst||eret_inst)&&(!delay))
-		jr_data_ok<=1'b1;
+		jr_data_ok=1'b1;
 	else
-		jr_data_ok<=1'bZ;
+		jr_data_ok=1'b0;
 end
 // assign jr_data_ok = jr_inst&&(!delay)?1'b1:1'bZ;
 reg [2:0]size_contr;
 reg [2:0]id_size_contr;
 always@(*)
 begin
-	size_contr[0]<=lb_inst||lbu_inst||sb_inst||lw_inst||sw_inst;
-	size_contr[1]<=lh_inst||lhu_inst||sh_inst||lw_inst||sw_inst;
-	size_contr[2]<=lbu_inst||lhu_inst;
+	size_contr[0]=lb_inst||lbu_inst||sb_inst||lw_inst||sw_inst;
+	size_contr[1]=lh_inst||lhu_inst||sh_inst||lw_inst||sw_inst;
+	size_contr[2]=lbu_inst||lhu_inst;
 end
 
 assign id_cln = id_cln_in;
@@ -731,23 +728,7 @@ always @ (negedge reset or posedge clk)
                 id_int_contr_word[15:0] <= 16'b0;
                 immed[31:0] <= 32'b0;
                 id_cln_fin <= 1'b1;
-                // id_cln_req <= 1'b0;
-				
-				// int_contr_word[9]<=1'b0;
-            end
-		// else if(delay)
-			// ;
-		// else if(id_cln)
-			// begin
-				// id_des[6:0]<=7'b0;
-                // id_wr_hilo[1:0] <= 2'b0;
-                // reg_esa[31:0] <= 32'b0;
-                // reg_esb[31:0] <= 32'b0;
-                // exe_pc[31:0] <= 32'b0;
-                // id_contr_word[31:0] <= 32'b0;
-                // id_int_contr_word[15:0] <= 16'b0;
-                // immed[31:0] <= 32'b0;			
-			// end			
+            end		
         else if(!delay)
             begin
                 id_des[6:0]<=des[6:0];

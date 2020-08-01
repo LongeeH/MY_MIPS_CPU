@@ -172,7 +172,7 @@ always @ (posedge clk)
 				end
                 else if(jr_req)
 				begin
-                    next_pc<=jr_data_cache+4;
+                    next_pc<=jr_data_ok?jr_data+4:jr_data_cache+4;
 					// jr_req<=1'b0;
 					jr_fin<=1;
 				end
@@ -199,7 +199,7 @@ always @ (posedge clk)
 				end
 				else if(jr_req)
 				begin
-					next_pc<=jr_data_cache+4;
+					next_pc<=jr_data_ok?jr_data+4:jr_data_cache+4;
 					// jr_req<=1'b0;
 					jr_fin<=1;
 				end
@@ -259,7 +259,7 @@ always @ (negedge reset or posedge clk)
 
 always @ (*)
 	begin 
-		pc<=next_pc;
+		pc=next_pc;
 	end
 
 //分支跳转*3
@@ -270,21 +270,21 @@ always @ (*)
 			3'b001:begin
 				// if(!branch_req_1)//not 1b2i
 				// begin
-					int_req<=1'b1;
-					branch_req_1<=1'b0;	
-					branch_req_2<=1'b0;
+					int_req=1'b1;
+					branch_req_1=1'b0;	
+					branch_req_2=1'b0;
 				// end 
 				// else
 				// ;
 			end
 			3'b101,3'b011,3'b111:begin//同时到则i一定提前
-				int_req<=1'b1;
+				int_req=1'b1;
 			end
 			3'b100:begin
-				branch_req_1<=1'b1;			
+				branch_req_1=1'b1;			
 			end
 			3'b010:begin
-				branch_req_2<=1'b1;			
+				branch_req_2=1'b1;			
 			end
 		endcase
 		if(int_fin&&int_req)
@@ -316,7 +316,7 @@ always @ (posedge if_cln or posedge if_cln_fin)
 			if_cln_req<=1'b1;	
 	end
 
-always @ (jr_data)
+always @ (posedge clk)
 	begin
 		if(jr_data_ok)
 			jr_data_cache<=jr_data;
@@ -328,13 +328,13 @@ always@(*)
 begin
 	if(branch_req_1)
 		begin
-			branch_offset[31:16]<=last_inst_1[15]?16'hffff:16'h0;
-			branch_offset[15:0]<=last_inst_1[15:0];
+			// branch_offset[31:16]=last_inst_1[15]?16'hffff:16'h0;
+			branch_offset={{16{last_inst_1[15]}},last_inst_1[15:0]};
 		end
 	else
 		begin
-			branch_offset[31:16]<=last_inst[15]?16'hffff:16'h0;
-			branch_offset[15:0]<=last_inst[15:0];
+			// branch_offset[31:16]=last_inst[15]?16'hffff:16'h0;
+			branch_offset={{16{last_inst[15]}},last_inst[15:0]};
 		end
 end
 endmodule

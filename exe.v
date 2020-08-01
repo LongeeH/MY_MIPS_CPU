@@ -189,17 +189,17 @@ module EXE(
 	begin
 		case(id_contr_word[4:0])//ALUOP参迃page45
 			5'b00010:begin
-				alu_hilo_res<=mult_res;
+				alu_hilo_res=mult_res;
 			end
 			5'b00011:begin
-				alu_hilo_res<=div_res;//除法lo商hi�??
+				alu_hilo_res=div_res;//除法lo商hi�??
 				// alu_hilo_res<={div_res[31:0],div_res[63:32]};//除法lo商hi�??
 			end
 			5'b00110:begin
-				alu_hilo_res<=multu_res;
+				alu_hilo_res=multu_res;
 			end
 			5'b00111:begin
-				alu_hilo_res<=divu_res;//除法lo商hi�?
+				alu_hilo_res=divu_res;//除法lo商hi�?
 				// alu_hilo_res<={div_res[31:0],div_res[63:32]};//除法lo商hi�?
 			end
 			default:begin
@@ -251,21 +251,21 @@ module EXE(
 	
 	always@(*)//fake div
 	begin
-		div_res[31:0]<=$signed(alu_data_A)/$signed(alu_data_B);
-		div_res[63:32]<=$signed(alu_data_A)%$signed(alu_data_B);
+		div_res[31:0]=$signed(alu_data_A)/$signed(alu_data_B);
+		div_res[63:32]=$signed(alu_data_A)%$signed(alu_data_B);
 	end
 	always@(*)//fake divu
 	begin
-		divu_res[31:0]<=alu_data_A/alu_data_B;
-		divu_res[63:32]<=alu_data_A%alu_data_B;
+		divu_res[31:0]=alu_data_A/alu_data_B;
+		divu_res[63:32]=alu_data_A%alu_data_B;
 	end
 	always@(*)//fake mul
 	begin
-		mult_res<=$signed(alu_data_A)*$signed(alu_data_B);
+		mult_res=$signed(alu_data_A)*$signed(alu_data_B);
 	end
 	always@(*)//fake mulu
 	begin
-		multu_res<=alu_data_A*alu_data_B;
+		multu_res=alu_data_A*alu_data_B;
 	end
 	
 	
@@ -289,13 +289,13 @@ module EXE(
 	begin
 		case(exe_alu_wr_hilo)//ALUOP参迃page45
 			2'b01:begin
-				alu_2id_hilo<=alu_hilo_res[31:0];
+				alu_2id_hilo=alu_hilo_res[31:0];
 			end
 			2'b10:begin
-				alu_2id_hilo<=alu_hilo_res[63:32];
+				alu_2id_hilo=alu_hilo_res[63:32];
 			end			
 			default:begin
-				alu_2id_hilo<=alu_hilo_res[31:0];//通过
+				alu_2id_hilo=alu_hilo_res[31:0];//通过
 				// alu_2id_hilo<=alu_res;//通过
 			end
 		endcase			

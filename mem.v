@@ -129,20 +129,20 @@ module MEM(
 	
 	always@(*)//CP0操作相关指令
 	begin 
-		mem_data_addr<=exe_res; 
+		mem_data_addr=exe_res; 
 		// mem_data_out<=mem_data; 
-		mem_tran_data_addr<=(exe_contr_word[7]||exe_contr_word[8]); //
-		mem_sorl<=exe_contr_word[7]; 
-		mem_int_contr<=exe_int_contr_word; //
-		mem_wr_en<=exe_contr_word[7]; 
-		mem_load_en<=exe_contr_word[8];
-		mem_rd_cp0_reg<=exe_contr_word[16]; //
-		mem_wr_cp0_reg<=exe_contr_word[15]; //
-		mem_tlb_op_en<=exe_contr_word[19]; //
-		mem_cp0_reg_index<=exe_contr_word[14:10]; //
-		mem_tlb_op<=exe_contr_word[18:17]; //
-		mem_int_pc<=mem_pc; //
-		mem_cp0_data_out<=mem_data;
+		mem_tran_data_addr=(exe_contr_word[7]||exe_contr_word[8]); //
+		mem_sorl=exe_contr_word[7]; 
+		mem_int_contr=exe_int_contr_word; //
+		mem_wr_en=exe_contr_word[7]; 
+		mem_load_en=exe_contr_word[8];
+		mem_rd_cp0_reg=exe_contr_word[16]; //
+		mem_wr_cp0_reg=exe_contr_word[15]; //
+		mem_tlb_op_en=exe_contr_word[19]; //
+		mem_cp0_reg_index=exe_contr_word[14:10]; //
+		mem_tlb_op=exe_contr_word[18:17]; //
+		mem_int_pc=mem_pc; //
+		mem_cp0_data_out=mem_data;
 	end 
 	always@(*)
 	begin
@@ -278,8 +278,8 @@ module MEM(
 	
 	always @(exe_des or exe_wr_hilo) 
 	begin  
-		mem_des<=exe_des; 
-		mem_wr_hilo<=exe_wr_hilo; 
+		mem_des=exe_des; 
+		mem_wr_hilo=exe_wr_hilo; 
 	end 
 	
 	//和EXE�?样的处理方式，在寄存器前直接相连结果，将数据前�?�提前，也许并不正确
@@ -289,13 +289,13 @@ module MEM(
 	begin
 		case(mem_wr_hilo)//ALUOP参迃page45
 			2'b01:begin
-				mem_2id_hilo<=exe_hi_data;
+				mem_2id_hilo=exe_hi_data;
 			end
 			2'b10:begin
-				mem_2id_hilo<=exe_lo_data;
+				mem_2id_hilo=exe_lo_data;
 			end			
 			default:begin
-				mem_2id_hilo<=exe_lo_data;//数据从寄存器堆来hi==lo
+				mem_2id_hilo=exe_lo_data;//数据从寄存器堆来hi==lo
 				
 			end
 		endcase			
