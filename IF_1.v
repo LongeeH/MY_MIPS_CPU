@@ -146,7 +146,7 @@ always @ (posedge clk)
 			if_cln_fin<=0;
 			pcn<=0;
 		end
-        else if(int_req)
+        else if(int_req||int)
 			begin
 				next_pc<=32'hbfc0_0380;
 				int_fin<=1;
@@ -156,15 +156,15 @@ always @ (posedge clk)
 				jr_fin<=1;
 				pcn<=1;
 			end      
-        else if(branch_req_1)
+        else if(branch_req_1||branch_1)
             begin
-                if(j_req)
+                if(j_req||j)
 				begin
                     next_pc[31:28]<=pc_slot[31:28];
-					next_pc[27:0]<=(last_inst[25:0]<<2);
+					next_pc<={pc_slot[31:28],last_inst[25:0],2'b00};
 					j_fin<=1;
 				end
-                else if (jr_req)
+                else if (jr_req||jr)
 				begin
 					next_pc<=(jr_data_ok==1)?jr_data:jr_data_cache;
 					jr_fin<=1;
@@ -177,27 +177,23 @@ always @ (posedge clk)
 				if_cln_fin<=1;
 				pcn<=1;
             end
-		else if(branch_req_2)
+		else if(branch_req_2||branch_2)
             begin
                 if(j_req)
 				begin
-                    next_pc[31:28]<=pc[31:28];
-					next_pc[27:0]<=(last_inst_2[25:0]<<2);
-					// j_req<=1'b0;
+                    // next_pc[31:28]<=pc[31:28];
+					next_pc<={pc[31:28],last_inst_2[25:0],2'b00};
 					j_fin<=1;
 				end
-				else if (jr_req)
+				else if (jr_req||jr)
 				begin
 					next_pc<=(jr_data_ok==1)?jr_data:jr_data_cache;
-					// jr_req<=1'b0;
 					jr_fin<=1;
 				end 
                 else
 				begin
                     next_pc<=pc+(branch_offset<<2);
 				end
-				// branch_req_2<=1'b0;
-				// if_cln_req<=1'b0;
 				branch_fin<=1;
 				if_cln_fin<=1;
 				pcn<=1;
@@ -222,7 +218,7 @@ always @ (negedge reset or posedge clk)
 			IC_IF<=2'b0;
 			//id_pc<=32'hbfc0_0000;
 		end 
-		else if(int_req)
+		else if(int_req||int)
 			begin
 				id_inst<=32'b0;
 				id_pc<=32'b0;
@@ -231,7 +227,7 @@ always @ (negedge reset or posedge clk)
 		else if(delay_hard)
 			begin
 			end
-		else if(branch_req_1||if_cln_req)//流水线清�?
+		else if(branch_req_1||branch_1||if_cln_req||if_cln)//流水线清�?
 			begin
 				id_inst<=32'b0;
 				id_pc<=32'b0;
@@ -255,77 +251,56 @@ always @ (*)
 	end
 //用于分支指令的机�?*3 日后尝试整合
 // always @ (posedge branch_1 or posedge branch_2 or posedge int)
-always @ (*)
+always @ (posedge clk)
 	begin
-		case({branch_1,branch_2,int})
-			3'b001:begin
-				// if(!branch_req_1)//避免1b2i同时进入的情况，只有1非分支，才认�?2i有效。反�?1i2b则清2
-				// begin
-					int_req=1'b1;
-					branch_req_2=1'b0;
-					branch_req_1=1'b0;
-				// end 
-				// else
-				// ;
-			end
-			3'b101,3'b011,3'b111:begin//同时到则i�?定提�?
-				int_req=1'b1;
-			end
-			3'b100:begin
-				branch_req_1=1'b1;			
-			end
-			3'b010:begin
-				branch_req_2=1'b1;			
-			end
-		endcase
-		
+		if(delay_hard||delay_soft)
+			begin
+			case({branch_1,branch_2,int})
+				3'b001:begin
+					int_req<=1'b1;
+					branch_req_2<=1'b0;
+					branch_req_1<=1'b0;
+				end
+				3'b101,3'b011,3'b111:begin//同时到则i�?定提�?
+					int_req<=1'b1;
+				end
+				3'b100:begin
+					branch_req_1<=1'b1;			
+				end
+				3'b010:begin
+					branch_req_2<=1'b1;			
+				end
+			endcase
+		end
 		if(int_fin&&int_req)
-			int_req=0;			
+			int_req<=0;			
 		if(branch_fin&&branch_req_1)
-			branch_req_1=0;
+			branch_req_1<=0;
 		if(branch_fin&&branch_req_2)
-			branch_req_2=0;
+			branch_req_2<=0;
 	end
 	
-// always@(posedge branch_2)begin
-	// issolt<=1'b1;
-// end
-// always@(pc)begin
-	// if(issolt)
-		// if_solt<=1'b1;
-	// else
-		// if_solt<=1'b0;
-	
-	// issolt
-// end
 
-
-
-always @ (posedge j or posedge j_fin)
+always @ (posedge clk)
 	begin
 		if(j_fin)
 			j_req<=1'b0;
-		else if(j)
+		else if(j&&(delay_hard||delay_soft))
 			j_req<=1'b1;
-	end
-always @ (posedge jr or posedge jr_fin)
-	begin
+			
 		if(jr_fin)
 			jr_req<=1'b0;
-		else if(jr)
+		else if(jr&&(delay_hard||delay_soft))
 			jr_req<=1'b1;
-	end
-always @ (posedge if_cln or posedge if_cln_fin)
-	begin
+		
 		if(if_cln_fin)
 			if_cln_req<=1'b0;
-		else if(if_cln)
+		else if(if_cln&&(delay_hard||delay_soft))
 			if_cln_req<=1'b1;
-	end
-always @ (posedge clk)
-	begin
+		
 		if(jr_data_ok)
 			jr_data_cache<=jr_data;
+			
 	end
 
 assign last_inst_1=last_inst;
@@ -333,15 +308,9 @@ assign last_inst_1=last_inst;
 always@(*)
 begin
 	if(branch_req_1)
-		begin
-			// branch_offset[31:16]=last_inst[15]?16'hffff:16'h0;
-			branch_offset={{16{last_inst[15]}},last_inst[15:0]};
-		end
+		branch_offset={{16{last_inst[15]}},last_inst[15:0]};
 	else
-		begin
-			// branch_offset[31:16]=last_inst_2[15]?16'hffff:16'h0;
-			branch_offset={{16{last_inst_2[15]}},last_inst_2[15:0]};
-		end
+		branch_offset={{16{last_inst_2[15]}},last_inst_2[15:0]};
 end
 
 endmodule

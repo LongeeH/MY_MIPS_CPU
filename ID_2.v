@@ -463,8 +463,6 @@ always @ (*)
 	begin
 		if(!delay)
 			begin
-				// int_contr_word[1:0]<=IC_IF[1:0];
-				// int_contr_word[0]<=(jalr_inst||jr_inst)&&(reg_A[1:0]!=2'b00);
 				int_contr_word[0]=(id_pc[1:0]!=2'b00);
 				int_contr_word[1]=unknown_inst;
 				int_contr_word[2]=(add_inst || addi_inst ||sub_inst);
@@ -488,16 +486,17 @@ assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
                     slti_inst || sltiu_inst || srlv_inst || srav_inst ||
                     sllv_inst || nor_inst || xor_inst || xori_inst || beq_inst ||
                     bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst || jr_inst||jalr_inst||
-					bltzal_inst|| bgezal_inst
+					bltzal_inst
 					||div_inst||divu_inst||mult_inst||multu_inst
 					||mthi_inst||mtlo_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst
 					)&&(!nop_inst);
 					
-assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||
-                    sw_inst || sub_inst || subu_inst || slt_inst || sltu_inst ||
-                    srlv_inst || srav_inst || sllv_inst || nor_inst || xor_inst ||beq_inst ||
-                    bne_inst || bltz_inst ||blez_inst ||bgez_inst||sll_inst||
-					bltzal_inst|| bgezal_inst
+assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||sw_inst 
+					|| sub_inst || subu_inst || slt_inst || sltu_inst ||
+                    srlv_inst || srav_inst || sllv_inst ||srl_inst||sra_inst||sll_inst
+					|| nor_inst || xor_inst ||beq_inst  
+					||bne_inst  
+					//||bgez_inst||blez_inst|| bltz_inst || bgezal_inst||bltzal_inst
 					||div_inst||divu_inst||mult_inst||multu_inst||mtc0_inst
 					)&&(!nop_inst);
 
@@ -732,10 +731,8 @@ always @ ( posedge clk)
                 id_size_contr[2:0] <= size_contr[2:0];
 				if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)
 					immed<=id_pc+8;
-                else if(id_inst[15])
-                    immed[31:0]<={16'b1111111111111111,id_inst[15:0]};
                 else
-                    immed[31:0]<={16'b0,id_inst[15:0]};
+                    immed[31:0]<={{16{id_inst[15]}},id_inst[15:0]};
 				branch<=self_branch;
 				j<=self_j;
 				jr<=self_jr;

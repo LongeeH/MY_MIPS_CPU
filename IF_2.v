@@ -80,11 +80,11 @@ input jr;
 input [31:0]jr_data;
 input [31:0]cp0_epc;
 input jr_data_ok;
-input branch_1;
-input branch_2;
-input delay_soft;
+(*mark_debug = "true" *)input branch_1;
+(*mark_debug = "true" *)input branch_2;
+(*mark_debug = "true" *)input delay_soft;
 input delay_hard;
-input if_cln;
+(*mark_debug = "true" *)input if_cln;
 input IADEE;
 input IADFE;
 input [31:0]exc_pc;
@@ -143,16 +143,9 @@ always @ (posedge clk)
 			if_cln_fin<=0;
 			pcn<=0;
 		end
-        else if(int_req)
+        else if(int_req||int)
 			begin
 				next_pc<=32'hbfc0_0384;
-				// int_req<=0;
-				// if_cln_req<=0;
-				// next_pc<=exc_pc+4;
-				// branch_req_1<=0;
-				// branch_req_2<=0;
-				// j_req<=0;
-				// jr_req<=0;
 				int_fin<=1;
 				if_cln_fin<=1;
 				branch_fin<=1;
@@ -160,55 +153,47 @@ always @ (posedge clk)
 				jr_fin<=1;
 				pcn<=1;
 			end
-        else if(branch_req_1)
+        else if(branch_req_1||branch_1)
             begin
 				pcn<=1;
-                if(j_req)
+                if(j_req||j)
 				begin
                     next_pc[31:28]<=pc_slot_2[31:28];
 					next_pc[27:0]<=(last_inst_1[25:0]<<2)+4;
-					// j_req<=1'b0;
 					j_fin<=1;
 				end
-                else if(jr_req)
+                else if(jr_req||jr)
 				begin
                     next_pc<=jr_data_ok?jr_data+4:jr_data_cache+4;
-					// jr_req<=1'b0;
 					jr_fin<=1;
 				end
 				else
 				begin
 					next_pc<=pc_slot+(branch_offset<<2);
 				end
-				// branch_req_1<=1'b0;
-				// if_cln_req<=1'b0;
 				branch_fin<=1;
 				if_cln_fin<=1;
             end
 		
-		else if(branch_req_2)
+		else if(branch_req_2||branch_1)
 			begin
 				pcn<=1;
-                if(j_req)
+                if(j_req||j)
 				
 				begin
                     next_pc[31:28]<=pc_slot[31:28];
 					next_pc[27:0]<=(last_inst[25:0]<<2)+4;
-					// j_req<=1'b0;
 					j_fin<=1;
 				end
-				else if(jr_req)
+				else if(jr_req||jr)
 				begin
 					next_pc<=jr_data_ok?jr_data+4:jr_data_cache+4;
-					// jr_req<=1'b0;
 					jr_fin<=1;
 				end
                 else
 				begin
                     next_pc<=pc+(branch_offset<<2);
 				end
-                // branch_req_2<=1'b0;
-				// if_cln_req<=1'b0;
 				branch_fin<=1;
 				if_cln_fin<=1;
             end
@@ -233,15 +218,15 @@ always @ (negedge reset or posedge clk)
 		begin
 			id_inst<=32'b0;
 			IC_IF<=2'b0;
-			//id_pc<=32'hbfc0_0004;
-		end else if(int_req)
+	
+		end else if(int_req||int)
 		begin
 			id_inst<=32'b0;
 			id_pc<=32'b0;
-			//IC_IF<={IADEE,IADFE};
+
 		end else if(delay_hard)//硬暂停，通常是用于数据相关，级别最高，不允许更新任何，冻结流水线
 		begin
-		end else if(branch_req_1||branch_req_2||if_cln_req)//流水线清空
+		end else if(branch_req_1||branch_1||branch_req_2||branch_2||if_cln_req||if_cln)//流水线清空
 		begin
 			id_inst<=32'b0;
 			id_pc<=32'b0;
@@ -263,30 +248,27 @@ always @ (*)
 	end
 
 //分支跳转*3
-// always @ (posedge branch_1 or posedge branch_2 or posedge int)
-always @ (*)
+always @ (posedge clk)
 	begin
-		case({branch_1,branch_2,int})
-			3'b001:begin
-				// if(!branch_req_1)//not 1b2i
-				// begin
-					int_req=1'b1;
-					branch_req_1=1'b0;	
-					branch_req_2=1'b0;
-				// end 
-				// else
-				// ;
-			end
-			3'b101,3'b011,3'b111:begin//同时到则i一定提前
-				int_req=1'b1;
-			end
-			3'b100:begin
-				branch_req_1=1'b1;			
-			end
-			3'b010:begin
-				branch_req_2=1'b1;			
-			end
-		endcase
+		if(delay_hard||delay_soft)
+		begin
+			case({branch_1,branch_2,int})
+				3'b001:begin
+					int_req<=1'b1;
+					branch_req_1<=1'b0;	
+					branch_req_2<=1'b0;
+				end
+				3'b101,3'b011,3'b111:begin//同时到则i一定提前
+					int_req<=1'b1;
+				end
+				3'b100:begin
+					branch_req_1<=1'b1;			
+				end
+				3'b010:begin
+					branch_req_2<=1'b1;			
+				end
+			endcase
+		end
 		if(int_fin&&int_req)
 			int_req<=0;			
 		if(branch_fin&&branch_req_1)
@@ -294,47 +276,34 @@ always @ (*)
 		if(branch_fin&&branch_req_2)
 			branch_req_2<=0;
 	end
-always @ (posedge j or posedge j_fin)
+always @ (posedge clk)
 	begin
 		if(j_fin)
 			j_req<=1'b0;
-		else if(j)
+		else if(j&&(delay_hard||delay_soft))
 			j_req<=1'b1;
-	end
-always @ (posedge jr or posedge jr_fin)
-	begin
 		if(jr_fin)
 			jr_req<=1'b0;
-		else if(jr)
+		else if(jr&&(delay_hard||delay_soft))
 			jr_req<=1'b1;
-	end
-always @ (posedge if_cln or posedge if_cln_fin)
-	begin
 		if(if_cln_fin)
 			if_cln_req<=1'b0;
-		else if(if_cln)
-			if_cln_req<=1'b1;	
-	end
-
-always @ (posedge clk)
-	begin
+		else if(if_cln&&(delay_hard||delay_soft))
+			if_cln_req<=1'b1;
+			
 		if(jr_data_ok)
 			jr_data_cache<=jr_data;
+			
 	end
+
 	
 assign last_inst_2=last_inst;
 
 always@(*)
 begin
 	if(branch_req_1)
-		begin
-			// branch_offset[31:16]=last_inst_1[15]?16'hffff:16'h0;
-			branch_offset={{16{last_inst_1[15]}},last_inst_1[15:0]};
-		end
+		branch_offset={{16{last_inst_1[15]}},last_inst_1[15:0]};
 	else
-		begin
-			// branch_offset[31:16]=last_inst[15]?16'hffff:16'h0;
-			branch_offset={{16{last_inst[15]}},last_inst[15:0]};
-		end
+		branch_offset={{16{last_inst[15]}},last_inst[15:0]};
 end
 endmodule

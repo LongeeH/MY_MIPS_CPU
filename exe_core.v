@@ -22,7 +22,7 @@
 
 module exe_core(
 	input clk,
-	(*mark_debug = "true" *)input reset,
+	input reset,
 	//test axi port here
 	//read address channel
 	output reg [3:0]arid,
@@ -33,15 +33,15 @@ module exe_core(
 	output reg [1:0]arlock,
 	output reg [3:0]arcache,
 	output reg [2:0]arprot,	
-	(*mark_debug = "true"*)output reg arvalid,
+	output reg arvalid,
 	input arready,
 	
 	//read data channel
 	input [3:0]rid,
-	(*mark_debug = "true"*)input rvalid,
+	input rvalid,
     input [1:0] rresp,	
 	input rlast,
-	(*mark_debug = "true"*)input [31:0]rdata,
+	input [31:0]rdata,
 	output reg rready,	
 	
     //write address channel
@@ -96,14 +96,14 @@ module exe_core(
     input               cache_op_ok,
 
     //debug interface
-    (*mark_debug = "true"*)output  [31:0] debug_wb_pc_1,
+    output  [31:0] debug_wb_pc_1,
     output  [3:0] debug_wb_rf_wen_1,
-    (*mark_debug = "true"*)output  [4:0] debug_wb_rf_wnum_1,
-    (*mark_debug = "true"*)output  [31:0] debug_wb_rf_wdata_1,
-    (*mark_debug = "true"*)output  [31:0] debug_wb_pc_2,
+    output  [4:0] debug_wb_rf_wnum_1,
+    output  [31:0] debug_wb_rf_wdata_1,
+    output  [31:0] debug_wb_pc_2,
     output  [3:0] debug_wb_rf_wen_2,
-    (*mark_debug = "true"*)output  [4:0] debug_wb_rf_wnum_2,
-    (*mark_debug = "true"*)output  [31:0] debug_wb_rf_wdata_2
+    output  [4:0] debug_wb_rf_wnum_2,
+    output  [31:0] debug_wb_rf_wdata_2
     );
 	
 	
@@ -112,14 +112,14 @@ module exe_core(
 	wire [31:0]last_inst_1;
 	wire [31:0]last_inst_2;
 	//IF-ID
-    (*mark_debug = "true"*)wire [31:0]id_inst_1;
-	(*mark_debug = "true"*)wire [31:0]id_pc_1;
+    (*mark_debug = "true" *)wire [31:0]id_inst_1;
+	wire [31:0]id_pc_1;
 	wire [1:0]IC_IF_1;
-	(*mark_debug = "true"*)wire [31:0]id_inst_2;
-	(*mark_debug = "true"*)wire [31:0]id_pc_2;
+	(*mark_debug = "true" *)wire [31:0]id_inst_2;
+	wire [31:0]id_pc_2;
 	wire [1:0]IC_IF_2;
-	(*mark_debug = "true"*)wire branch_1;
-	(*mark_debug = "true"*)wire branch_2;
+	wire branch_1;
+	wire branch_2;
 	wire j_1;
 	wire j_2;//useless
 	wire jr_1;
@@ -215,10 +215,10 @@ module exe_core(
 	wire [31:0]lo_r_data;
 	wire [31:0]hi_r_data;
 	//WB-REG
-	wire [31:0]wb_reg_data_1;
-	wire [31:0]wb_reg_data_2;
-	wire wb_reg_wr_1;
-	wire wb_reg_wr_2;
+	(*mark_debug = "true" *)wire [31:0]wb_reg_data_1;
+	(*mark_debug = "true" *)wire [31:0]wb_reg_data_2;
+	(*mark_debug = "true" *)wire wb_reg_wr_1;
+	(*mark_debug = "true" *)wire wb_reg_wr_2;
 	wire [4:0]wb_res_des1;
 	wire [4:0]wb_res_des2;
 	wire wb_hi_wr_1;
@@ -606,20 +606,20 @@ module exe_core(
 	);
 	
 	//instruction require
-	(*mark_debug = "true" *)wire [31:0] pc_1;
-	(*mark_debug = "true" *)wire [31:0] pc_2;
-	(*mark_debug = "true"*)wire [31:0]if_inst_1;
-	(*mark_debug = "true"*)wire [31:0]if_inst_2;
+	(*mark_debug = "true"*)wire [31:0] pc_1;
+	(*mark_debug = "true"*)wire [31:0] pc_2;
+	(*mark_debug = "true" *)wire [31:0]if_inst_1;
+	(*mark_debug = "true" *)wire [31:0]if_inst_2;
 	wire waitinst;
 	reg waitinst_1;
 	reg waitinst_2;
 	reg rready;
 	// wire delay_soft;
 	wire inst_req;
-	(*mark_debug = "true"*)reg inst_rec_1;
-	(*mark_debug = "true"*)reg inst_rec_2;
-	(*mark_debug = "true"*)reg inst_req_1;
-	(*mark_debug = "true"*)reg inst_req_2;
+	reg inst_rec_1;
+	reg inst_rec_2;
+	reg inst_req_1;
+	reg inst_req_2;
 	//reg inst_req_en;//which pipeline req?
 	// reg arvalid_rst;
 	// reg arvalid_use;
@@ -628,16 +628,16 @@ module exe_core(
 	reg [1:0]data_r_req_2;
 	reg data_r_rec_1;
 	reg data_r_rec_2;
-	wire [31:0]mem_data_addr_1;
-	wire [31:0]mem_data_addr_2;
+	(*mark_debug = "true"*)wire [31:0]mem_data_addr_1;
+	(*mark_debug = "true"*)wire [31:0]mem_data_addr_2;
 	wire [31:0]mem_data_in_1;
-	wire [31:0]mem_data_in_2;
+	(*mark_debug = "true"*)wire [31:0]mem_data_in_2;
 
 	wire[2:0]mem_size_contr_1;
 	wire[2:0]mem_size_contr_2;
 
 
-	(*mark_debug = "true"*)reg inst_apply;
+	reg inst_apply;
 	reg data_apply_1;
 	reg data_apply_2;
 	
@@ -700,7 +700,7 @@ module exe_core(
 	//axi read apply end
 	
 	
-	wire mem_forward;
+	(*mark_debug = "true"*)wire mem_forward;
 	assign mem_forward=(mem_data_addr_2==mem_data_addr_1)&&mem_wr_en_1&&mem_load_en_2;
 	//axi read receive module
 	//inst rec
@@ -911,19 +911,20 @@ module exe_core(
 	wire if_delay;
 	// wire if_delay;
 	assign if_delay = delay_out_1 | delay_out_2;
-	
+	wire mem_load_en_1;
+	(*mark_debug = "true"*)wire mem_load_en_2;
 	
 	//need data distributor divide instruction or data
 	
 	
 	//axi write module here	
-	wire mem_wr_en_1;
+	(*mark_debug = "true"*)wire mem_wr_en_1;
 	wire mem_wr_en_2;
 	reg data_w_ok_1;
 	reg data_w_ok_2;
 	reg [1:0]data_w_req_1;
 	reg [1:0]data_w_req_2;
-	wire [31:0]mem_data_out_1;
+	(*mark_debug = "true"*)wire [31:0]mem_data_out_1;
 	wire [31:0]mem_data_out_2;
 	
 	//w req add

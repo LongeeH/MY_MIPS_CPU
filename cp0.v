@@ -98,40 +98,40 @@ module CP0(
 		// begin
 			case(cp0_int_contr_word_1[7:0])
 				8'b00000001,8'b00000011,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b00100000,8'b10000000:begin//int occur ,8'b00000100
-					cp0_exp_1 <= 1'b1;
-					cp0_cln_1<=1'b1;
+					cp0_exp_1 = 1'b1;
+					cp0_cln_1 = 1'b1;
 				end
 				8'b01000000:begin//eret
-					cp0_exp_1<=1'b0;
-					cp0_cln_1<=1'b1;
+					cp0_exp_1 = 1'b0;
+					cp0_cln_1 = 1'b1;
 				end
 				8'b00000000:begin
-					cp0_exp_1 <= 1'b0;
-					cp0_cln_1 <= 1'b0;
+					cp0_exp_1 = 1'b0;
+					cp0_cln_1 = 1'b0;
 				end
 				default:begin
-					cp0_exp_1 <= 1'b0;
-					cp0_cln_1 <= 1'b0;
+					cp0_exp_1 = 1'b0;
+					cp0_cln_1 = 1'b0;
 				end
 			endcase
 			if(!branch_1)
 			begin
 				case(cp0_int_contr_word_2[7:0])
 					8'b00000001,8'b00000011,8'b00000010,8'b00000100,8'b00001000,8'b00010000,8'b00100000,8'b10000000:begin//int occur,8'b00000100
-						cp0_exp_2 <= 1'b1;
-						cp0_cln_2<=1'b1;
+						cp0_exp_2 = 1'b1;
+						cp0_cln_2 = 1'b1;
 					end
 					8'b01000000:begin//eret
-						cp0_exp_2<=1'b0;
-						cp0_cln_2<=1'b1;
+						cp0_exp_2 = 1'b0;
+						cp0_cln_2 = 1'b1;
 					end
 					8'b00000000:begin
-						cp0_exp_2 <= 1'b0;
-						cp0_cln_2<=1'b0;
+						cp0_exp_2 = 1'b0;
+						cp0_cln_2 = 1'b0;
 					end
 					default:begin
-						cp0_exp_2 <= 1'b0;
-						cp0_cln_2<=1'b0;
+						cp0_exp_2 = 1'b0;
+						cp0_cln_2 = 1'b0;
 					end
 				endcase	
 			end
@@ -157,7 +157,7 @@ module CP0(
 		end
 		2'b00:begin
 			isDelay = 1'bZ;
-			exceptionFlag[7:0] = 8'bZ;
+			exceptionFlag = 32'bZ;
 			exceptionPC = 32'bZ;
 			orginalVritualAddrT = 32'bZ;
 		end
@@ -414,74 +414,74 @@ module CP0(
 	always @ (*) begin
 		if(reset == 0)
 		begin
-			cp0_r_data_1 <= 31'h0000_0000;
+			cp0_r_data_1 = 31'h0000_0000;
 		end
 		else
 		begin
             case (cp0_r_addr_1)
 				// `CP0BadVAddrAddr: //5'b01000
 				5'b01000:begin
-					cp0_r_data_1 <= BadVAddr;
+					cp0_r_data_1 = BadVAddr;
 				end
 				// `CP0CountAddr: 
 				5'b01001:begin
-					cp0_r_data_1 <= Count;
+					cp0_r_data_1 = Count;
 				end
 				// `CP0StatusAddr:
 				5'b01100:begin
-					cp0_r_data_1 <= Status;
+					cp0_r_data_1 = Status;
 				end
 				// `CP0CauseAddr: 
 				5'b01101:begin
-					cp0_r_data_1 <= Cause;
+					cp0_r_data_1 = Cause;
 				end
 				// `CP0expAddr: 
 				5'b01110:begin
-					cp0_r_data_1 <= EPC;
+					cp0_r_data_1 = EPC;
 				end
 				// `CP0CompareAddr: 
 				5'b01011:begin
-					cp0_r_data_1 <= Compare;
+					cp0_r_data_1 = Compare;
 				end	
 				default:begin
-					cp0_r_data_1 <= 31'h0000_0000;
+					cp0_r_data_1 = 31'h0000_0000;
 				end			
             endcase		
 		end
 		
 		if(reset == 0)
 		begin
-			cp0_r_data_2 <= 31'h0000_0000;
+			cp0_r_data_2 = 31'h0000_0000;
 		end
 		else
 		begin
             case (cp0_r_addr_2)
 				// `CP0BadVAddrAddr: //5'b01000
 				5'b01000:begin
-					cp0_r_data_2 <= BadVAddr;
+					cp0_r_data_2 = BadVAddr;
 				end
 				// `CP0CountAddr: 
 				5'b01001:begin
-						cp0_r_data_2 <= Count;
+						cp0_r_data_2 = Count;
 				end
 				// `CP0StatusAddr:
 				5'b01100:begin
-						cp0_r_data_2 <= Status;
+						cp0_r_data_2 = Status;
 				end
 				// `CP0CauseAddr: 
 				5'b01101:begin
-						cp0_r_data_2 <= Cause;
+						cp0_r_data_2 = Cause;
 				end
 				// `CP0expAddr: 
 				5'b01110:begin
-						cp0_r_data_2 <= EPC;
+						cp0_r_data_2 = EPC;
 				end
 				// `CP0CompareAddr: 
 				5'b01011:begin
-						cp0_r_data_2 <= Compare;
+						cp0_r_data_2 = Compare;
 				end	
 				default:begin
-						cp0_r_data_2 <= 31'h0000_0000;
+						cp0_r_data_2 = 31'h0000_0000;
                 end			
             endcase		
 		end
@@ -493,11 +493,11 @@ module CP0(
 	begin
         if((Status[1] == 1'b0) && ((Cause[9] == 1'b1 && Status[9] == 1'b1) || (Cause[8] == 1'b1 && Status[8] == 1'b1)))
         begin
-            softWareInt <= 1'b1;
+            softWareInt = 1'b1;
         end
         else
         begin
-            softWareInt <= 1'b0;
+            softWareInt = 1'b0;
         end   
 	end
 	

@@ -481,7 +481,8 @@ always @ (*)
 				int_contr_word[15]=syscall_inst||eret_inst||break_inst;
 			end
 		else
-			int_contr_word=16'b0;
+			int_contr_word[8:0]=9'b0;
+			int_contr_word[15:10]=6'b0;
 	end
 reg is_solt;
 reg is_solt_fin;
@@ -503,7 +504,6 @@ end
 
 always@(*)
 begin
-	
 	if(is_solt&&(id_pc!=32'b0)&&(ab_pc!=id_pc))//||nop_inst))
 		begin
 			int_contr_word[9]=1'b1;
@@ -527,10 +527,12 @@ assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
 					||mthi_inst||mtlo_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst
 					)&&(!nop_inst);
 					
-assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||
-                    sw_inst || sub_inst || subu_inst || slt_inst || sltu_inst ||
-                    srlv_inst || srav_inst || sllv_inst || nor_inst || xor_inst ||beq_inst ||bltzal_inst|| bgezal_inst||
-                    bne_inst || bltz_inst ||blez_inst ||bgez_inst||sll_inst
+assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||sw_inst 
+					|| sub_inst || subu_inst || slt_inst || sltu_inst
+					||srlv_inst || srav_inst || sllv_inst ||srl_inst||sra_inst||sll_inst
+					|| nor_inst || xor_inst 
+					//||bgez_inst||blez_inst|| bltz_inst || bgezal_inst||bltzal_inst
+					||beq_inst || bne_inst 
 					||div_inst||divu_inst||mult_inst||multu_inst||mtc0_inst
 					)&&(!nop_inst);
 
@@ -744,10 +746,8 @@ always @ (negedge reset or posedge clk)
                 id_size_contr[2:0] <= size_contr[2:0];
 				if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)//link pc
 					immed<=id_pc+8;
-                else if(id_inst[15])
-                    immed[31:0]<={16'b1111111111111111,id_inst[15:0]};
-                else
-                    immed[31:0]<={16'b0,id_inst[15:0]};
+				else
+					immed[31:0]<={{16{id_inst[15]}},id_inst[15:0]};
 				branch<=self_branch;
 				j<=self_j;
 				jr<=self_jr;
