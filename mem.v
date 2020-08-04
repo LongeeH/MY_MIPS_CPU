@@ -229,7 +229,7 @@ module MEM(
 	
 	always @(negedge reset or posedge clk) //原设计的流水线，结合上一个always重新实现
     begin  
-		if(reset==0||(!delay&&mem_cln_req)) 
+		if(reset==0||(!delay&&(mem_cln_req||mem_cln))) 
 			begin 
 				mem_res<=32'b0; 
 				mem_contr_word<=32'b0; 
@@ -262,16 +262,17 @@ module MEM(
 				mem_contr_word<=32'b0; 
 				mem_res<=32'b0; 
 				wb_pc<=32'b0; 
+				mem_cln_fin<=1'b1;
 			end			
 			
     end 
 	
 	reg mem_cln_fin;
-	always@(posedge mem_cln or posedge mem_cln_fin)
+	always@(posedge clk)
 	begin
-		if(mem_cln_fin)
+		if(!delay&&mem_cln_req)
 			mem_cln_req<=1'b0;
-		else if(mem_cln)
+		else if(mem_cln&&delay)
 			mem_cln_req<=1'b1;
 	end
 	

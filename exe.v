@@ -91,14 +91,14 @@ module EXE(
 	reg [31:0]exe_lo_data;
 	reg [6:0]exe_des;
 	reg [1:0]exe_wr_hilo;
-	// reg [63:0]mult_res;
-	// reg [63:0]multu_res;
-	// reg [63:0]div_res;
-	// reg [63:0]divu_res;	
-	wire [63:0]mult_res;
-	wire [63:0]multu_res;
-	wire [63:0]div_res;
-	wire [63:0]divu_res;
+	reg [63:0]mult_res;
+	reg [63:0]multu_res;
+	reg [63:0]div_res;
+	reg [63:0]divu_res;	
+	// wire [63:0]mult_res;
+	// wire [63:0]multu_res;
+	// wire [63:0]div_res;
+	// wire [63:0]divu_res;
 	reg [63:0]alu_hilo_res;
 	reg [32:0]alu_2id_hilo;
 	reg exe_cln_req;
@@ -141,13 +141,13 @@ module EXE(
 	
 	always @(id_des or id_wr_hilo)//数据相关的控制信�??
 	begin
-		exe_alu_des<=id_des;
-		exe_alu_wr_hilo<=id_wr_hilo;
+		exe_alu_des=id_des;
+		exe_alu_wr_hilo=id_wr_hilo;
     end
 
 	always @(negedge reset or posedge clk)//流水线处�??
 	begin
-		if(reset==0||(!delay&&exe_cln_req))
+		if(reset==0||(!delay&&(exe_cln_req||exe_cln)))
 		begin
 			exe_res<=32'b0;
 			mem_data<=32'b0;
@@ -219,63 +219,63 @@ module EXE(
 		.alu_int_ov(alu_int_ov)
 	);
 
-	mult_gen_0 mult (
-	  .A(alu_data_A),  // input wire [31 : 0] A
-	  .B(alu_data_B),  // input wire [31 : 0] B
-	  .P(mult_res)  // output wire [63 : 0] P
-	);
-	mult_gen_u multu (
-	  .A(alu_data_A),  // input wire [31 : 0] A
-	  .B(alu_data_B),  // input wire [31 : 0] B
-	  .P(multu_res)  // output wire [63 : 0] P
-	);
+	// mult_gen_0 mult (
+	  // .A(alu_data_A),  // input wire [31 : 0] A
+	  // .B(alu_data_B),  // input wire [31 : 0] B
+	  // .P(mult_res)  // output wire [63 : 0] P
+	// );
+	// mult_gen_u multu (
+	  // .A(alu_data_A),  // input wire [31 : 0] A
+	  // .B(alu_data_B),  // input wire [31 : 0] B
+	  // .P(multu_res)  // output wire [63 : 0] P
+	// );
 	
-	div_gen_0 div (
-	  .s_axis_divisor_tvalid(1),    // input wire s_axis_divisor_tvalid
-	  .s_axis_divisor_tdata(alu_data_B),      // input wire [31 : 0] s_axis_divisor_tdata
-	  .s_axis_dividend_tvalid(1),  // input wire s_axis_dividend_tvalid
-	  .s_axis_dividend_tdata(alu_data_A),    // input wire [31 : 0] s_axis_dividend_tdata
-	  .m_axis_dout_tvalid(),          // output wire m_axis_dout_tvalid
-	  .m_axis_dout_tdata({div_res[31:0],div_res[63:32]})            // output wire [63 : 0] m_axis_dout_tdata
-	);
+	// div_gen_0 div (
+	  // .s_axis_divisor_tvalid(1),    // input wire s_axis_divisor_tvalid
+	  // .s_axis_divisor_tdata(alu_data_B),      // input wire [31 : 0] s_axis_divisor_tdata
+	  // .s_axis_dividend_tvalid(1),  // input wire s_axis_dividend_tvalid
+	  // .s_axis_dividend_tdata(alu_data_A),    // input wire [31 : 0] s_axis_dividend_tdata
+	  // .m_axis_dout_tvalid(),          // output wire m_axis_dout_tvalid
+	  // .m_axis_dout_tdata({div_res[31:0],div_res[63:32]})            // output wire [63 : 0] m_axis_dout_tdata
+	// );
 	
-	div_gen_u divu (
-	  .s_axis_divisor_tvalid(1),    // input wire s_axis_divisor_tvalid
-	  .s_axis_divisor_tdata(alu_data_B),      // input wire [31 : 0] s_axis_divisor_tdata
-	  .s_axis_dividend_tvalid(1),  // input wire s_axis_dividend_tvalid
-	  .s_axis_dividend_tdata(alu_data_A),    // input wire [31 : 0] s_axis_dividend_tdata
-	  .m_axis_dout_tvalid(),          // output wire m_axis_dout_tvalid
-	  .m_axis_dout_tdata({divu_res[31:0],divu_res[63:32]})            // output wire [63 : 0] m_axis_dout_tdata
-	);
+	// div_gen_u divu (
+	  // .s_axis_divisor_tvalid(1),    // input wire s_axis_divisor_tvalid
+	  // .s_axis_divisor_tdata(alu_data_B),      // input wire [31 : 0] s_axis_divisor_tdata
+	  // .s_axis_dividend_tvalid(1),  // input wire s_axis_dividend_tvalid
+	  // .s_axis_dividend_tdata(alu_data_A),    // input wire [31 : 0] s_axis_dividend_tdata
+	  // .m_axis_dout_tvalid(),          // output wire m_axis_dout_tvalid
+	  // .m_axis_dout_tdata({divu_res[31:0],divu_res[63:32]})            // output wire [63 : 0] m_axis_dout_tdata
+	// );
 	
 	
-	// always@(*)//fake div
-	// begin
-		// div_res[31:0]=$signed(alu_data_A)/$signed(alu_data_B);
-		// div_res[63:32]=$signed(alu_data_A)%$signed(alu_data_B);
-	// end
-	// always@(*)//fake divu
-	// begin
-		// divu_res[31:0]=alu_data_A/alu_data_B;
-		// divu_res[63:32]=alu_data_A%alu_data_B;
-	// end
-	// always@(*)//fake mul
-	// begin
-		// mult_res=$signed(alu_data_A)*$signed(alu_data_B);
-	// end
-	// always@(*)//fake mulu
-	// begin
-		// multu_res=alu_data_A*alu_data_B;
-	// end
+	always@(*)//fake div
+	begin
+		div_res[31:0]=$signed(alu_data_A)/$signed(alu_data_B);
+		div_res[63:32]=$signed(alu_data_A)%$signed(alu_data_B);
+	end
+	always@(*)//fake divu
+	begin
+		divu_res[31:0]=alu_data_A/alu_data_B;
+		divu_res[63:32]=alu_data_A%alu_data_B;
+	end
+	always@(*)//fake mul
+	begin
+		mult_res=$signed(alu_data_A)*$signed(alu_data_B);
+	end
+	always@(*)//fake mulu
+	begin
+		multu_res=alu_data_A*alu_data_B;
+	end
 	
 	
 	
 	reg exe_cln_fin;
-	always@(posedge exe_cln or posedge exe_cln_fin)
+	always@(posedge clk)
 	begin
-		if(exe_cln_fin)
+		if(!delay&&exe_cln_req)
 			exe_cln_req<=1'b0;
-		else if(exe_cln)
+		else if(exe_cln&&delay)
 			exe_cln_req<=1'b1;
 	end
 	

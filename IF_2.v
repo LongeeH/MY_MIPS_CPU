@@ -175,7 +175,7 @@ always @ (posedge clk)
 				if_cln_fin<=1;
             end
 		
-		else if(branch_req_2||branch_1)
+		else if(branch_req_2||branch_2)
 			begin
 				pcn<=1;
                 if(j_req||j)
@@ -269,24 +269,26 @@ always @ (posedge clk)
 				end
 			endcase
 		end
-		if(int_fin&&int_req)
+		if(!(delay_hard||delay_soft)&&int_req)
 			int_req<=0;			
-		if(branch_fin&&branch_req_1)
+		if(!(delay_hard||delay_soft)&&branch_req_1)
 			branch_req_1<=0;
-		if(branch_fin&&branch_req_2)
+		if(!(delay_hard||delay_soft)&&branch_req_2)
 			branch_req_2<=0;
 	end
 always @ (posedge clk)
 	begin
-		if(j_fin)
+		if(!(delay_hard||delay_soft)&&j_req)
 			j_req<=1'b0;
 		else if(j&&(delay_hard||delay_soft))
 			j_req<=1'b1;
-		if(jr_fin)
+			
+		if(!(delay_hard||delay_soft)&&jr_req)
 			jr_req<=1'b0;
 		else if(jr&&(delay_hard||delay_soft))
 			jr_req<=1'b1;
-		if(if_cln_fin)
+
+		if(!(delay_hard||delay_soft)&&if_cln_req)
 			if_cln_req<=1'b0;
 		else if(if_cln&&(delay_hard||delay_soft))
 			if_cln_req<=1'b1;

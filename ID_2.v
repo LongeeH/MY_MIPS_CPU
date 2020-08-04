@@ -401,17 +401,20 @@ always @ (tlbp_inst or tlbr_inst or tlbwi_inst or tlbwr_inst)
 
 //通用信号
 assign reg_des = Rtype;
-assign write_reg = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst ||
-                     subu_inst || and_inst || andi_inst || or_inst || ori_inst || slt_inst ||
-                     sltu_inst || slti_inst || sltiu_inst || sll_inst || sllv_inst ||
-                     sra_inst || srav_inst ||srl_inst ||srlv_inst ||nor_inst||xor_inst||
-                     xori_inst ||lw_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||mfc0_inst||mfhi_inst||mflo_inst||lui_inst || jal_inst||jalr_inst||bltzal_inst|| bgezal_inst);
+assign write_reg = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst ||subu_inst 
+					|| and_inst || andi_inst || or_inst || ori_inst || nor_inst || xor_inst ||xori_inst 
+					|| slt_inst || sltu_inst || slti_inst || sltiu_inst 
+					|| sll_inst || sllv_inst || sra_inst || srav_inst || srl_inst || srlv_inst 
+					|| jal_inst || jalr_inst || bltzal_inst || bgezal_inst
+					|| lw_inst || lb_inst || lbu_inst || lh_inst || lhu_inst || mfc0_inst || mfhi_inst || mflo_inst ||lui_inst);
 assign write_mem = sw_inst||sb_inst||sh_inst;
 assign mem_2_reg = lw_inst||lb_inst||lbu_inst||lh_inst||lhu_inst;
 assign write_lo = mtlo_inst||div_inst||divu_inst||mult_inst||multu_inst;
 assign write_hi = mthi_inst||div_inst||divu_inst||mult_inst||multu_inst;
 assign alu_srcA = (sll_inst || sra_inst || srl_inst);
-assign alu_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst||jal_inst||jalr_inst||bltzal_inst|| bgezal_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst);
+assign alu_srcB[0] = (addi_inst || addiu_inst || slti_inst || sltiu_inst || lw_inst||sw_inst||lui_inst||jal_inst||jalr_inst||bltzal_inst|| bgezal_inst
+||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst
+);
 assign alu_srcB[1] = (ori_inst || andi_inst ||xori_inst);
 assign alu_res_ok = (add_inst || addu_inst || addi_inst || addiu_inst || sub_inst || subu_inst ||
                      and_inst || andi_inst || or_inst || ori_inst || slt_inst || sltu_inst ||
@@ -419,11 +422,11 @@ assign alu_res_ok = (add_inst || addu_inst || addi_inst || addiu_inst || sub_ins
                      xor_inst || xori_inst||lui_inst||jal_inst||jalr_inst||bltzal_inst|| bgezal_inst||div_inst||divu_inst||mult_inst||multu_inst);
 assign mem_res_ok = (lw_inst || lb_inst || lbu_inst || lh_inst || lhu_inst || mfc0_inst);
 
-assign delay = delay_in | delay_self | delay_self_mix;
+assign delay = delay_in || delay_self || delay_self_mix;
 assign delay_out = delay_self;
 assign delay_mix = delay_self_mix;
 
-always @ (reg_des or RDI or RTI)
+always @ (*)
     begin
 		if(jal_inst||jalr_inst||bltzal_inst|| bgezal_inst)
 			result_des =5'b11111;
@@ -480,22 +483,23 @@ always @ (*)
 	end
 assign after_branch = int_contr_word[8];
 //数据相关
-assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || add_inst ||
-                    addi_inst || addu_inst || addiu_inst || lw_inst ||
-                    sw_inst || sub_inst || subu_inst ||slt_inst || sltu_inst ||
-                    slti_inst || sltiu_inst || srlv_inst || srav_inst ||
-                    sllv_inst || nor_inst || xor_inst || xori_inst || beq_inst ||
-                    bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst || jr_inst||jalr_inst||
-					bltzal_inst
-					||div_inst||divu_inst||mult_inst||multu_inst
-					||mthi_inst||mtlo_inst||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst
+assign rs_source = (and_inst || andi_inst || or_inst || ori_inst || nor_inst || xor_inst || xori_inst 
+					|| add_inst || addi_inst || addu_inst || addiu_inst || sub_inst || subu_inst
+					|| lw_inst || sw_inst || lb_inst || lbu_inst || lh_inst || lhu_inst || sb_inst || sh_inst
+					|| slt_inst || sltu_inst || slti_inst || sltiu_inst 
+					|| srlv_inst || srav_inst || sllv_inst 
+					|| beq_inst || bltzal_inst || bgezal_inst || bne_inst || bltz_inst || blez_inst || bgtz_inst || bgez_inst
+                    || jr_inst || jalr_inst
+					|| div_inst || divu_inst || mult_inst || multu_inst
+					|| mthi_inst || mtlo_inst
 					)&&(!nop_inst);
 					
-assign rt_source = (and_inst || or_inst || add_inst || addu_inst || lw_inst ||sw_inst 
-					|| sub_inst || subu_inst || slt_inst || sltu_inst ||
-                    srlv_inst || srav_inst || sllv_inst ||srl_inst||sra_inst||sll_inst
-					|| nor_inst || xor_inst ||beq_inst  
-					||bne_inst  
+assign rt_source = (and_inst || or_inst || nor_inst || xor_inst
+					|| add_inst || addu_inst || sub_inst || subu_inst
+					|| lw_inst ||sw_inst ||lb_inst||lbu_inst||lh_inst||lhu_inst||sb_inst||sh_inst
+					|| slt_inst || sltu_inst 
+					|| srlv_inst || srav_inst || sllv_inst ||srl_inst||sra_inst||sll_inst
+					||beq_inst ||bne_inst  
 					//||bgez_inst||blez_inst|| bltz_inst || bgezal_inst||bltzal_inst
 					||div_inst||divu_inst||mult_inst||multu_inst||mtc0_inst
 					)&&(!nop_inst);
@@ -528,8 +532,8 @@ always@(*)
 //参�?�图5-10 FWDA可能不受clk控制
 always @ (*)
     begin
-        if((alu_des_1[6] && ((rs_source && (RSI[4:0] == alu_des_1[4:0]))||(rt_source && (RTI[4:0] == alu_des_1[4:0]))))||
-		(alu_des_2[6] && ((rs_source && (RSI[4:0] == alu_des_2[4:0]))|| (rt_source && (RTI[4:0] == alu_des_2[4:0])))))
+        if((alu_des_1[6] && ((rs_source && (RSI[4:0] == alu_des_1[4:0])) || (rt_source && (RTI[4:0] == alu_des_1[4:0]))))
+		|| (alu_des_2[6] && ((rs_source && (RSI[4:0] == alu_des_2[4:0])) || (rt_source && (RTI[4:0] == alu_des_2[4:0])))))
 		begin
 			delay_self=1;
             // RSO<=5'b00000;
@@ -555,10 +559,10 @@ always @ (*)
                 else if((mem_wr_hilo_2[0] && lo_source)
                         || (mem_wr_hilo_2[1] && hi_source))        
 						FWDA=4'b1010;
-                else if((mem_des_1[5] || mem_des_1[6]) && rs_source &&
+                else if((mem_des_1[5]||mem_des_1[6]) && rs_source &&
                         (RSI[4:0] == mem_des_1[4:0])) 
 						FWDA=4'b0101;
-                else if((mem_des_2[5] || mem_des_2[6]) && rs_source &&
+                else if((mem_des_2[5]||mem_des_2[6]) && rs_source &&
                         (RSI[4:0] == mem_des_2[4:0]))
 						FWDA=4'b0110;
                 else if (lo_source)   
@@ -655,8 +659,9 @@ reg self_branch;
 reg self_j;
 reg self_jr;
 
-always @ (j_inst or jr_inst or jal_inst or jalr_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
-          blez_inst or rs_eq_z or bgtz_inst or r_slt_z or bgez_inst)
+// always @ (j_inst or jr_inst or jal_inst or jalr_inst or beq_inst or rs_eq_rt or bne_inst or bltz_inst or r_slt_z or 
+          // blez_inst or rs_eq_z or bgtz_inst or r_slt_z or bgez_inst)
+always @ (*)
 begin
         self_branch = j_inst || jr_inst || jal_inst ||jalr_inst||eret_inst||(beq_inst && rs_eq_rt) || (bne_inst && !rs_eq_rt) ||((bltz_inst||bltzal_inst) && r_slt_z)||
                   (blez_inst && ((rs_eq_z)||(r_slt_z))) || (bgtz_inst && ! (rs_eq_rt || r_slt_z)) ||
@@ -694,17 +699,17 @@ assign id_cln = id_cln_in;
 wire id_cln;
 reg id_cln_req;
 reg id_cln_fin;
-always @(posedge id_cln or posedge id_cln_fin)
+always @(posedge clk)
 begin
-	if(id_cln_fin)
+	if(!delay&&id_cln_req)
 		id_cln_req<=1'b0;
-	else if(id_cln)
+	else if(id_cln&&delay)
 		id_cln_req<=1'b1;
 end
 
 always @ ( posedge clk)
 	begin
-        if(reset==0||(!delay&&id_cln_req)||delay_self_mix)//这里的mix暂时还不能删�?,同阶冲突时，由于delay无法立即更新exe，产生重复的exe�?
+        if(reset==0||(!delay&&(id_cln_req||id_cln))||delay_self_mix)//这里的mix暂时还不能删�?,同阶冲突时，由于delay无法立即更新exe，产生重复的exe�?
             begin
                 id_des[6:0]<=7'b0;
                 id_wr_hilo[1:0] <= 2'b0;
@@ -736,7 +741,7 @@ always @ ( posedge clk)
 				branch<=self_branch;
 				j<=self_j;
 				jr<=self_jr;
-				id_cln_fin <= 1'b0;
+				id_cln_fin <= 1'b1;
             end
 			else
 				id_cln_fin <= 1'b0;
