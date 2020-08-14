@@ -2,9 +2,9 @@
 Some Verilog file about a double-launching pipeline MIPS cpu.
 
 todo:
-- [ ] implement axi interface
+- [x] implement axi interface
 - [x] implement double debug interface  
-- [ ] cacahe  
-- [ ] cp0
+- [x] cacahe  
+- [x] cp0
 
 
